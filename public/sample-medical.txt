@@ -1,0 +1,52 @@
+# Sistema Cardiovascular - Resumen Médico
+
+## Anatomía del Corazón
+
+El corazón es un órgano muscular hueco que funciona como una bomba doble, impulsando la sangre a través de dos circuitos: la circulación pulmonar y la circulación sistémica.
+
+### Estructura:
+- **Aurículas**: Cavidades superiores que reciben sangre
+  - Aurícula derecha: recibe sangre desoxigenada del cuerpo
+  - Aurícula izquierda: recibe sangre oxigenada de los pulmones
+
+- **Ventrículos**: Cavidades inferiores que bombean sangre
+  - Ventrículo derecho: bombea sangre a los pulmones
+  - Ventrículo izquierdo: bombea sangre al resto del cuerpo
+
+## Ciclo Cardíaco
+
+El ciclo cardíaco consta de dos fases principales:
+
+1. **Diástole**: Fase de relajación y llenado
+   - Las válvulas AV se abren
+   - La sangre fluye de las aurículas a los ventrículos
+   - Presión ventricular baja
+
+2. **Sístole**: Fase de contracción y eyección
+   - Los ventrículos se contraen
+   - Las válvulas semilunares se abren
+   - La sangre es expulsada
+
+## Valores Normales
+
+- Frecuencia cardíaca: 60-100 latidos/min
+- Presión arterial: 120/80 mmHg
+- Gasto cardíaco: 4-8 L/min
+- Volumen sistólico: 70 ml
+
+## Patologías Comunes
+
+### Insuficiencia Cardíaca
+- Reducción de la capacidad de bombeo
+- Síntomas: disnea, edema, fatiga
+
+### Arritmias
+- Alteraciones del ritmo cardíaco
+- Tipos: taquicardia, bradicardia, fibrilación
+
+### Infarto de Miocardio
+- Necrosis del tejido cardíaco
+- Causa: obstrucción arterial coronaria
+
+---
+Documento generado para estudio médico - Plataforma Synapse
