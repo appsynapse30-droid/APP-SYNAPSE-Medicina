@@ -1,0 +1,266 @@
+.flashcard-container {
+    perspective: 1000px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    cursor: pointer;
+}
+
+.flashcard-container.flipping .flashcard {
+    animation: quick-flip 0.15s ease;
+}
+
+@keyframes quick-flip {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.flashcard {
+    width: 100%;
+    max-width: 500px;
+    min-height: 350px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+}
+
+.flashcard.flipped {
+    transform: rotateX(180deg);
+}
+
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    min-height: 350px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    background: rgba(30, 30, 70, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.3),
+        0 0 60px rgba(99, 102, 241, 0.1);
+}
+
+.flashcard-front {
+    padding: 1.5rem;
+}
+
+.flashcard-back {
+    transform: rotateX(180deg);
+    padding: 1.25rem;
+}
+
+/* Priority Badge */
+.priority-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Deck Badge */
+.deck-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+.deck-icon {
+    font-size: 0.9rem;
+}
+
+.deck-name {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Card Content */
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.question-text {
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #ffffff;
+    text-align: center;
+}
+
+.answer-text {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #ffffff;
+}
+
+/* Question Reminder */
+.question-reminder {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    padding-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+/* Answer Divider */
+.answer-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.answer-divider::before,
+.answer-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(99, 102, 241, 0.5),
+            transparent);
+}
+
+.answer-divider span {
+    font-size: 0.75rem;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* Extra Info */
+.extra-info {
+    margin-top: 1rem;
+}
+
+.extra-info details {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.extra-info summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    list-style: none;
+}
+
+.extra-info summary::-webkit-details-marker {
+    display: none;
+}
+
+.extra-info summary::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.extra-info details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.extra-content {
+    padding: 0 1rem 1rem 1rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+}
+
+/* Tags */
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.tag {
+    padding: 0.25rem 0.5rem;
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #a5b4fc;
+}
+
+/* Tap Hint */
+.tap-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 0 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    animation: pulse-hint 2s ease-in-out infinite;
+}
+
+@keyframes pulse-hint {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.tap-icon {
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .flashcard {
+        min-height: 300px;
+    }
+
+    .flashcard-face {
+        min-height: 300px;
+    }
+
+    .question-text {
+        font-size: 1.15rem;
+    }
+
+    .answer-text {
+        font-size: 1rem;
+    }
+
+    .flashcard-front,
+    .flashcard-back {
+        padding: 1rem;
+    }
+}

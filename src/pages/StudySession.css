@@ -1,0 +1,338 @@
+.study-session-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #0f0f23 0%, #1a1a3e 100%);
+    color: #ffffff;
+}
+
+/* Header */
+.study-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: rgba(26, 26, 62, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.back-button,
+.skip-button {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-button:hover,
+.skip-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.deck-info {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ffffff;
+}
+
+/* Main Content */
+.study-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Study Actions */
+.study-actions {
+    margin-top: auto;
+    padding: 1.5rem 0;
+}
+
+.show-answer-button {
+    width: 100%;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.show-answer-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+}
+
+.show-answer-button:active {
+    transform: translateY(0);
+}
+
+/* Loading State */
+.study-loading,
+.study-error,
+.no-cards,
+.session-complete,
+.no-current-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-brain {
+    font-size: 4rem;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.study-loading p,
+.no-current-card p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+/* Error State */
+.study-error .error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.study-error h2 {
+    color: #ef4444;
+    margin: 0 0 0.5rem 0;
+}
+
+.study-error p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 1.5rem 0;
+}
+
+.study-error button {
+    padding: 0.75rem 1.5rem;
+    background: #6366f1;
+    border: none;
+    border-radius: 10px;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* No Cards */
+.no-cards .celebration-icon {
+    font-size: 4rem;
+    animation: celebrate 0.5s ease-out;
+}
+
+@keyframes celebrate {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.no-cards h2 {
+    color: #10b981;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.no-cards p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 1.5rem 0;
+}
+
+/* Session Complete */
+.session-complete {
+    max-width: 400px;
+    width: 100%;
+}
+
+.complete-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.trophy-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+    animation: trophy-bounce 0.6s ease-out;
+}
+
+@keyframes trophy-bounce {
+    0% {
+        transform: scale(0) rotate(-10deg);
+    }
+
+    50% {
+        transform: scale(1.2) rotate(5deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0);
+    }
+}
+
+.complete-header h2 {
+    color: #fbbf24;
+    font-size: 1.75rem;
+    margin: 0;
+}
+
+.session-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.stat-card.correct {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.stat-card.incorrect {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.stat-card.accuracy {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.stat-card.correct .stat-value {
+    color: #10b981;
+}
+
+.stat-card.incorrect .stat-value {
+    color: #ef4444;
+}
+
+.stat-card.accuracy .stat-value {
+    color: #6366f1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+}
+
+.complete-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.primary-button,
+.secondary-button {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #ffffff;
+}
+
+.primary-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+}
+
+.secondary-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.secondary-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .study-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .study-content {
+        padding: 1rem;
+    }
+
+    .back-button,
+    .skip-button {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .session-stats-grid {
+        gap: 0.75rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}

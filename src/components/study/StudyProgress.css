@@ -1,0 +1,116 @@
+.study-progress {
+    padding: 0 1.5rem 1rem 1.5rem;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    position: relative;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 12px;
+    transition: width 0.3s ease;
+    min-width: 10px;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Stats Row */
+.progress-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.stat-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.stat.correct .stat-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.stat.incorrect .stat-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.stat.accuracy .stat-icon {
+    background: rgba(99, 102, 241, 0.2);
+    color: #6366f1;
+    font-size: 0.6rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stat.correct .stat-value {
+    color: #10b981;
+}
+
+.stat.incorrect .stat-value {
+    color: #ef4444;
+}
+
+.stat.accuracy .stat-value {
+    color: #6366f1;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .study-progress {
+        padding: 0 1rem 0.75rem 1rem;
+    }
+
+    .progress-bar-container {
+        height: 20px;
+    }
+
+    .progress-text {
+        font-size: 0.7rem;
+    }
+
+    .progress-stats {
+        gap: 1rem;
+    }
+
+    .stat {
+        font-size: 0.8rem;
+    }
+}

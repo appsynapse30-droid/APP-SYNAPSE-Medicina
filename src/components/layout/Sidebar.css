@@ -134,3 +134,53 @@
         transform: translateX(0);
     }
 }
+
+/* Logout Button */
+.logout-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    margin-top: var(--space-sm);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-md);
+    color: #ef4444;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Study Highlight */
+.nav-item.highlight {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.nav-item.highlight:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%);
+}
+
+.nav-item.highlight.active {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-color: transparent;
+}
+
+/* Study Badge */
+.study-badge {
+    margin-left: auto;
+    padding: 0.15rem 0.4rem;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
