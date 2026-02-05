@@ -1069,3 +1069,82 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Delete Modal */
+.modal.delete-modal {
+    max-width: 400px;
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.delete-modal-content {
+    padding: var(--space-xl);
+    text-align: center;
+}
+
+.delete-icon {
+    width: 64px;
+    height: 64px;
+    background: rgba(248, 81, 73, 0.15);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-lg);
+    color: var(--accent-red, #f85149);
+}
+
+.delete-modal-content h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.delete-modal-content p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+    line-height: 1.5;
+}
+
+.delete-modal-content strong {
+    color: var(--text-primary);
+}
+
+.delete-modal-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--accent-red, #f85149);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: #e03e36;
+    transform: translateY(-1px);
+}

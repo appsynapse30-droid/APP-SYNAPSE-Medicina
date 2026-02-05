@@ -19,7 +19,8 @@ import {
     StickyNote,
     Image as ImageIcon,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    Trash2
 } from 'lucide-react'
 import { useLibrary } from '../context/LibraryContext'
 import PDFViewer from '../components/PDFViewer'
@@ -28,7 +29,8 @@ import './DocumentReader.css'
 export default function DocumentReader() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { documents } = useLibrary()
+    const { documents, deleteDocument } = useLibrary()
+
 
     const [document, setDocument] = useState(null)
     const [documentNotFound, setDocumentNotFound] = useState(false)
@@ -38,6 +40,7 @@ export default function DocumentReader() {
     const [contextEnabled, setContextEnabled] = useState(true)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [showAIPanel, setShowAIPanel] = useState(true)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
 
     useEffect(() => {
         // Buscar documento por ID - comparar como string para evitar problemas con números grandes
@@ -95,6 +98,13 @@ export default function DocumentReader() {
             link.href = document.fileData
             link.download = document.title
             link.click()
+        }
+    }
+
+    const handleDelete = () => {
+        if (document) {
+            deleteDocument(document.id)
+            navigate('/library')
         }
     }
 
@@ -168,6 +178,13 @@ export default function DocumentReader() {
                             onClick={() => setShowAIPanel(!showAIPanel)}
                         >
                             <Sparkles size={18} />
+                        </button>
+                        <button
+                            title="Eliminar documento"
+                            className="delete-btn"
+                            onClick={() => setShowDeleteModal(true)}
+                        >
+                            <Trash2 size={18} />
                         </button>
                     </div>
                 </div>
@@ -369,6 +386,39 @@ export default function DocumentReader() {
                         </button>
                     </div>
                 </aside>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+                    <div className="modal delete-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="delete-modal-content">
+                            <div className="delete-icon">
+                                <Trash2 size={32} />
+                            </div>
+                            <h2>¿Eliminar documento?</h2>
+                            <p>
+                                Estás a punto de eliminar <strong>"{document?.title}"</strong>.
+                                Esta acción no se puede deshacer.
+                            </p>
+                            <div className="delete-modal-actions">
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowDeleteModal(false)}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={handleDelete}
+                                >
+                                    <Trash2 size={16} />
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )

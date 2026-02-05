@@ -5,20 +5,34 @@ import { useAuth } from '../context/AuthContext';
 /**
  * ProtectedRoute Component
  * Redirects to login if user is not authenticated
+ * 
+ * ⚠️ BYPASS TEMPORAL: Autenticación desactivada para desarrollo
+ * Para reactivar, cambiar BYPASS_AUTH a false
  */
-function ProtectedRoute({ children }) {
-    const { isAuthenticated, loading } = useAuth();
-    const location = useLocation();
 
-    // Show loading state while checking auth
-    if (loading) {
-        return (
-            <div className="auth-loading">
-                <div className="loading-spinner">
-                    <span className="brain-icon">🧠</span>
-                    <p>Cargando...</p>
-                </div>
-                <style>{`
+// ⚠️ CAMBIAR A false PARA REACTIVAR AUTENTICACIÓN
+const BYPASS_AUTH = true;
+
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  // Si bypass está activo, renderizar directamente los children
+  if (BYPASS_AUTH) {
+    return children;
+  }
+
+  // ===== CÓDIGO ORIGINAL (se ejecuta cuando BYPASS_AUTH = false) =====
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="auth-loading">
+        <div className="loading-spinner">
+          <span className="brain-icon">🧠</span>
+          <p>Cargando...</p>
+        </div>
+        <style>{`
           .auth-loading {
             min-height: 100vh;
             display: flex;
@@ -45,17 +59,17 @@ function ProtectedRoute({ children }) {
             50% { transform: scale(1.1); opacity: 0.7; }
           }
         `}</style>
-            </div>
-        );
-    }
+      </div>
+    );
+  }
 
-    // Redirect to login if not authenticated
-    if (!isAuthenticated) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-    // Render protected content
-    return children;
+  // Render protected content
+  return children;
 }
 
 export default ProtectedRoute;

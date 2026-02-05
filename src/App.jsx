@@ -41,6 +41,7 @@ function App() {
                             </ProtectedRoute>
                         }>
                             <Route index element={<Dashboard />} />
+                            <Route path="dashboard" element={<Dashboard />} />
                             <Route path="library" element={<Library />} />
                             <Route path="library/document/:id" element={<DocumentReader />} />
                             <Route path="study" element={<StudyAI />} />

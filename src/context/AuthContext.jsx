@@ -4,29 +4,83 @@ import { supabase } from '../config/supabase';
 // Create context
 const AuthContext = createContext(null);
 
+// ⚠️ BYPASS DE AUTENTICACIÓN
+// - Cambiar a 'true' SOLO para desarrollo de UI (sin acceso a base de datos)
+// - Mantener en 'false' cuando necesites probar funcionalidades con Supabase
+// 
+// NOTA: Si BYPASS_AUTH está en true, el user.id será un UUID ficticio que 
+// causará errores en las consultas a Supabase porque las tablas esperan 
+// un UUID real existente en auth.users
+const BYPASS_AUTH = false;
+
+// Usuario mock para desarrollo (cuando bypass está activo)
+// ⚠️ IMPORTANTE: Este UUID debe existir en la tabla user_profiles de Supabase
+// o se creará automáticamente al primer uso
+const DEV_USER_UUID = '00000000-0000-0000-0000-000000000001';
+
+const MOCK_USER = {
+    id: DEV_USER_UUID,
+    email: 'dev@synapse.local',
+    user_metadata: {
+        display_name: 'Developer',
+        university: 'Universidad de Desarrollo',
+        career_year: 3
+    }
+};
+
 /**
  * Auth Provider Component
  * Handles user authentication state and provides auth functions
+ * 
+ * ⚠️ BYPASS TEMPORAL: Autenticación desactivada para desarrollo
  */
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [session, setSession] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(BYPASS_AUTH ? MOCK_USER : null);
+    const [session, setSession] = useState(BYPASS_AUTH ? { user: MOCK_USER } : null);
+    const [loading, setLoading] = useState(BYPASS_AUTH ? false : true);
     const [error, setError] = useState(null);
 
     // Initialize auth state
     useEffect(() => {
+        // Si bypass está activo, no inicializar autenticación real
+        if (BYPASS_AUTH) {
+            console.log('🔓 Auth bypass activo - usando usuario mock');
+            return;
+        }
+
+        let mounted = true;
+        let timeoutId = null;
+
+        // Timeout de seguridad - si tarda más de 5 segundos, asumimos que no hay sesión
+        timeoutId = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn('Auth initialization timeout - assuming no session');
+                setLoading(false);
+            }
+        }, 5000);
+
         // Get initial session
         const initializeAuth = async () => {
             try {
-                const { data: { session: currentSession } } = await supabase.auth.getSession();
-                setSession(currentSession);
-                setUser(currentSession?.user ?? null);
+                const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+
+                if (sessionError) {
+                    console.error('Error getting session:', sessionError);
+                    setError(sessionError.message);
+                } else if (mounted) {
+                    setSession(currentSession);
+                    setUser(currentSession?.user ?? null);
+                }
             } catch (err) {
                 console.error('Error getting session:', err);
-                setError(err.message);
+                if (mounted) {
+                    setError(err.message);
+                }
             } finally {
-                setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                    clearTimeout(timeoutId);
+                }
             }
         };
 
@@ -36,9 +90,18 @@ export function AuthProvider({ children }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, newSession) => {
                 console.log('Auth event:', event);
-                setSession(newSession);
-                setUser(newSession?.user ?? null);
-                setLoading(false);
+
+                // Limpiar timeout al recibir cualquier evento de auth
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+
+                if (mounted) {
+                    setSession(newSession);
+                    setUser(newSession?.user ?? null);
+                    setLoading(false);
+                }
 
                 // Create profile on signup
                 if (event === 'SIGNED_IN' && newSession?.user) {
@@ -49,6 +112,8 @@ export function AuthProvider({ children }) {
 
         // Cleanup subscription
         return () => {
+            mounted = false;
+            clearTimeout(timeoutId);
             subscription?.unsubscribe();
         };
     }, []);
@@ -202,6 +267,30 @@ export function AuthProvider({ children }) {
         signOut,
         updateProfile
     };
+
+    // Show loading state while initializing auth
+    if (loading) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)',
+                flexDirection: 'column',
+                gap: '1rem'
+            }}>
+                <span style={{ fontSize: '3rem', animation: 'pulse 1.5s ease-in-out infinite' }}>🧠</span>
+                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem' }}>Iniciando SYNAPSE...</p>
+                <style>{`
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); opacity: 1; }
+                        50% { transform: scale(1.1); opacity: 0.7; }
+                    }
+                `}</style>
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={value}>

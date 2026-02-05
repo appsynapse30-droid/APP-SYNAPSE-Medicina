@@ -1,5 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
 import {
     ZoomIn,
     ZoomOut,
@@ -16,8 +18,11 @@ import {
 } from 'lucide-react'
 import './PDFViewer.css'
 
-// Configure PDF.js worker - using CDN for reliability
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+// Configure PDF.js worker - use bundled worker from pdfjs-dist (most reliable)
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url
+).toString()
 
 export default function PDFViewer({
     fileUrl,
@@ -40,6 +45,13 @@ export default function PDFViewer({
 
     const containerRef = useRef(null)
     const [containerWidth, setContainerWidth] = useState(800)
+
+    // Memoize document options to prevent re-renders
+    const documentOptions = useMemo(() => ({
+        cMapUrl: 'https://unpkg.com/pdfjs-dist@4.4.168/cmaps/',
+        cMapPacked: true,
+        standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@4.4.168/standard_fonts/',
+    }), [])
 
     // Validate PDF data
     const validatePdfData = useCallback((data) => {
@@ -382,10 +394,7 @@ export default function PDFViewer({
                         loading={null}
                         error={null}
                         className="pdf-document"
-                        options={{
-                            cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/cmaps/`,
-                            cMapPacked: true,
-                        }}
+                        options={documentOptions}
                     >
                         {!isLoading && !loadError && (
                             <Page

@@ -56,7 +56,10 @@ export default function Library() {
     const [showUploadModal, setShowUploadModal] = useState(false)
     const [showNoteModal, setShowNoteModal] = useState(false)
     const [showCollectionModal, setShowCollectionModal] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [documentToDelete, setDocumentToDelete] = useState(null)
     const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, doc: null })
+
 
     // Estados de edición
     const [editingCollection, setEditingCollection] = useState(null)
@@ -579,7 +582,8 @@ export default function Library() {
                     <button
                         className="danger"
                         onClick={() => {
-                            deleteDocument(contextMenu.doc.id)
+                            setDocumentToDelete(contextMenu.doc)
+                            setShowDeleteModal(true)
                             closeContextMenu()
                         }}
                     >
@@ -814,6 +818,49 @@ export default function Library() {
                             >
                                 Crear Colección
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && documentToDelete && (
+                <div className="modal-overlay" onClick={() => {
+                    setShowDeleteModal(false)
+                    setDocumentToDelete(null)
+                }}>
+                    <div className="modal delete-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="delete-modal-content">
+                            <div className="delete-icon">
+                                <Trash2 size={32} />
+                            </div>
+                            <h2>¿Eliminar documento?</h2>
+                            <p>
+                                Estás a punto de eliminar <strong>"{documentToDelete.title}"</strong>.
+                                Esta acción no se puede deshacer.
+                            </p>
+                            <div className="delete-modal-actions">
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => {
+                                        setShowDeleteModal(false)
+                                        setDocumentToDelete(null)
+                                    }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => {
+                                        deleteDocument(documentToDelete.id)
+                                        setShowDeleteModal(false)
+                                        setDocumentToDelete(null)
+                                    }}
+                                >
+                                    <Trash2 size={16} />
+                                    Eliminar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

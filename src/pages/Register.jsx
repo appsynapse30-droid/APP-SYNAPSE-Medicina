@@ -89,11 +89,11 @@ function Register() {
                         <span className="success-icon">✅</span>
                         <h2>¡Registro exitoso!</h2>
                         <p>
-                            Te hemos enviado un email de confirmación a <strong>{formData.email}</strong>.
-                            Por favor, verifica tu correo para activar tu cuenta.
+                            Tu cuenta ha sido creada correctamente con el email <strong>{formData.email}</strong>.
+                            ¡Ya puedes iniciar sesión!
                         </p>
                         <Link to="/login" className="go-login-button">
-                            Ir a Iniciar Sesión
+                            Iniciar Sesión Ahora
                         </Link>
                     </div>
                 </div>
