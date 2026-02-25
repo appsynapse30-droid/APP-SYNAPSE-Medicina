@@ -22,7 +22,10 @@ import {
     File,
     FilePlus,
     Check,
-    Clock
+    Clock,
+    Download,
+    Loader2,
+    AlertCircle
 } from 'lucide-react'
 import { useLibrary } from '../context/LibraryContext'
 import './Library.css'
@@ -33,6 +36,10 @@ export default function Library() {
         documents,
         collections,
         tags,
+        loading,
+        uploading,
+        uploadProgress,
+        error: libraryError,
         addDocument,
         updateDocument,
         deleteDocument,
@@ -41,7 +48,10 @@ export default function Library() {
         deleteCollection,
         renameCollection,
         searchDocuments,
-        createNote
+        createNote,
+        downloadDocument,
+        validateFile,
+        MAX_FILE_SIZE
     } = useLibrary()
 
     const [viewMode, setViewMode] = useState('grid')
@@ -125,16 +135,35 @@ export default function Library() {
     }, [])
 
     const handleFiles = (files) => {
-        const fileArray = Array.from(files).map(file => ({
-            file,
-            name: file.name,
-            size: formatFileSize(file.size),
-            sizeBytes: file.size,
-            type: getFileType(file.name),
-            preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
-        }))
-        setUploadFiles(prev => [...prev, ...fileArray])
-        setShowUploadModal(true)
+        const fileArray = []
+        const errors = []
+
+        Array.from(files).forEach(file => {
+            // Validate file
+            const validation = validateFile(file)
+            if (!validation.valid) {
+                errors.push(validation.error)
+                return
+            }
+
+            fileArray.push({
+                file,
+                name: file.name,
+                size: formatFileSize(file.size),
+                sizeBytes: file.size,
+                type: getFileType(file.name),
+                preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+            })
+        })
+
+        if (errors.length > 0) {
+            alert(errors.join('\n'))
+        }
+
+        if (fileArray.length > 0) {
+            setUploadFiles(prev => [...prev, ...fileArray])
+            setShowUploadModal(true)
+        }
     }
 
     const formatFileSize = (bytes) => {

@@ -235,6 +235,52 @@ export function AuthProvider({ children }) {
     };
 
     /**
+     * Reset password - send recovery email
+     */
+    const resetPassword = async (email) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`
+            });
+
+            if (resetError) throw resetError;
+
+            return { error: null };
+        } catch (err) {
+            setError(err.message);
+            return { error: err };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Update password - after reset
+     */
+    const updatePassword = async (newPassword) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { error: updateError } = await supabase.auth.updateUser({
+                password: newPassword
+            });
+
+            if (updateError) throw updateError;
+
+            return { error: null };
+        } catch (err) {
+            setError(err.message);
+            return { error: err };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
      * Update user profile
      */
     const updateProfile = async (updates) => {
@@ -265,7 +311,9 @@ export function AuthProvider({ children }) {
         signUp,
         signIn,
         signOut,
-        updateProfile
+        updateProfile,
+        resetPassword,
+        updatePassword
     };
 
     // Show loading state while initializing auth

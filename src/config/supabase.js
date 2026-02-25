@@ -279,6 +279,175 @@ export const supabaseHelpers = {
                 .single();
             return { data, error };
         }
+    },
+
+    // Document Storage helpers
+    storage: {
+        /**
+         * Upload a file to Supabase Storage
+         * @param {string} userId - User ID for folder path
+         * @param {File} file - File to upload
+         * @returns {Promise<{path: string, error: Error|null}>}
+         */
+        uploadDocument: async (userId, file) => {
+            try {
+                // Generate unique filename
+                const timestamp = Date.now();
+                const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                const filePath = `${userId}/${timestamp}_${sanitizedName}`;
+
+                const { data, error } = await supabase.storage
+                    .from('documents')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) throw error;
+
+                return { path: data.path, error: null };
+            } catch (error) {
+                console.error('Upload error:', error);
+                return { path: null, error };
+            }
+        },
+
+        /**
+         * Get a signed URL for downloading a document
+         * @param {string} filePath - Path to the file in storage
+         * @param {number} expiresIn - URL expiration in seconds (default 1 hour)
+         * @returns {Promise<{url: string, error: Error|null}>}
+         */
+        getSignedUrl: async (filePath, expiresIn = 3600) => {
+            try {
+                const { data, error } = await supabase.storage
+                    .from('documents')
+                    .createSignedUrl(filePath, expiresIn);
+
+                if (error) throw error;
+
+                return { url: data.signedUrl, error: null };
+            } catch (error) {
+                console.error('Get URL error:', error);
+                return { url: null, error };
+            }
+        },
+
+        /**
+         * Delete a document from storage
+         * @param {string} filePath - Path to the file in storage
+         * @returns {Promise<{error: Error|null}>}
+         */
+        deleteDocument: async (filePath) => {
+            try {
+                const { error } = await supabase.storage
+                    .from('documents')
+                    .remove([filePath]);
+
+                if (error) throw error;
+
+                return { error: null };
+            } catch (error) {
+                console.error('Delete error:', error);
+                return { error };
+            }
+        },
+
+        /**
+         * Download a document file
+         * @param {string} filePath - Path to the file in storage
+         * @returns {Promise<{data: Blob, error: Error|null}>}
+         */
+        downloadDocument: async (filePath) => {
+            try {
+                const { data, error } = await supabase.storage
+                    .from('documents')
+                    .download(filePath);
+
+                if (error) throw error;
+
+                return { data, error: null };
+            } catch (error) {
+                console.error('Download error:', error);
+                return { data: null, error };
+            }
+        }
+    },
+
+    // Documents database helpers
+    documents: {
+        /**
+         * Get all documents for a user
+         */
+        getAll: async (userId) => {
+            const { data, error } = await supabase
+                .from('documents')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+            return { data, error };
+        },
+
+        /**
+         * Get a single document by ID
+         */
+        getById: async (id) => {
+            const { data, error } = await supabase
+                .from('documents')
+                .select('*')
+                .eq('id', id)
+                .single();
+            return { data, error };
+        },
+
+        /**
+         * Create a new document record
+         */
+        create: async (document) => {
+            const { data, error } = await supabase
+                .from('documents')
+                .insert(document)
+                .select()
+                .single();
+            return { data, error };
+        },
+
+        /**
+         * Update a document record
+         */
+        update: async (id, updates) => {
+            const { data, error } = await supabase
+                .from('documents')
+                .update({ ...updates, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            return { data, error };
+        },
+
+        /**
+         * Delete a document record
+         */
+        delete: async (id) => {
+            const { error } = await supabase
+                .from('documents')
+                .delete()
+                .eq('id', id);
+            return { error };
+        },
+
+        /**
+         * Search documents by name or tags
+         */
+        search: async (userId, query) => {
+            const { data, error } = await supabase
+                .from('documents')
+                .select('*')
+                .eq('user_id', userId)
+                .or(`name.ilike.%${query}%,subject.ilike.%${query}%`)
+                .order('created_at', { ascending: false });
+            return { data, error };
+        }
     }
 };
 

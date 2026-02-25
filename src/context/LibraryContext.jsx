@@ -1,11 +1,13 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { supabase, supabaseHelpers } from '../config/supabase'
+import { useAuth } from './AuthContext'
 
 const LibraryContext = createContext()
 
-// Datos iniciales de ejemplo
-const initialDocuments = [
+// Datos iniciales de ejemplo (solo para usuarios sin documentos)
+const sampleDocuments = [
     {
-        id: 1,
+        id: 'sample-1',
         title: "Principios de Medicina Interna de Harrison",
         type: 'PDF',
         category: 'Medicina Interna • Libro de Texto',
@@ -16,53 +18,30 @@ const initialDocuments = [
         size: '12.4 MB',
         sizeBytes: 12400000,
         image: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=300&h=200&fit=crop',
-        content: null,
-        isNote: false
-    },
-    {
-        id: 2,
-        title: 'Clase 4: Introducción a...',
-        type: 'NOTA',
-        category: 'Dr. Roberts • Diapositivas',
-        summary: 'Puntos clave: Estructura neuronal, potenciales de acción, y...',
-        tags: ['Neuro', 'Año 2'],
-        collection: 'Neurología',
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        size: '2.1 MB',
-        sizeBytes: 2100000,
-        image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop',
-        content: null,
-        isNote: false
-    },
-    {
-        id: 3,
-        title: 'Diagrama de Flujo del Ciclo Cardíaco',
-        type: 'IMG',
-        category: 'Fisiología • Diagrama',
-        summary: 'Visualiza cambios de presión en ventrículo izquierdo durante...',
-        tags: ['Fisiología', 'Cardiología'],
-        collection: 'Cardiología',
-        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        size: '850 KB',
-        sizeBytes: 850000,
-        image: 'https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=300&h=200&fit=crop',
-        content: null,
-        isNote: false
+        isNote: false,
+        isSample: true
     }
 ]
 
 const initialCollections = [
-    { id: 1, name: 'Cardiología', count: 12, color: '#f85149' },
-    { id: 2, name: 'Neurología', count: 8, color: '#58a6ff' },
-    { id: 3, name: 'Patología', count: 24, color: '#8b5cf6' },
-    { id: 4, name: 'Farmacología', count: 6, color: '#3fb950' }
+    { id: 1, name: 'Cardiología', count: 0, color: '#f85149' },
+    { id: 2, name: 'Neurología', count: 0, color: '#58a6ff' },
+    { id: 3, name: 'Patología', count: 0, color: '#8b5cf6' },
+    { id: 4, name: 'Farmacología', count: 0, color: '#3fb950' }
 ]
 
+// Constants
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
 export function LibraryProvider({ children }) {
-    const [documents, setDocuments] = useState(() => {
-        const saved = localStorage.getItem('synapse_documents')
-        return saved ? JSON.parse(saved) : initialDocuments
-    })
+    const { user, isAuthenticated } = useAuth()
+
+    const [documents, setDocuments] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [uploading, setUploading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState(0)
+    const [error, setError] = useState(null)
 
     const [collections, setCollections] = useState(() => {
         const saved = localStorage.getItem('synapse_collections')
@@ -74,11 +53,7 @@ export function LibraryProvider({ children }) {
         return saved ? JSON.parse(saved) : ['Cardiología', 'Neuro', 'Fisiología', 'Año 2', 'Farmacología', 'Anatomía']
     })
 
-    // Persistir en localStorage
-    useEffect(() => {
-        localStorage.setItem('synapse_documents', JSON.stringify(documents))
-    }, [documents])
-
+    // Persist collections and tags locally (they're lightweight)
     useEffect(() => {
         localStorage.setItem('synapse_collections', JSON.stringify(collections))
     }, [collections])
@@ -87,75 +62,281 @@ export function LibraryProvider({ children }) {
         localStorage.setItem('synapse_tags', JSON.stringify(tags))
     }, [tags])
 
-    // Función para convertir File a base64
-    const fileToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader()
-            reader.readAsDataURL(file)
-            reader.onload = () => resolve(reader.result)
-            reader.onerror = (error) => reject(error)
-        })
+    // Fetch documents from Supabase when user changes
+    const fetchDocuments = useCallback(async () => {
+        if (!isAuthenticated || !user?.id) {
+            setDocuments(sampleDocuments)
+            setLoading(false)
+            return
+        }
+
+        setLoading(true)
+        setError(null)
+
+        try {
+            const { data, error: fetchError } = await supabaseHelpers.documents.getAll(user.id)
+
+            if (fetchError) throw fetchError
+
+            // Transform Supabase documents to match our format
+            const transformedDocs = (data || []).map(doc => ({
+                id: doc.id,
+                title: doc.name,
+                type: getTypeFromMime(doc.file_type),
+                category: doc.subject || 'Documento',
+                summary: '',
+                tags: doc.tags || [],
+                collection: doc.subject,
+                date: doc.created_at,
+                size: formatFileSize(doc.file_size),
+                sizeBytes: doc.file_size,
+                filePath: doc.file_path,
+                isNote: false,
+                isSample: false
+            }))
+
+            setDocuments(transformedDocs)
+        } catch (err) {
+            console.error('Error fetching documents:', err)
+            setError('Error al cargar documentos')
+            setDocuments([])
+        } finally {
+            setLoading(false)
+        }
+    }, [user?.id, isAuthenticated])
+
+    useEffect(() => {
+        fetchDocuments()
+    }, [fetchDocuments])
+
+    // Helper functions
+    const formatFileSize = (bytes) => {
+        if (!bytes) return '0 B'
+        if (bytes < 1024) return bytes + ' B'
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
     }
 
-    // Funciones para documentos
-    const addDocument = async (doc, file = null) => {
-        let fileData = null
+    const getTypeFromMime = (mimeType) => {
+        if (!mimeType) return 'ARCHIVO'
+        if (mimeType.includes('pdf')) return 'PDF'
+        if (mimeType.includes('image')) return 'IMG'
+        if (mimeType.includes('word') || mimeType.includes('document')) return 'DOC'
+        if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'PPT'
+        return 'ARCHIVO'
+    }
 
-        // Si hay un archivo, convertirlo a base64 para almacenamiento
-        if (file && file.type === 'application/pdf') {
-            try {
-                fileData = await fileToBase64(file)
-            } catch (error) {
-                console.error('Error converting file to base64:', error)
+    const validateFile = (file) => {
+        if (file.size > MAX_FILE_SIZE) {
+            return { valid: false, error: `El archivo "${file.name}" excede el límite de 50MB` }
+        }
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return { valid: false, error: `Tipo de archivo no soportado: ${file.type}` }
+        }
+        return { valid: true, error: null }
+    }
+
+    // Add document with file upload to Supabase Storage
+    const addDocument = async (docData, file = null) => {
+        if (!isAuthenticated || !user?.id) {
+            setError('Debes iniciar sesión para subir documentos')
+            return { error: 'No autenticado' }
+        }
+
+        setUploading(true)
+        setUploadProgress(0)
+        setError(null)
+
+        try {
+            // If we have a file, upload it to Storage first
+            let filePath = null
+            let fileSize = docData.sizeBytes || 0
+
+            if (file) {
+                // Validate file
+                const validation = validateFile(file)
+                if (!validation.valid) {
+                    throw new Error(validation.error)
+                }
+
+                setUploadProgress(25)
+
+                // Upload to Supabase Storage
+                const { path, error: uploadError } = await supabaseHelpers.storage.uploadDocument(user.id, file)
+
+                if (uploadError) throw uploadError
+
+                filePath = path
+                fileSize = file.size
+                setUploadProgress(75)
             }
-        }
 
-        const newDoc = {
-            ...doc,
-            id: Date.now(),
-            date: new Date().toISOString(),
-            fileData: fileData // Almacenar el contenido del PDF
-        }
-        setDocuments(prev => [newDoc, ...prev])
+            // Save metadata to database
+            const documentRecord = {
+                user_id: user.id,
+                name: docData.title || file?.name || 'Documento sin nombre',
+                file_path: filePath,
+                file_size: fileSize,
+                file_type: file?.type || 'application/octet-stream',
+                subject: docData.collection || docData.category || null,
+                tags: docData.tags || []
+            }
 
-        // Actualizar conteo de colección
-        if (doc.collection) {
-            updateCollectionCount(doc.collection, 1)
-        }
+            const { data, error: dbError } = await supabaseHelpers.documents.create(documentRecord)
 
-        return newDoc
+            if (dbError) throw dbError
+
+            setUploadProgress(100)
+
+            // Add to local state
+            const newDoc = {
+                id: data.id,
+                title: data.name,
+                type: getTypeFromMime(data.file_type),
+                category: data.subject || 'Documento',
+                summary: docData.summary || '',
+                tags: data.tags || [],
+                collection: data.subject,
+                date: data.created_at,
+                size: formatFileSize(data.file_size),
+                sizeBytes: data.file_size,
+                filePath: data.file_path,
+                image: docData.image,
+                isNote: docData.isNote || false,
+                isSample: false
+            }
+
+            setDocuments(prev => [newDoc, ...prev])
+
+            // Update collection count
+            if (data.subject) {
+                updateCollectionCount(data.subject, 1)
+            }
+
+            return { data: newDoc, error: null }
+        } catch (err) {
+            console.error('Error adding document:', err)
+            setError(err.message || 'Error al subir documento')
+            return { data: null, error: err }
+        } finally {
+            setUploading(false)
+            setTimeout(() => setUploadProgress(0), 1000)
+        }
     }
 
-    const updateDocument = (id, updates) => {
-        setDocuments(prev => prev.map(doc =>
-            doc.id === id ? { ...doc, ...updates } : doc
-        ))
+    // Update document metadata
+    const updateDocument = async (id, updates) => {
+        if (!isAuthenticated) return { error: 'No autenticado' }
+
+        try {
+            const { data, error: updateError } = await supabaseHelpers.documents.update(id, {
+                name: updates.title,
+                subject: updates.collection || updates.category,
+                tags: updates.tags
+            })
+
+            if (updateError) throw updateError
+
+            setDocuments(prev => prev.map(doc =>
+                doc.id === id ? { ...doc, ...updates } : doc
+            ))
+
+            return { data, error: null }
+        } catch (err) {
+            console.error('Error updating document:', err)
+            return { data: null, error: err }
+        }
     }
 
-    const deleteDocument = (id) => {
+    // Delete document from Storage and Database
+    const deleteDocument = async (id) => {
+        if (!isAuthenticated) return { error: 'No autenticado' }
+
         const doc = documents.find(d => d.id === id)
-        if (doc?.collection) {
-            updateCollectionCount(doc.collection, -1)
-        }
-        setDocuments(prev => prev.filter(doc => doc.id !== id))
-    }
+        if (!doc) return { error: 'Documento no encontrado' }
 
-    const moveToCollection = (docId, collectionName) => {
-        const doc = documents.find(d => d.id === docId)
-        if (doc) {
-            // Decrementar colección anterior
+        // Skip sample documents
+        if (doc.isSample) {
+            setDocuments(prev => prev.filter(d => d.id !== id))
+            return { error: null }
+        }
+
+        try {
+            // Delete from Storage if has file
+            if (doc.filePath) {
+                const { error: storageError } = await supabaseHelpers.storage.deleteDocument(doc.filePath)
+                if (storageError) {
+                    console.warn('Error deleting from storage:', storageError)
+                }
+            }
+
+            // Delete from Database
+            const { error: dbError } = await supabaseHelpers.documents.delete(id)
+            if (dbError) throw dbError
+
+            // Update local state
             if (doc.collection) {
                 updateCollectionCount(doc.collection, -1)
             }
-            // Incrementar nueva colección
-            if (collectionName) {
-                updateCollectionCount(collectionName, 1)
-            }
-            updateDocument(docId, { collection: collectionName })
+            setDocuments(prev => prev.filter(d => d.id !== id))
+
+            return { error: null }
+        } catch (err) {
+            console.error('Error deleting document:', err)
+            setError('Error al eliminar documento')
+            return { error: err }
         }
     }
 
-    // Funciones para colecciones
+    // Get download URL for a document
+    const getDocumentUrl = async (id) => {
+        const doc = documents.find(d => d.id === id)
+        if (!doc?.filePath) return { url: null, error: 'No file path' }
+
+        const { url, error } = await supabaseHelpers.storage.getSignedUrl(doc.filePath)
+        return { url, error }
+    }
+
+    // Download a document
+    const downloadDocument = async (id) => {
+        const doc = documents.find(d => d.id === id)
+        if (!doc?.filePath) return { error: 'No file path' }
+
+        try {
+            const { data, error } = await supabaseHelpers.storage.downloadDocument(doc.filePath)
+            if (error) throw error
+
+            // Create download link
+            const url = URL.createObjectURL(data)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = doc.title
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            return { error: null }
+        } catch (err) {
+            console.error('Error downloading:', err)
+            return { error: err }
+        }
+    }
+
+    const moveToCollection = async (docId, collectionName) => {
+        const doc = documents.find(d => d.id === docId)
+        if (doc) {
+            const oldCollection = doc.collection
+            const { error } = await updateDocument(docId, { collection: collectionName })
+
+            if (!error) {
+                if (oldCollection) updateCollectionCount(oldCollection, -1)
+                if (collectionName) updateCollectionCount(collectionName, 1)
+            }
+        }
+    }
+
+    // Collection functions (kept local)
     const addCollection = (name, color = '#58a6ff') => {
         const newCollection = {
             id: Date.now(),
@@ -176,7 +357,6 @@ export function LibraryProvider({ children }) {
     const deleteCollection = (id) => {
         const collection = collections.find(c => c.id === id)
         if (collection) {
-            // Mover documentos de esta colección a sin colección
             setDocuments(prev => prev.map(doc =>
                 doc.collection === collection.name ? { ...doc, collection: null } : doc
             ))
@@ -187,7 +367,6 @@ export function LibraryProvider({ children }) {
     const renameCollection = (id, newName) => {
         const oldCollection = collections.find(c => c.id === id)
         if (oldCollection) {
-            // Actualizar documentos con el nuevo nombre
             setDocuments(prev => prev.map(doc =>
                 doc.collection === oldCollection.name ? { ...doc, collection: newName } : doc
             ))
@@ -197,35 +376,32 @@ export function LibraryProvider({ children }) {
         ))
     }
 
-    // Funciones para tags
+    // Tag functions
     const addTag = (tagName) => {
         if (!tags.includes(tagName)) {
             setTags(prev => [...prev, tagName])
         }
     }
 
-    const addTagToDocument = (docId, tagName) => {
+    const addTagToDocument = async (docId, tagName) => {
         addTag(tagName)
-        setDocuments(prev => prev.map(doc =>
-            doc.id === docId && !doc.tags.includes(tagName)
-                ? { ...doc, tags: [...doc.tags, tagName] }
-                : doc
-        ))
+        const doc = documents.find(d => d.id === docId)
+        if (doc && !doc.tags.includes(tagName)) {
+            await updateDocument(docId, { tags: [...doc.tags, tagName] })
+        }
     }
 
-    const removeTagFromDocument = (docId, tagName) => {
-        setDocuments(prev => prev.map(doc =>
-            doc.id === docId
-                ? { ...doc, tags: doc.tags.filter(t => t !== tagName) }
-                : doc
-        ))
+    const removeTagFromDocument = async (docId, tagName) => {
+        const doc = documents.find(d => d.id === docId)
+        if (doc) {
+            await updateDocument(docId, { tags: doc.tags.filter(t => t !== tagName) })
+        }
     }
 
-    // Función de búsqueda
+    // Search function
     const searchDocuments = (query, filters = {}) => {
         let results = [...documents]
 
-        // Filtrar por texto
         if (query) {
             const lowerQuery = query.toLowerCase()
             results = results.filter(doc =>
@@ -236,24 +412,20 @@ export function LibraryProvider({ children }) {
             )
         }
 
-        // Filtrar por colección
         if (filters.collection) {
             results = results.filter(doc => doc.collection === filters.collection)
         }
 
-        // Filtrar por tipo
         if (filters.type) {
             results = results.filter(doc => doc.type === filters.type)
         }
 
-        // Filtrar por tags
         if (filters.tags && filters.tags.length > 0) {
             results = results.filter(doc =>
                 filters.tags.some(tag => doc.tags.includes(tag))
             )
         }
 
-        // Ordenar
         if (filters.sortBy) {
             switch (filters.sortBy) {
                 case 'date':
@@ -273,14 +445,14 @@ export function LibraryProvider({ children }) {
         return results
     }
 
-    // Crear nota
-    const createNote = (title, content, collection = null, tags = []) => {
+    // Create note (stored in database without file)
+    const createNote = async (title, content, collection = null, noteTags = []) => {
         return addDocument({
             title,
             type: 'NOTA',
             category: 'Nota personal',
             summary: content.substring(0, 100) + '...',
-            tags,
+            tags: noteTags,
             collection,
             size: `${Math.round(content.length / 1024 * 100) / 100} KB`,
             sizeBytes: content.length,
@@ -294,18 +466,33 @@ export function LibraryProvider({ children }) {
         documents,
         collections,
         tags,
+        loading,
+        uploading,
+        uploadProgress,
+        error,
+        // Document operations
         addDocument,
         updateDocument,
         deleteDocument,
         moveToCollection,
+        getDocumentUrl,
+        downloadDocument,
+        // Collection operations
         addCollection,
         deleteCollection,
         renameCollection,
+        // Tag operations
         addTag,
         addTagToDocument,
         removeTagFromDocument,
+        // Search
         searchDocuments,
-        createNote
+        createNote,
+        // Refresh
+        refreshDocuments: fetchDocuments,
+        // Validation
+        validateFile,
+        MAX_FILE_SIZE
     }
 
     return (

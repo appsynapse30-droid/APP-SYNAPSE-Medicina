@@ -615,34 +615,85 @@
     color: var(--text-muted);
 }
 
-/* Tip Card */
+/* Tip Card - Enhanced */
 .tip-card {
     background: linear-gradient(135deg, rgba(247, 201, 72, 0.1) 0%, rgba(240, 136, 62, 0.1) 100%);
     border: 1px solid rgba(247, 201, 72, 0.2);
     border-radius: var(--radius-lg);
     padding: var(--space-md);
+    transition: all 0.3s ease;
+}
+
+.tip-card:hover {
+    border-color: rgba(247, 201, 72, 0.4);
+    box-shadow: 0 4px 20px rgba(247, 201, 72, 0.1);
 }
 
 .tip-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: var(--space-sm);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
 }
 
-.tip-icon {
+.tip-title-section {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+}
+
+.tip-emoji {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.tip-title-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tip-label {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
     color: var(--accent-yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.tip-header span {
+.tip-title {
+    font-size: var(--font-size-base);
     font-weight: 600;
-    color: var(--accent-yellow);
+    color: var(--text-primary);
+    margin: 0;
 }
 
-.tip-card p {
+.tip-refresh-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    background: transparent;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tip-refresh-btn:hover {
+    background: rgba(247, 201, 72, 0.2);
+    color: var(--accent-yellow);
+    transform: rotate(180deg);
+}
+
+.tip-content {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
     line-height: 1.6;
+    margin-bottom: var(--space-md);
 }
 
 .tip-link {
@@ -654,6 +705,40 @@
 
 .tip-link:hover {
     text-decoration: underline;
+}
+
+.tip-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(247, 201, 72, 0.15);
+}
+
+.tip-nav-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    color: var(--text-muted);
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.tip-nav-btn:hover {
+    background: rgba(247, 201, 72, 0.2);
+    color: var(--accent-yellow);
+}
+
+.tip-counter {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-muted);
+    min-width: 40px;
+    text-align: center;
 }
 
 /* Calendar Link Button */

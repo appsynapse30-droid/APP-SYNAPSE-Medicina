@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     Clock,
@@ -11,11 +12,13 @@ import {
     FileText,
     Layers,
     ChevronRight,
+    ChevronLeft,
     BookOpen,
     Play,
     Target,
     Zap,
-    ArrowRight
+    ArrowRight,
+    RefreshCw
 } from 'lucide-react'
 import { useCalendar, eventCategories } from '../context/CalendarContext'
 import { useStudyStats } from '../context/StudyStatsContext'
@@ -29,6 +32,95 @@ export default function Dashboard() {
     const { getTodayProgress, getStreakInfo, getGreeting, addStudyTime } = useStudyStats()
     const { cases, getStats, getStudyCases } = useClinicalCases()
     const { documents } = useLibrary()
+
+    // Tips de estudio médico
+    const studyTips = [
+        {
+            id: 1,
+            title: 'Repetición Espaciada',
+            content: '¡La repetición espaciada es clave! Repasa tus casos pendientes hoy para mejorar tu retención un 40%.',
+            icon: '🧠',
+            link: '/simulations',
+            linkText: 'casos pendientes'
+        },
+        {
+            id: 2,
+            title: 'Técnica Pomodoro',
+            content: 'Estudia en bloques de 25 minutos con descansos de 5 minutos. Después de 4 bloques, toma un descanso de 15-30 minutos.',
+            icon: '⏱️',
+            link: '/analytics',
+            linkText: 'ver progreso'
+        },
+        {
+            id: 3,
+            title: 'Enseña para Aprender',
+            content: 'Explica los conceptos médicos como si enseñaras a un compañero. Esta técnica mejora la comprensión y memorización.',
+            icon: '👨‍🏫',
+            link: '/ai',
+            linkText: 'practicar con IA'
+        },
+        {
+            id: 4,
+            title: 'Mapas Conceptuales',
+            content: 'Conecta síntomas, diagnósticos y tratamientos en mapas visuales. El cerebro recuerda mejor las relaciones que datos aislados.',
+            icon: '🗺️',
+            link: '/library',
+            linkText: 'crear notas'
+        },
+        {
+            id: 5,
+            title: 'Casos Clínicos Reales',
+            content: 'Practica con casos clínicos simulados para desarrollar el razonamiento diagnóstico y mejorar tu toma de decisiones.',
+            icon: '🏥',
+            link: '/simulations',
+            linkText: 'iniciar simulación'
+        },
+        {
+            id: 6,
+            title: 'Descanso Activo',
+            content: 'El sueño consolida la memoria. Estudia antes de dormir y repasa brevemente al despertar para mejor retención.',
+            icon: '😴',
+            link: '/analytics',
+            linkText: 'ver estadísticas'
+        },
+        {
+            id: 7,
+            title: 'Flashcards Activas',
+            content: 'Crea tus propias flashcards mientras estudias. El proceso de creación activa la memoria más que solo leer.',
+            icon: '📝',
+            link: '/flashcards',
+            linkText: 'crear flashcards'
+        },
+        {
+            id: 8,
+            title: 'Método de Cornell',
+            content: 'Divide tus notas en 3 secciones: conceptos clave, notas detalladas y resumen. Facilita el repaso y la comprensión.',
+            icon: '📓',
+            link: '/library',
+            linkText: 'organizar notas'
+        }
+    ]
+
+    // Estado para el tip actual
+    const [currentTipIndex, setCurrentTipIndex] = useState(0)
+    const currentTip = studyTips[currentTipIndex]
+
+    // Funciones para navegar entre tips
+    const nextTip = () => {
+        setCurrentTipIndex((prev) => (prev + 1) % studyTips.length)
+    }
+
+    const prevTip = () => {
+        setCurrentTipIndex((prev) => (prev - 1 + studyTips.length) % studyTips.length)
+    }
+
+    const randomTip = () => {
+        let newIndex
+        do {
+            newIndex = Math.floor(Math.random() * studyTips.length)
+        } while (newIndex === currentTipIndex && studyTips.length > 1)
+        setCurrentTipIndex(newIndex)
+    }
 
     // Datos del calendario
     const upcomingEvents = getUpcomingEvents(4)
@@ -453,23 +545,46 @@ export default function Dashboard() {
 
                 <div className="tip-card">
                     <div className="tip-header">
-                        <Lightbulb size={18} className="tip-icon" />
-                        <span>Consejo de Estudio</span>
-                    </div>
-                    <p>
-                        ¡La repetición espaciada es clave! Repasa tus{' '}
-                        <a
-                            href="#"
-                            className="tip-link"
-                            onClick={(e) => {
-                                e.preventDefault()
-                                navigate('/simulations')
-                            }}
+                        <div className="tip-title-section">
+                            <span className="tip-emoji">{currentTip.icon}</span>
+                            <div className="tip-title-content">
+                                <span className="tip-label">Consejo de Estudio</span>
+                                <h4 className="tip-title">{currentTip.title}</h4>
+                            </div>
+                        </div>
+                        <button
+                            className="tip-refresh-btn"
+                            onClick={randomTip}
+                            title="Nuevo consejo aleatorio"
                         >
-                            {casesStats.pendingReview} casos pendientes
-                        </a>{' '}
-                        hoy para mejorar tu retención un 40%.
+                            <RefreshCw size={16} />
+                        </button>
+                    </div>
+                    <p className="tip-content">
+                        {currentTip.content.split(currentTip.linkText)[0]}
+                        {currentTip.linkText && (
+                            <a
+                                href="#"
+                                className="tip-link"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    navigate(currentTip.link)
+                                }}
+                            >
+                                {currentTip.linkText}
+                            </a>
+                        )}
+                        {currentTip.content.split(currentTip.linkText)[1] || ''}
                     </p>
+                    <div className="tip-navigation">
+                        <button className="tip-nav-btn" onClick={prevTip} title="Consejo anterior">
+                            <ChevronLeft size={16} />
+                        </button>
+                        <span className="tip-counter">{currentTipIndex + 1} / {studyTips.length}</span>
+                        <button className="tip-nav-btn" onClick={nextTip} title="Siguiente consejo">
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
                 </div>
             </aside>
         </div>

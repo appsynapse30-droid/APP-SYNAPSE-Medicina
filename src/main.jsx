@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { SettingsProvider } from './context/SettingsContext.jsx'
-import { LibraryProvider } from './context/LibraryContext.jsx'
 import { CalendarProvider } from './context/CalendarContext.jsx'
 import { ClinicalCasesProvider } from './context/ClinicalCasesContext.jsx'
 import { StudyStatsProvider } from './context/StudyStatsContext.jsx'
@@ -14,13 +13,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <BrowserRouter>
             <SettingsProvider>
                 <StudyStatsProvider>
-                    <LibraryProvider>
-                        <CalendarProvider>
-                            <ClinicalCasesProvider>
-                                <App />
-                            </ClinicalCasesProvider>
-                        </CalendarProvider>
-                    </LibraryProvider>
+                    <CalendarProvider>
+                        <ClinicalCasesProvider>
+                            <App />
+                        </ClinicalCasesProvider>
+                    </CalendarProvider>
                 </StudyStatsProvider>
             </SettingsProvider>
         </BrowserRouter>
