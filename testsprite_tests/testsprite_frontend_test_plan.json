@@ -1,124 +1,96 @@
 [
   {
     "id": "TC001",
-    "title": "Complete step 1 of registration and proceed to step 2",
-    "description": "Verifies a user can enter personal info on step 1 and advance to step 2.",
-    "category": "User Registration (Multi-step)",
+    "title": "Successful email/password login returns authenticated state",
+    "description": "Verifies a user can sign in with valid credentials and sees a post-login authenticated UI state.",
+    "category": "User Login",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /register"
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Sign in\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 1\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Test User\" into the name field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"test.user+e2e1@example.com\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Verify text \"Sign in\" is not visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 2\" is visible"
+        "description": "Verify element \"Logout\" is visible"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Complete step 2 (academic details) and proceed to step 3",
-    "description": "Verifies a user can select academic details on step 2 and advance to step 3.",
-    "category": "User Registration (Multi-step)",
+    "title": "Invalid password shows error message and user remains on login page",
+    "description": "Verifies incorrect credentials display an error and do not create an authenticated session.",
+    "category": "User Login",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /register"
+        "description": "Navigate to /login"
       },
       {
         "type": "action",
-        "description": "Type \"Test User\" into the name field"
+        "description": "Type \"fake.user@example.com\" into the \"Email\" field"
       },
       {
         "type": "action",
-        "description": "Type \"test.user+e2e2@example.com\" into the email field"
+        "description": "Type \"wrong-password-123\" into the \"Password\" field"
       },
       {
         "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Click on \"Sign in\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 2\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Select \"University\" from the university dropdown"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Verify text \"Invalid login credentials\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 3\" is visible"
+        "description": "Verify URL contains \"/login\""
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Complete full registration through step 3 and submit",
-    "description": "Verifies a user can complete all steps, submit registration, and see a success outcome (redirect or confirmation).",
-    "category": "User Registration (Multi-step)",
-    "priority": "High",
+    "title": "Required field validation: submit with empty email",
+    "description": "Verifies the form prevents submission and surfaces a visible validation message when email is missing.",
+    "category": "User Login",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /register"
+        "description": "Navigate to /login"
       },
       {
         "type": "action",
-        "description": "Type \"Test User\" into the name field"
+        "description": "Type \"some-password\" into the \"Password\" field"
       },
       {
         "type": "action",
-        "description": "Type \"test.user+e2e3@example.com\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Click on \"Sign in\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 3\" is visible"
+        "description": "Verify text \"Email\" is visible"
       },
       {
-        "type": "action",
-        "description": "Click the \"Submit\" button"
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
       },
       {
         "type": "assertion",
@@ -128,30 +100,26 @@
   },
   {
     "id": "TC004",
-    "title": "Step 1 validation blocks progression when required field is missing",
-    "description": "Verifies inline validation appears and the user remains on step 1 when a required field is empty.",
-    "category": "User Registration (Multi-step)",
-    "priority": "High",
+    "title": "Required field validation: submit with empty password",
+    "description": "Verifies the form prevents submission and surfaces a visible validation message when password is missing.",
+    "category": "User Login",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /register"
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"fake.user@example.com\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Sign in\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 1\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Test User\" into the name field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Verify text \"Password\" is visible"
       },
       {
         "type": "assertion",
@@ -159,94 +127,78 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 1\" is visible"
+        "description": "Verify URL contains \"/login\""
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Back navigation returns from step 2 to step 1 with entered values preserved",
-    "description": "Verifies the Back control returns to the previous step and previously entered values remain visible.",
-    "category": "User Registration (Multi-step)",
+    "title": "Invalid email format is rejected on the login form",
+    "description": "Verifies a malformed email address triggers visible validation feedback and does not attempt login.",
+    "category": "User Login",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /register"
+        "description": "Navigate to /login"
       },
       {
         "type": "action",
-        "description": "Type \"Test User\" into the name field"
+        "description": "Type \"not-an-email\" into the \"Email\" field"
       },
       {
         "type": "action",
-        "description": "Type \"test.user+e2e5@example.com\" into the email field"
+        "description": "Type \"some-password\" into the \"Password\" field"
       },
       {
         "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Click on \"Sign in\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 2\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Back\" button"
+        "description": "Verify text \"valid email\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"test.user+e2e5@example.com\" is visible"
+        "description": "Verify URL contains \"/login\""
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "Invalid email format shows validation error on step 1",
-    "description": "Verifies the form rejects an incorrectly formatted email and displays a visible error.",
-    "category": "User Registration (Multi-step)",
-    "priority": "Medium",
+    "title": "Password field masking behavior",
+    "description": "Verifies the password field is present and behaves like a protected input (masked characters).",
+    "category": "User Login",
+    "priority": "Low",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /register"
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"secret123\" into the \"Password\" field"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 1\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Test User\" into the name field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"not-an-email\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Verify element \"Password\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"email\" is visible"
+        "description": "Verify text \"secret123\" is not visible"
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Password policy validation prevents weak password on step 1",
-    "description": "Verifies a weak password is rejected with a visible validation message and does not advance to step 2.",
-    "category": "User Registration (Multi-step)",
-    "priority": "Medium",
+    "title": "Register page loads and shows expected fields",
+    "description": "Verifies the registration page is reachable and key form controls are visible before signup.",
+    "category": "User Registration",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
@@ -254,40 +206,32 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 1\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Test User\" into the name field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"test.user+e2e7@example.com\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"123\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
+        "description": "Verify page title contains \"Register\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"password\" is visible"
+        "description": "Verify element \"Email\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Step 1\" is visible"
+        "description": "Verify element \"Full name\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Password\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Create account\" is visible"
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "Step 3 requires selecting at least one study preference before submit (if enforced)",
-    "description": "Verifies step 3 prevents submission when required study preference selections are missing and shows a visible error.",
-    "category": "User Registration (Multi-step)",
-    "priority": "Low",
+    "title": "Successful registration submits and shows email confirmation state",
+    "description": "Verifies a new user can submit the registration form and sees a UI state indicating email confirmation is pending.",
+    "category": "User Registration",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
@@ -295,64 +239,19 @@
       },
       {
         "type": "action",
-        "description": "Type \"Test User\" into the name field"
+        "description": "Type \"new.user+e2e.1@example.com\" into the \"Email\" field"
       },
       {
         "type": "action",
-        "description": "Type \"test.user+e2e8@example.com\" into the email field"
+        "description": "Type \"New User One\" into the \"Full name\" field"
       },
       {
         "type": "action",
-        "description": "Type \"ValidPassw0rd!\" into the password field"
+        "description": "Type \"ValidPass123!\" into the \"Password\" field"
       },
       {
         "type": "action",
-        "description": "Click the \"Next\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Next\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Step 3\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"required\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC009",
-    "title": "Send password recovery email with a registered account shows success confirmation",
-    "description": "Verifies a user can request a password reset and sees a visible success confirmation.",
-    "category": "Password Recovery",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /forgot-password"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Forgot Password\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Click the send recovery email button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Recovery email sent\" is visible"
+        "description": "Click on \"Create account\""
       },
       {
         "type": "assertion",
@@ -361,15 +260,213 @@
     ]
   },
   {
+    "id": "TC009",
+    "title": "Registration blocks invalid email format",
+    "description": "Verifies the form prevents signup when the email is not a valid format and shows a visible error message.",
+    "category": "User Registration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"not-an-email\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Test User\" into the \"Full name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create account\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Enter a valid email\" is visible"
+      }
+    ]
+  },
+  {
     "id": "TC010",
-    "title": "Unregistered email shows an email-not-found (or cannot send) error message",
-    "description": "Verifies the UI shows a visible error when the email address is not recognized or cannot be sent.",
+    "title": "Registration blocks weak password and shows password guidance",
+    "description": "Verifies a weak password is rejected and the user is shown visible password strength/error guidance.",
+    "category": "User Registration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"new.user+e2e.weak@example.com\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Weak Password User\" into the \"Full name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"123\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create account\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password is too weak\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Registration requires full name (profile data) before submission",
+    "description": "Verifies the user cannot register without providing a full name and sees a visible validation message.",
+    "category": "User Registration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"new.user+e2e.noname@example.com\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create account\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Full name is required\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Registration with existing email shows 'already registered' error",
+    "description": "Verifies attempting to sign up with an existing account shows a visible error indicating the email is already registered.",
+    "category": "User Registration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"existing.user@example.com\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Existing User\" into the \"Full name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create account\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"User already registered\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Submitting registration shows loading/disabled state to prevent double submit",
+    "description": "Verifies the UI prevents duplicate submission by showing a visible loading state or disabling the submit button after click.",
+    "category": "User Registration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"new.user+e2e.2@example.com\" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"New User Two\" into the \"Full name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPass123!\" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create account\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Create account\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Creating\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Registration form trims leading/trailing spaces in inputs",
+    "description": "Verifies the form handles accidental whitespace by accepting inputs with surrounding spaces and proceeds to the confirmation state.",
+    "category": "User Registration",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Type \"  new.user+e2e.trim@example.com  \" into the \"Email\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"  Trim Test User  \" into the \"Full name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"  ValidPass123!  \" into the \"Password\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create account\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Check your email\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Request password reset with a registered email shows confirmation message",
+    "description": "Verifies a user can submit the forgot-password form with a valid email and sees the 'password reset email sent' confirmation state.",
     "category": "Password Recovery",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /forgot-password"
+        "description": "Navigate to \"/forgot-password\""
       },
       {
         "type": "assertion",
@@ -377,11 +474,44 @@
       },
       {
         "type": "action",
-        "description": "Type \"nonexistent.user.987654@example.com\" into the email field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
       },
       {
         "type": "action",
-        "description": "Click the send recovery email button"
+        "description": "Click on the \"Send reset link\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Password reset email sent\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Resend\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Request password reset with an unknown email shows error or no-op message",
+    "description": "Verifies the UI handles an unregistered email submission by showing an error or a generic response without indicating success for a reset email being sent.",
+    "category": "Password Recovery",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/forgot-password\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Forgot Password\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"not-a-real-user-12345@example.com\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Send reset link\" button"
       },
       {
         "type": "assertion",
@@ -389,20 +519,20 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"cannot send\" is visible"
+        "description": "Verify text \"Password reset email sent\" is not visible"
       }
     ]
   },
   {
-    "id": "TC011",
-    "title": "Invalid email format is blocked or shows validation error",
-    "description": "Verifies the page prevents sending a recovery email when the email format is invalid.",
+    "id": "TC017",
+    "title": "Forgot password form requires an email address",
+    "description": "Verifies the form prevents submission and shows a validation message when the email field is empty.",
     "category": "Password Recovery",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /forgot-password"
+        "description": "Navigate to \"/forgot-password\""
       },
       {
         "type": "assertion",
@@ -410,40 +540,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"not-an-email\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Click the send recovery email button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Enter a valid email\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Recovery email sent\" is not visible"
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Empty email submission shows required-field error",
-    "description": "Verifies the page shows a visible error and does not submit when the email field is empty.",
-    "category": "Password Recovery",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /forgot-password"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Forgot Password\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the send recovery email button"
+        "description": "Click on the \"Send reset link\" button"
       },
       {
         "type": "assertion",
@@ -451,20 +548,20 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Recovery email sent\" is not visible"
+        "description": "Verify text \"Password reset email sent\" is visible"
       }
     ]
   },
   {
-    "id": "TC013",
-    "title": "User can return to Login from Forgot Password page",
-    "description": "Verifies navigation from the password recovery page back to the login page.",
+    "id": "TC018",
+    "title": "Forgot password form validates email format",
+    "description": "Verifies the UI displays a validation error when the email format is invalid and does not show the success confirmation.",
     "category": "Password Recovery",
-    "priority": "Low",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /forgot-password"
+        "description": "Navigate to \"/forgot-password\""
       },
       {
         "type": "assertion",
@@ -472,217 +569,36 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Back to login\" link"
+        "description": "Type \"invalid-email-format\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Send reset link\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/login\""
+        "description": "Verify text \"Enter a valid email\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Login\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "Multiple quick clicks do not show duplicate success messages or conflicting states",
-    "description": "Verifies the UI remains stable when the user clicks send multiple times in quick succession.",
-    "category": "Password Recovery",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /forgot-password"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Click the send recovery email button"
-      },
-      {
-        "type": "action",
-        "description": "Click the send recovery email button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Recovery email sent\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Network error\" is not visible"
-      }
-    ]
-  },
-  {
-    "id": "TC015",
-    "title": "Dashboard loads and shows core overview sections",
-    "description": "Verifies the dashboard overview renders key sections: stats/streak, upcoming exams, and quick actions.",
-    "category": "Dashboard (Overview)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Study\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Library\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Settings\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC016",
-    "title": "Dashboard alias route /dashboard renders the same overview page",
-    "description": "Verifies the /dashboard route is accessible after login and displays dashboard content.",
-    "category": "Dashboard (Overview)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Dashboard\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Study\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC017",
-    "title": "Quick action: Study card navigates to Study page",
-    "description": "Verifies clicking the Study quick action from the dashboard routes the user to /study.",
-    "category": "Dashboard (Overview)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Study\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Study\" quick action card"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/study\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify page title contains \"Study\""
-      }
-    ]
-  },
-  {
-    "id": "TC018",
-    "title": "Central navigation: Dashboard to Calendar via visible navigation link",
-    "description": "Verifies the dashboard can route the user to the Calendar page using app navigation.",
-    "category": "Dashboard (Overview)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Calendar\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/calendar\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify page title contains \"Calendar\""
+        "description": "Verify text \"Password reset email sent\" is not visible"
       }
     ]
   },
   {
     "id": "TC019",
-    "title": "Central navigation: Dashboard to Analytics via visible navigation link",
-    "description": "Verifies the dashboard can route the user to the Analytics page using app navigation.",
-    "category": "Dashboard (Overview)",
+    "title": "Resend reset link from confirmation state triggers another request",
+    "description": "Verifies a user can resend the password reset email from the confirmation UI state.",
+    "category": "Password Recovery",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /login"
+        "description": "Navigate to \"/forgot-password\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Forgot Password\" is visible"
       },
       {
         "type": "action",
@@ -690,36 +606,69 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Analytics\" navigation item"
+        "description": "Click on the \"Send reset link\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/analytics\""
+        "description": "Verify text \"Password reset email sent\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Resend\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify page title contains \"Analytics\""
+        "description": "Verify text \"Password reset email sent\" is visible"
       }
     ]
   },
   {
     "id": "TC020",
-    "title": "Central navigation: Dashboard to Settings via visible navigation link",
-    "description": "Verifies the dashboard can route the user to the Settings page using app navigation.",
-    "category": "Dashboard (Overview)",
+    "title": "Navigate back to login from forgot-password page",
+    "description": "Verifies the user can navigate from the forgot-password page to the login page using the provided link/button.",
+    "category": "Password Recovery",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/forgot-password\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Forgot Password\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Back to login\" link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Login\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Email\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Password\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Forgot password handles multiple rapid submissions gracefully",
+    "description": "Verifies the UI prevents duplicate requests or shows a stable state when the user clicks submit multiple times quickly.",
+    "category": "Password Recovery",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /login"
+        "description": "Navigate to \"/forgot-password\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Forgot Password\" is visible"
       },
       {
         "type": "action",
@@ -727,31 +676,27 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+        "description": "Click on the \"Send reset link\" button"
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Settings\" navigation item"
+        "description": "Click on the \"Send reset link\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
+        "description": "Verify text \"Password reset email sent\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify page title contains \"Settings\""
+        "description": "Verify element \"Resend\" is visible"
       }
     ]
   },
   {
-    "id": "TC021",
-    "title": "Access Document Library after login",
-    "description": "Verifies an authenticated user can log in and reach the Document Library page.",
-    "category": "Document Library",
+    "id": "TC022",
+    "title": "Authenticated user can access protected Dashboard route",
+    "description": "Verifies that a logged-in user can reach the protected Dashboard and sees expected authenticated UI.",
+    "category": "Route Protection",
     "priority": "High",
     "steps": [
       {
@@ -760,7 +705,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
@@ -775,65 +720,20 @@
         "description": "Verify URL contains \"/\""
       },
       {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
+        "type": "assertion",
+        "description": "Verify page title contains \"Dashboard\""
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/library\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Library\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC022",
-    "title": "Search documents by name or tag",
-    "description": "Verifies searching filters the visible document results in the library.",
-    "category": "Document Library",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click into the search input"
-      },
-      {
-        "type": "action",
-        "description": "Type \"cardio\" into the search input"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"cardio\" is visible"
+        "description": "Verify element \"Dashboard\" is visible"
       }
     ]
   },
   {
     "id": "TC023",
-    "title": "Filter documents by collection",
-    "description": "Verifies selecting a collection filter updates the visible document list.",
-    "category": "Document Library",
+    "title": "Authenticated session can load protected data-driven Dashboard content without being redirected",
+    "description": "Verifies that after successful login, the user remains authenticated while viewing the Dashboard and does not get redirected to login due to missing/expired token during initial data load.",
+    "category": "Route Protection",
     "priority": "Medium",
     "steps": [
       {
@@ -842,7 +742,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
@@ -853,28 +753,24 @@
         "description": "Click the \"Log in\" button"
       },
       {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click a collection name in the collections sidebar"
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
       },
       {
         "type": "assertion",
-        "description": "Verify the document list area is visible"
+        "description": "Verify element \"Dashboard\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"No documents\" is visible"
+        "description": "Verify URL does not contain \"/login\""
       }
     ]
   },
   {
     "id": "TC024",
-    "title": "Create a new collection from Manage Collections",
-    "description": "Verifies a user can create a new collection and see it appear in the sidebar list.",
-    "category": "Document Library",
+    "title": "View dashboard study statistics for a logged-in user",
+    "description": "Verifies the dashboard loads and displays the Study Statistics section for an authenticated user.",
+    "category": "Medical Study Dashboard",
     "priority": "High",
     "steps": [
       {
@@ -883,7 +779,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
@@ -891,35 +787,23 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Manage collections\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Test Collection\" into the collection name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Create\" button"
+        "description": "Click on the \"Log in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Test Collection\" is visible"
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Study Statistics\" is visible"
       }
     ]
   },
   {
     "id": "TC025",
-    "title": "Switch to grid view and open a document into the reader",
-    "description": "Verifies a user can browse in grid view and open a document to the reader page.",
-    "category": "Document Library",
+    "title": "Dashboard shows prioritized flashcards section for today’s reviews",
+    "description": "Verifies the dashboard displays a flashcards area intended for prioritized reviews after login.",
+    "category": "Medical Study Dashboard",
     "priority": "High",
     "steps": [
       {
@@ -928,7 +812,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
@@ -936,35 +820,93 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Grid view\" toggle"
+        "description": "Click on the \"Log in\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify the document grid is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible document card"
+        "description": "Verify URL contains \"/\""
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/library/document\""
+        "description": "Verify text \"Flashcards\" is visible"
       }
     ]
   },
   {
     "id": "TC026",
-    "title": "Add a tag to a selected document",
-    "description": "Verifies a user can select a document, add a tag, and see the tag displayed on the document.",
-    "category": "Document Library",
+    "title": "Dashboard shows recent clinical cases section",
+    "description": "Verifies the dashboard displays a section for recent clinical cases after login.",
+    "category": "Medical Study Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Clinical Cases\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Dashboard loads multiple core sections on initial render",
+    "description": "Verifies the dashboard renders the three hub sections (stats, flashcards, cases) on the main page for an authenticated user.",
+    "category": "Medical Study Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Study Statistics\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Flashcards\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Clinical Cases\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Dashboard displays an error state when flashcards cannot be loaded",
+    "description": "Verifies the dashboard presents a visible error message or empty-state messaging if the flashcards section cannot load.",
+    "category": "Medical Study Dashboard",
     "priority": "Medium",
     "steps": [
       {
@@ -973,7 +915,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
@@ -981,23 +923,135 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
+        "description": "Click on the \"Log in\" button"
       },
       {
         "type": "action",
-        "description": "Click \"Library\" in the main navigation"
+        "description": "Scroll to the \"Flashcards\" section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify either text \"Unable to load\" is visible or text \"No flashcards\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Dashboard displays an error state when clinical cases cannot be loaded",
+    "description": "Verifies the dashboard presents a visible error message or empty-state messaging if the clinical cases section cannot load.",
+    "category": "Medical Study Dashboard",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
       },
       {
         "type": "action",
-        "description": "Click the first visible document item in the list"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
-        "description": "Click \"Add tag\""
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
       },
       {
         "type": "action",
-        "description": "Type \"pharm\" into the tag field"
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the \"Clinical Cases\" section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify either text \"Unable to load\" is visible or text \"No cases\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Dashboard shows visible loading indicators while content is fetched",
+    "description": "Verifies that the dashboard provides visible loading feedback before study data is rendered.",
+    "category": "Medical Study Dashboard",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify either text \"Loading\" is visible or element \"Loading indicator\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Study Statistics\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Access Document Library page from direct URL",
+    "description": "Verifies the Document Library page loads and shows core UI elements for managing documents.",
+    "category": "Document Library",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /library"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Library\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Library\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Upload\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Search for an existing document by title",
+    "description": "Verifies searching filters the visible document list by a title keyword.",
+    "category": "Document Library",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /library"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Guideline\" into the search field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Guideline\" is visible"
       },
       {
         "type": "action",
@@ -1005,2383 +1059,110 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"pharm\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC027",
-    "title": "Delete a document and confirm removal",
-    "description": "Verifies a user can delete a document, confirm the deletion, and the document disappears from the library list.",
-    "category": "Document Library",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible document item in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Delete\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Confirm\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Deleted\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC028",
-    "title": "Start a study session from the Study page",
-    "description": "Verifies an authenticated user can choose a deck on /study and start a study session that opens /study/session.",
-    "category": "Study Session with FSRS",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Study\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/study\""
-      }
-    ]
-  },
-  {
-    "id": "TC029",
-    "title": "Select a deck and launch session",
-    "description": "Verifies selecting a flashcard deck enables starting a session and transitions to the session page.",
-    "category": "Study Session with FSRS",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Study\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/study\""
-      },
-      {
-        "type": "action",
-        "description": "Click a flashcard deck from the deck list"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Start study session\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/study/session\""
-      }
-    ]
-  },
-  {
-    "id": "TC030",
-    "title": "Generate with AI from Library shows progress indicator",
-    "description": "Verifies that starting AI generation for a selected PDF shows a visible progress indicator during processing.",
-    "category": "Synapse AI — Flashcard & Summary Generator",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a PDF document item in the library list"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Generate with AI\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Processing\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC031",
-    "title": "AI flashcards preview can be imported to a deck",
-    "description": "Verifies that generated flashcards can be previewed and imported into a user deck.",
-    "category": "Synapse AI — Flashcard & Summary Generator",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a PDF document item in the library list"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Generate with AI\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Flashcards\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Import to deck\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Imported\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC032",
-    "title": "Generate summary and citations from Library displays structured output",
-    "description": "Verifies that generating a summary and citations for a selected PDF displays a structured summary and a citation list.",
-    "category": "Synapse AI — Flashcard & Summary Generator",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a PDF document item in the library list"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Generate summary and citations\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Summary\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Citations\" is visible"
+        "description": "Verify element \"Document list\" is visible"
       }
     ]
   },
   {
     "id": "TC033",
-    "title": "Citation style selection affects displayed citation format",
-    "description": "Verifies that switching citation style (e.g., AMA vs APA) updates the visible citations section.",
-    "category": "Synapse AI — Flashcard & Summary Generator",
+    "title": "Search with no matches shows an empty state",
+    "description": "Verifies the library displays a clear empty/no-results state when search returns nothing.",
+    "category": "Document Library",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
+        "description": "Navigate to /library"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
+        "description": "Verify element \"Search\" is visible"
       },
       {
         "type": "action",
-        "description": "Click \"Library\" in the main navigation"
+        "description": "Type \"zzzz-no-such-document-12345\" into the search field"
       },
       {
         "type": "action",
-        "description": "Click on a PDF document item in the library list"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Generate summary and citations\" button"
+        "description": "Press Enter"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Citations\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Select \"APA\" from the citation style dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"APA\" is visible"
+        "description": "Verify text \"No results\" is visible"
       }
     ]
   },
   {
     "id": "TC034",
-    "title": "Import to deck is blocked until flashcards are generated",
-    "description": "Verifies that the user cannot import to a deck before flashcards are available (prevents premature import).",
-    "category": "Synapse AI — Flashcard & Summary Generator",
-    "priority": "Medium",
+    "title": "Open document details/preview from the library list",
+    "description": "Verifies a user can open a document entry from the list to view its details or preview area.",
+    "category": "Document Library",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
+        "description": "Navigate to /library"
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
+        "description": "Verify element \"Document list\" is visible"
       },
       {
         "type": "action",
-        "description": "Click \"Library\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a PDF document item in the library list"
+        "description": "Click on the first document in the document list"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Import to deck\" is visible"
+        "description": "Verify element \"Document details\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Generate\" is visible"
+        "description": "Verify element \"Title\" is visible"
       }
     ]
   },
   {
     "id": "TC035",
-    "title": "Access Simulations page from Dashboard and view available cases",
-    "description": "Verifies an authenticated user can reach the Clinical Case Simulations page and see the cases list/tiles.",
-    "category": "Clinical Case Simulations (Neural Consult)",
+    "title": "Create a new collection and assign a document to it",
+    "description": "Verifies organizing documents into a collection works end-to-end in the UI.",
+    "category": "Document Library",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to /login"
+        "description": "Navigate to /library"
       },
       {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/simulations\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Clinical\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC036",
-    "title": "Open a clinical case and see overview with Start button",
-    "description": "Verifies a user can open a case from the simulations list and see its overview details and a Start control.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/simulations\""
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible clinical case card/title in the list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Overview\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Start\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC037",
-    "title": "Start simulation shows first prompt or a clear non-interactive fallback message",
-    "description": "Verifies the Start Simulation action leads to a visible simulation state (prompt) or a clear message explaining current limited interactivity.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible clinical case card/title in the list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Start\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Start\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Prompt\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC038",
-    "title": "Attempt to interact with a simulation prompt gracefully communicates limited interactivity",
-    "description": "Verifies that when interactive controls are limited, the UI provides a clear notice rather than failing silently.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible clinical case card/title in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Start\""
-      },
-      {
-        "type": "action",
-        "description": "Click the primary visible action within the simulation area (for example \"Next\", \"Submit\", or \"Continue\")"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"limited\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC039",
-    "title": "View worked solution option is discoverable when interactivity is limited",
-    "description": "Verifies the user is offered a worked solution/static scenario option when the simulation cannot be fully interactive.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible clinical case card/title in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Start\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"solution\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"static\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC040",
-    "title": "Simulations page remains usable after returning from a case view",
-    "description": "Verifies the user can return to the simulations list and continue browsing without broken state.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible clinical case card/title in the list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Start\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Back\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/simulations\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify at least one clinical case card/title is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC041",
-    "title": "Empty or loading state on Simulations page is communicated clearly",
-    "description": "Verifies the page shows a visible loading indicator or a clear empty-state message if no cases are shown.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/simulations\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Loading\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC042",
-    "title": "Simulation view shows a clear end state or feedback section when completing a static scenario",
-    "description": "Verifies that a user can reach a visible feedback/end section (or an explicit message that feedback is not available) after progressing through a static scenario.",
-    "category": "Clinical Case Simulations (Neural Consult)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Simulations\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the first visible clinical case card/title in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Start\""
-      },
-      {
-        "type": "action",
-        "description": "Click the visible option to run a \"static\" scenario if present"
-      },
-      {
-        "type": "action",
-        "description": "Click the primary visible progression action (for example \"Next\" or \"Continue\")"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Feedback\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC043",
-    "title": "Analytics page loads and displays key progress charts and metrics",
-    "description": "Verifies that an authenticated user can open Analytics and see visible charts/metrics (not an empty page).",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/analytics"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Analytics\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC044",
-    "title": "Analytics shows progress charts/metrics populated (not blank placeholders)",
-    "description": "Verifies that Analytics displays visible chart areas and at least one visible metric label/value area populated from session/review logs.",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Progress chart\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"FSRS metrics\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Session history\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC045",
-    "title": "Set date range filter and verify charts update",
-    "description": "Verifies that changing the Analytics date range updates the visible chart/metric content for the selected period.",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Select \"Last 7 days\" from the date range dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Last 7 days\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Progress chart\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC046",
-    "title": "Switch date range from short to long and verify visible refresh",
-    "description": "Verifies that switching between two different date ranges results in an observable refresh of the Analytics view (no stuck state).",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Select \"Last 30 days\" from the date range dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Last 30 days\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Select \"Last 7 days\" from the date range dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Last 7 days\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC047",
-    "title": "Export report initiates PDF generation flow (without verifying OS download prompt)",
-    "description": "Verifies that clicking Export report triggers a visible in-app PDF generation/loading state or confirmation, without relying on native download dialogs.",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Export report\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Generating\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Report\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC048",
-    "title": "Export report respects currently selected date range",
-    "description": "Verifies that selecting a date range and then exporting shows a visible indication that the report is scoped to that range (e.g., range label shown in export preview/confirmation).",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Select \"Last 7 days\" from the date range dropdown"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Export report\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Last 7 days\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Report\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC049",
-    "title": "Analytics handles slow rendering by showing a spinner/loading indicator",
-    "description": "Verifies that when Analytics content takes time to render, a visible loading indicator appears (without requiring backend/network simulation).",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Loading\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Wait for 5 seconds"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Progress chart\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC050",
-    "title": "When loading is prolonged, user can reduce range to improve performance",
-    "description": "Verifies that during a heavy Analytics view, the UI offers an option to reduce the date range and that selecting a shorter range results in a visible updated state.",
-    "category": "Analytics (Progress & Charts)",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Analytics\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Wait for 5 seconds"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Reduce range\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Reduce range\" option"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Last 7 days\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC051",
-    "title": "Monthly calendar view loads and shows scheduled exams highlighted",
-    "description": "Verifies the calendar page loads in a monthly view and visually indicates scheduled exams.",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/calendar\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Monthly calendar\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC052",
-    "title": "Add an exam from a selected date and confirm it appears on the calendar",
-    "description": "Creates a new exam using the Add exam flow and verifies it is shown on the calendar.",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/calendar\""
-      },
-      {
-        "type": "action",
-        "description": "Click on a date cell in the current month"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Add exam\" button"
-      },
-      {
-        "type": "action",
-        "description": "Type \"E2E Exam - Cardiology Midterm\" into the exam title field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Save\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"E2E Exam - Cardiology Midterm\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC053",
-    "title": "Adding an exam requires a title (validation prevents save)",
-    "description": "Verifies the exam creation form shows a visible validation message when trying to save without a title.",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a date cell in the current month"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Add exam\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Save\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Title\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"required\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC054",
-    "title": "Open a scheduled exam to view details and quick actions",
-    "description": "Verifies clicking a scheduled exam opens an exam details view with quick actions related to study planning.",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a visible scheduled exam item on the calendar"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Exam details\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Add study session\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC055",
-    "title": "Close exam details panel/modal returns to calendar view",
-    "description": "Verifies the user can dismiss the exam details view and return to the calendar without navigation errors.",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a visible scheduled exam item on the calendar"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Exam details\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Close\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Monthly calendar\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC056",
-    "title": "Add reminders while creating an exam and verify reminders section is retained",
-    "description": "Verifies the exam creation flow allows setting reminders and that the reminders section shows selected values before saving.",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a date cell in the current month"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Add exam\" button"
-      },
-      {
-        "type": "action",
-        "description": "Type \"E2E Exam - Reminders Check\" into the exam title field"
-      },
-      {
-        "type": "action",
-        "description": "Select \"1 day before\" from the reminders dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"1 day before\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC057",
-    "title": "Calendar page remains usable during slow rendering (no blocked UI)",
-    "description": "Verifies that when the calendar content loads slowly, the user still sees a loading indicator or stable layout and can proceed once loaded (does not simulate network errors).",
-    "category": "Calendar & Exam Scheduling",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Calendar\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/calendar\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Monthly calendar\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on a date cell in the current month"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Add exam\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC058",
-    "title": "Save profile changes from Settings",
-    "description": "Verifies a logged-in user can edit profile fields and save changes with a visible success confirmation.",
-    "category": "Settings & Profile",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Updated Test Name\" into the name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Save\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Saved\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC059",
-    "title": "Attempt to save profile with invalid/empty required field",
-    "description": "Verifies Settings shows a visible validation error when trying to save with missing required profile data.",
-    "category": "Settings & Profile",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"\" into the name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Save\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"required\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC060",
-    "title": "Toggle notification preference and see confirmation",
-    "description": "Verifies a user can change a notification preference and receives a visible confirmation or saved state.",
-    "category": "Settings & Profile",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "action",
-        "description": "Click the notification preference toggle labeled \"Email notifications\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Notification preferences\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC061",
-    "title": "Notification preferences persist after leaving and returning to Settings",
-    "description": "Verifies notification preference changes remain applied after navigating away and coming back.",
-    "category": "Settings & Profile",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "action",
-        "description": "Click the notification preference toggle labeled \"Email notifications\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Dashboard\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Notification preferences\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC062",
-    "title": "Change theme and verify the theme updates immediately",
-    "description": "Verifies changing appearance theme in Settings updates the visible theme without needing a page reload.",
-    "category": "Settings & Profile",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "action",
-        "description": "Select \"Dark\" from the theme dropdown"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Dark\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC063",
-    "title": "Theme change persists when navigating to another page",
-    "description": "Verifies the selected theme remains applied after navigating away from Settings to another route.",
-    "category": "Settings & Profile",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click \"Settings\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/settings\""
-      },
-      {
-        "type": "action",
-        "description": "Select \"Light\" from the theme dropdown"
-      },
-      {
-        "type": "action",
-        "description": "Click \"Library\" in the app navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/library\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Library\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC064",
-    "title": "Create a new atomic note and confirm it appears in the notes index",
-    "description": "Verifies a user can create and save a new note and see it listed in the notes index.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Notes\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"New note\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"New note\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC065",
-    "title": "Save a new note with title and body and verify it is visible after saving",
-    "description": "Verifies saving a note persists it and the saved note is visible in the index or note view.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Notes\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"New note\" button"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Atomic Note: Beta Blockers\" into the Title field"
-      }
-    ]
-  },
-  {
-    "id": "TC066",
-    "title": "Create a bidirectional link between two existing notes",
-    "description": "Verifies linking one note to another creates a visible bidirectional relationship.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Notes\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on an existing note in the notes index"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Create link\" button"
-      }
-    ]
-  },
-  {
-    "id": "TC067",
-    "title": "Create a new MOC and save it so it appears in MOC navigation",
-    "description": "Verifies a user can open the MOC editor, add notes, save, and see the MOC listed in navigation.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"MOCs\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"New MOC\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"MOC\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC068",
-    "title": "Add notes to a MOC index and verify they display within the saved MOC",
-    "description": "Verifies notes can be added to a MOC and are visible in the MOC after saving.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"MOCs\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on an existing MOC in the MOC list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"MOC index\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC069",
-    "title": "Refactor a collection of linked notes with AI and accept the suggestion",
-    "description": "Verifies AI refactor produces suggestions and accepting them updates the notes content.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Notes\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on a note that is part of a linked cluster"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Refactor with AI\" button"
-      }
-    ]
-  },
-  {
-    "id": "TC070",
-    "title": "Prevent saving a note with missing required fields (validation)",
-    "description": "Verifies the note editor blocks saving when required fields like title are missing and shows a visible validation message.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Notes\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"New note\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Save\" button"
-      }
-    ]
-  },
-  {
-    "id": "TC071",
-    "title": "Cancel out of link creation without changes",
-    "description": "Verifies a user can open the link creation UI and exit/cancel without creating a link.",
-    "category": "Knowledge Graph / Zettelkasten (Evergreen Notes & MOCs)",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Notes\" in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Click on an existing note in the notes index"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Create link\" button"
-      }
-    ]
-  },
-  {
-    "id": "TC072",
-    "title": "Login and access QBank UI entry point",
-    "description": "Verifies an authenticated user can reach the QBank UI entry point from the main app navigation.",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"QBank\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC073",
-    "title": "Browse question categories from QBank UI",
-    "description": "Verifies a user can browse and view available question categories in the QBank UI.",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Question categories\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Category list\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC074",
-    "title": "Open a category and start attempting a question",
-    "description": "Verifies a user can open a category, select a question, and see the question with answer choices.",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question category"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question in the list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Answer choices\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC075",
-    "title": "Submit an answer and see immediate feedback with evidence links",
-    "description": "Verifies submitting an answer shows immediate feedback and displays linked evidence references.",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question category"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible answer choice"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Feedback\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"References\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC076",
-    "title": "Evidence reference links are visible in feedback",
-    "description": "Verifies the feedback area includes visible evidence link labels (e.g., guideline/reference sources).",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question category"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible answer choice"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit\" button"
-      },
-      {
         "type": "assertion",
-        "description": "Verify text \"PubMed\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC077",
-    "title": "Create flashcard from question feedback and add to a selected deck",
-    "description": "Verifies a user can create a flashcard from question feedback and confirm it is added to a chosen deck.",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question category"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question in the list"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible answer choice"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Submit\" button"
+        "description": "Verify element \"Collections\" is visible"
       },
       {
         "type": "action",
-        "description": "Click \"Create flashcard from question\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Select deck\" is visible"
+        "description": "Click on \"New collection\""
       },
       {
         "type": "action",
-        "description": "Select the first visible deck option from the deck dropdown"
+        "description": "Type \"Cardiology\" into the collection name field"
       },
       {
         "type": "action",
-        "description": "Click the \"Add\" or \"Create\" button in the flashcard dialog"
+        "description": "Click on \"Create\""
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Flashcard added\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC078",
-    "title": "Prevent submitting a question without selecting an answer",
-    "description": "Verifies the UI blocks submission without an answer and shows a visible validation message.",
-    "category": "QBank (Question Bank & Evidence Links)",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Sign in\" button"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"QBank\" navigation item"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible question category"
+        "description": "Verify text \"Cardiology\" is visible"
       },
       {
         "type": "action",
-        "description": "Click on the first visible question in the list"
+        "description": "Click on the first document in the document list"
       },
       {
         "type": "action",
-        "description": "Click the \"Submit\" button"
+        "description": "Select \"Cardiology\" from the collection dropdown"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Select an answer\" is visible"
+        "description": "Verify text \"Cardiology\" is visible"
       }
     ]
   }

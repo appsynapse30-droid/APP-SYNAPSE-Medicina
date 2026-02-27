@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedFlow Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        /* Custom adjustment for the glassmorphism to look premium */
+        .glass-card {
+            background: rgba(17, 24, 34, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        html.dark .glass-card {
+            background: rgba(17, 24, 34, 0.85);
+            border-color: rgba(50, 72, 103, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen w-full flex flex-col overflow-x-hidden text-slate-900 dark:text-white">
+<!-- Background Layer with Image -->
+<div class="fixed inset-0 z-0 w-full h-full overflow-hidden">
+<img alt="Abstract blue anatomical network structure with soft bokeh" class="w-full h-full object-cover opacity-100 dark:opacity-60 scale-105" data-alt="Abstract blue anatomical network structure with soft bokeh" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4l368FXVGylpc2dgDnkes1eZ86XaeFBxOJJK10X_gZi_zRIRr0gsjkdNv0x8mWusiESe5a7byjy9RRPKA5d0L0KOGcNwY9twy6B0Zs7Cgbty0OZ20pcYkopen2yAQD-UEchYgYEW-2ceyQLscoT1pE_cA9Jzymju9x86cNzeYx9GpcsPD84k32vec3VyjW3o50bA1zA7jZ6F7PbWs8hO4zYKYz7h61OshB7tI2XDg_X4PvuE9NRzbZBkqGWvimRyVZIUKqMeeOKg"/>
+<!-- Overlay Gradient for Readability -->
+<div class="absolute inset-0 bg-gradient-to-br from-white/80 via-white/50 to-white/80 dark:from-[#111822] dark:via-[#111822]/80 dark:to-[#111822]/90"></div>
+</div>
+<!-- Main Content Container -->
+<div class="relative z-10 flex min-h-screen w-full items-center justify-center p-4">
+<!-- Login Card -->
+<div class="glass-card w-full max-w-[480px] rounded-2xl border border-white/40 dark:border-[#324867]/50 shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.5s_ease-out]">
+<!-- Header -->
+<div class="px-8 pt-10 pb-6 text-center">
+<div class="mb-5 flex justify-center">
+<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-blue-400 shadow-[0_4px_20px_rgba(19,109,236,0.4)]">
+<span class="material-symbols-outlined text-white text-[32px]">ecg_heart</span>
+</div>
+</div>
+<h1 class="font-display text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">MedFlow</h1>
+<p class="text-slate-500 dark:text-[#92a9c9] text-base font-normal">Enter your credentials to continue your rounds.</p>
+</div>
+<!-- Segmented Control (Specialty Toggle) -->
+<div class="px-8 mb-6">
+<div class="flex p-1.5 bg-slate-100 dark:bg-[#192433] border border-slate-200 dark:border-[#324867] rounded-xl">
+<label class="group relative flex-1 cursor-pointer">
+<input class="peer sr-only" name="specialty" type="radio" value="Pre-Med"/>
+<span class="flex items-center justify-center rounded-lg py-2 text-sm font-medium text-slate-500 transition-all dark:text-[#92a9c9] peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-[#233348] dark:peer-checked:text-white">
+                            Pre-Med
+                        </span>
+</label>
+<label class="group relative flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="specialty" type="radio" value="Resident"/>
+<span class="flex items-center justify-center rounded-lg py-2 text-sm font-medium text-slate-500 transition-all dark:text-[#92a9c9] peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-[#233348] dark:peer-checked:text-white">
+                            Resident
+                        </span>
+</label>
+<label class="group relative flex-1 cursor-pointer">
+<input class="peer sr-only" name="specialty" type="radio" value="Attending"/>
+<span class="flex items-center justify-center rounded-lg py-2 text-sm font-medium text-slate-500 transition-all dark:text-[#92a9c9] peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-[#233348] dark:peer-checked:text-white">
+                            Attending
+                        </span>
+</label>
+</div>
+</div>
+<!-- Form Fields -->
+<form class="flex flex-col gap-5 px-8 pb-8">
+<!-- Email/ID Input -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-slate-700 dark:text-[#e0e6ed]">Institutional Email or ID</label>
+<div class="group relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 dark:text-[#92a9c9] group-focus-within:text-primary">id_card</span>
+<input class="h-12 w-full rounded-xl border border-slate-200 bg-white/50 px-4 pl-11 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-[#324867] dark:bg-[#192433] dark:text-white dark:placeholder:text-[#586e8a] dark:focus:border-[#136dec]" placeholder="Enter your medical ID" type="email" value=""/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between">
+<label class="text-sm font-medium text-slate-700 dark:text-[#e0e6ed]">Password</label>
+</div>
+<div class="group relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-slate-400 dark:text-[#92a9c9] group-focus-within:text-primary">lock</span>
+<input class="h-12 w-full rounded-xl border border-slate-200 bg-white/50 px-4 pl-11 pr-12 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-[#324867] dark:bg-[#192433] dark:text-white dark:placeholder:text-[#586e8a] dark:focus:border-[#136dec]" placeholder="Enter your password" type="password" value=""/>
+<button class="absolute right-0 flex h-full w-12 items-center justify-center text-slate-400 hover:text-slate-600 dark:text-[#92a9c9] dark:hover:text-white" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Actions Row -->
+<div class="flex items-center justify-between mt-1">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="h-4 w-4 rounded border-slate-300 bg-transparent text-primary focus:ring-offset-0 dark:border-[#324867] dark:checked:bg-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-[#92a9c9]">Remember device</span>
+</label>
+<a class="text-sm font-medium text-primary hover:text-blue-500 hover:underline" href="#">Forgot password?</a>
+</div>
+<!-- Login Button with Pulse -->
+<button class="group relative mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-base font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:shadow-blue-500/40 active:scale-[0.98]">
+<span class="absolute right-4 flex h-3 w-3">
+<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+<span class="relative inline-flex h-3 w-3 rounded-full bg-white"></span>
+</span>
+<span>Secure Login</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Section -->
+<div class="border-t border-slate-200 bg-slate-50/50 px-8 py-6 dark:border-[#324867] dark:bg-[#111822]/50">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-4">
+<div class="h-px flex-1 bg-slate-200 dark:bg-[#324867]"></div>
+<p class="text-xs font-medium uppercase text-slate-400 dark:text-[#586e8a]">Or access with</p>
+<div class="h-px flex-1 bg-slate-200 dark:bg-[#324867]"></div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#324867] dark:bg-[#192433] dark:text-white dark:hover:bg-[#233348]">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"></path></svg>
+<span>Google</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#324867] dark:bg-[#192433] dark:text-white dark:hover:bg-[#233348]">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.1 1.88-2.6 5.8 1.05 7.15-.4 1.25-1.5 3-3.1 4.06zm-4.7-14.7c.3-.2.5-.5.6-.8.2-.4.2-.8.1-1.2-.4.1-.8.3-1.1.6-.3.2-.5.5-.6.9-.2.4-.2.8-.1 1.2.4-.1.8-.3 1.1-.7z"></path></svg>
+<span>Apple</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative Floating Elements (Non-intrusive) -->
+<div class="pointer-events-none fixed right-[10%] top-[20%] hidden lg:block animate-pulse">
+<span class="material-symbols-outlined text-6xl text-primary/10 blur-sm">neurology</span>
+</div>
+<div class="pointer-events-none fixed left-[10%] bottom-[20%] hidden lg:block animate-pulse" style="animation-delay: 1s;">
+<span class="material-symbols-outlined text-6xl text-blue-400/10 blur-sm">genetics</span>
+</div>
+</div>
+</body></html>

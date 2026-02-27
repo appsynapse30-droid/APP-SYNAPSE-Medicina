@@ -2,17 +2,30 @@
   "status": "commited",
   "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3000",
+  "localEndpoint": "http://localhost:3000/login",
+  "backendAuthType": "public",
   "executionArgs": {
     "projectName": "APP-SYNAPSE-Medicina",
     "projectPath": "c:\\Users\\MyPc\\Desktop\\APP-SYNAPSE (Medicina)",
-    "testIds": [],
-    "additionalInstruction": "Focus on high priority tests first. The main issue to investigate is document upload in the Library - when users try to upload documents, nothing happens. Also test login flow, dashboard navigation, and library access. The app uses Supabase for auth and storage.",
+    "testIds": [
+      "TC002",
+      "TC003",
+      "TC005",
+      "TC006",
+      "TC007",
+      "TC009",
+      "TC010",
+      "TC015",
+      "TC017",
+      "TC018",
+      "TC020"
+    ],
+    "additionalInstruction": "This is a Spanish-language medical study application. The UI text is in Spanish. For example: \"Iniciar Sesión Seguro\" instead of \"Sign in\", \"Crear Cuenta\" instead of \"Create account\", \"Recuperar Contraseña\" instead of \"Forgot Password\", \"Enviar Enlace de Recuperación\" instead of \"Send reset link\", \"Email Institucional\" instead of \"Email\", \"Contraseña\" instead of \"Password\", \"Volver al Login\" instead of \"Back to login\". Error messages are also in Spanish like \"Por favor, completa todos los campos\", \"Email o contraseña incorrectos\", \"Por favor, ingresa tu email\". Focus on auth-related tests only (login, register, forgot password, route protection). The app runs on localhost:3000.",
     "serverMode": "development",
     "envs": {
       "API_KEY": "sk-user-v9bQnrsTIyvbPdyCN5O3w2AQQtQatzRByIl7Oz34VzKqfNTU1TjiOrweCMLCcTj9hyX61A2tGk2WNurARhM2ChzUQlrm2um3-jP5LOaINI-P7yQoyLixMjBo6R9qT4izHs8"
     }
   },
-  "serverPort": 61120,
-  "proxy": "http://dab73a7b-e084-4aea-b2c0-d9ff6abca113:m1TeN5DEbzmpGvZUvUa0KZAuqJhUkgcD@tun.testsprite.com:8080"
+  "serverPort": 58358,
+  "proxy": "http://9b0e95f6-d9dd-42aa-bd70-492e5dad2b15:LD8PXC3TLdP1JsKhz25WcMnV58HAsIR3@tun.testsprite.com:8080"
 }

@@ -35,7 +35,17 @@ function ForgotPassword() {
         const { error: resetError } = await resetPassword(email);
 
         if (resetError) {
-            setError(resetError.message);
+            // Translate common Supabase errors to Spanish
+            const msg = resetError.message || '';
+            if (msg.includes('rate limit') || msg.includes('too many requests')) {
+                setError('Demasiados intentos. Por favor, espera unos minutos.');
+            } else if (msg.includes('not found') || msg.includes('no user')) {
+                setError('No encontramos una cuenta con ese email.');
+            } else if (msg.includes('network') || msg.includes('fetch')) {
+                setError('Error de conexión. Verifica tu internet e intenta nuevamente.');
+            } else {
+                setError('Error al enviar el enlace. Intenta nuevamente.');
+            }
         } else {
             setSuccess(true);
         }

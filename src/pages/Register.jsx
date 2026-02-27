@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabase';
@@ -28,7 +28,7 @@ const GoogleIcon = () => (
 
 function Register() {
     const navigate = useNavigate();
-    const { signUp, loading, error: authError } = useAuth();
+    const { signUp, loading, clearError } = useAuth();
 
     const [formData, setFormData] = useState({
         email: '',
@@ -40,6 +40,11 @@ function Register() {
     const [success, setSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [socialLoading, setSocialLoading] = useState('');
+
+    // Clear stale auth errors when entering register page
+    useEffect(() => {
+        clearError();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -90,10 +95,17 @@ function Register() {
         );
 
         if (signUpError) {
-            if (signUpError.message.includes('already registered')) {
+            const msg = signUpError.message || '';
+            if (msg.includes('already registered')) {
                 setError('Este email ya está registrado. Intenta iniciar sesión.');
+            } else if (msg.includes('rate limit') || msg.includes('too many requests')) {
+                setError('Demasiados intentos. Espera unos minutos.');
+            } else if (msg.includes('network') || msg.includes('fetch') || msg.includes('Failed to fetch')) {
+                setError('Error de conexión. Verifica tu internet.');
+            } else if (msg.includes('password') && (msg.includes('weak') || msg.includes('short'))) {
+                setError('La contraseña es muy débil. Incluye mayúsculas, números y 8+ caracteres.');
             } else {
-                setError(signUpError.message);
+                setError('Error al crear la cuenta. Intenta nuevamente.');
             }
         } else {
             setSuccess(true);
@@ -199,10 +211,10 @@ function Register() {
                     </div>
 
                     {/* Error */}
-                    {(error || authError) && (
+                    {error && (
                         <div className="register-error">
                             <AlertCircle />
-                            <span>{error || authError}</span>
+                            <span>{error}</span>
                         </div>
                     )}
 

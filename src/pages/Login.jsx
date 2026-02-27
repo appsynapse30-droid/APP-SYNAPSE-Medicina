@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabase';
@@ -24,7 +24,7 @@ const GoogleIcon = () => (
 
 function Login() {
     const navigate = useNavigate();
-    const { signIn, loading, error: authError } = useAuth();
+    const { signIn, loading, clearError } = useAuth();
 
     const [formData, setFormData] = useState({
         email: '',
@@ -33,6 +33,11 @@ function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [socialLoading, setSocialLoading] = useState('');
+
+    // Clear stale auth errors when entering login page
+    useEffect(() => {
+        clearError();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -57,12 +62,19 @@ function Login() {
         const { error: signInError } = await signIn(formData.email, formData.password);
 
         if (signInError) {
-            if (signInError.message.includes('Invalid login credentials')) {
+            const msg = signInError.message || '';
+            if (msg.includes('Invalid login credentials')) {
                 setError('Email o contraseña incorrectos');
-            } else if (signInError.message.includes('Email not confirmed')) {
+            } else if (msg.includes('Email not confirmed')) {
                 setError('Por favor, verifica tu email antes de iniciar sesión');
+            } else if (msg.includes('rate limit') || msg.includes('too many requests')) {
+                setError('Demasiados intentos. Espera unos minutos.');
+            } else if (msg.includes('network') || msg.includes('fetch') || msg.includes('Failed to fetch')) {
+                setError('Error de conexión. Verifica tu internet.');
+            } else if (msg.includes('signup_disabled')) {
+                setError('El registro está deshabilitado temporalmente.');
             } else {
-                setError(signInError.message);
+                setError('Error al iniciar sesión. Intenta nuevamente.');
             }
         } else {
             navigate('/');
@@ -114,11 +126,11 @@ function Login() {
                 </div>
 
                 {/* Error Message */}
-                {(error || authError) && (
+                {error && (
                     <div className="login-form" style={{ paddingBottom: 0 }}>
                         <div className="login-error">
                             <AlertCircle />
-                            <span>{error || authError}</span>
+                            <span>{error}</span>
                         </div>
                     </div>
                 )}

@@ -308,6 +308,7 @@ export function AuthProvider({ children }) {
         loading,
         error,
         isAuthenticated: !!user,
+        clearError: () => setError(null),
         signUp,
         signIn,
         signOut,

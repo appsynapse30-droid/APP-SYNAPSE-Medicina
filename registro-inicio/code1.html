@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedStudy Pro - Registration</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "primary-dark": "#0b4cb5",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-dark": "#192433",
+                        "surface-border": "#324867",
+                        "text-secondary": "#92a9c9",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(19, 109, 236, 0.15)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101822; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324867; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a6fa5; 
+        }
+        
+        .glass-panel {
+            background: rgba(25, 36, 51, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(50, 72, 103, 0.5);
+        }
+
+        .path-card:hover {
+            border-color: #136dec;
+            background: rgba(19, 109, 236, 0.05);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<!-- Background 3D Abstract Element -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+<!-- Abstract Dark Blue DNA/Medical Background -->
+<div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay" data-alt="Abstract dark blue 3D medical DNA helix visualization" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDZMPr2m535mo-O5Y-nwMk7NrnqoaHYICp6nxX8-rsD8YKDKjrx1JWK8CFgA-SGNovzdaRxVLyavdtQpPQ6jnL_e6RBJUnHJJ1Ao8ZVmniuYuv8bK_O9Fm2zqGR8TDUccVkr4vPBumQrTCaExL8yu3Y5Vb1Q_5vHxIeJoTHH4o6TnyTfzS5Jo_HwZjL5mU2zhqjO1MgK2MUkXfQSd0Ka_XejnCvGrk030EPBgrhTmeF7PraCb6sTBIDlItQGvowFrAzR-FmCMUSdtg');">
+</div>
+<!-- Gradient Overlay to ensure text readability -->
+<div class="absolute inset-0 bg-gradient-to-b from-[#101822] via-[#101822]/90 to-[#101822]"></div>
+<!-- Decorative Glow -->
+<div class="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[100px]"></div>
+</div>
+<!-- Main Content Wrapper -->
+<div class="relative z-10 flex min-h-screen flex-col">
+<!-- Navbar -->
+<header class="w-full px-6 py-5 lg:px-12 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-glow">
+<span class="material-symbols-outlined text-[20px]">cardiology</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-white">MedStudy Pro</h2>
+</div>
+<div class="hidden md:flex items-center gap-2 text-sm font-medium text-text-secondary">
+<span>Already have an account?</span>
+<button class="text-white hover:text-primary transition-colors">Log In</button>
+</div>
+</header>
+<!-- Main Registration Area -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-8 md:px-8">
+<div class="w-full max-w-5xl flex flex-col gap-8">
+<!-- Progress Stepper -->
+<div class="w-full max-w-3xl mx-auto mb-4">
+<div class="flex items-center justify-between relative">
+<!-- Connecting Line -->
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-surface-border -z-10 transform -translate-y-1/2"></div>
+<div class="absolute top-1/2 left-0 w-1/2 h-[2px] bg-primary -z-10 transform -translate-y-1/2 transition-all duration-500"></div>
+<!-- Step 1: Completed -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center border-4 border-background-dark shadow-glow">
+<span class="material-symbols-outlined text-white text-sm">check</span>
+</div>
+<span class="text-xs font-medium text-primary hidden sm:block">Account</span>
+</div>
+<!-- Step 2: Active -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-background-dark border-2 border-primary flex items-center justify-center shadow-glow z-10 relative">
+<div class="w-2.5 h-2.5 bg-primary rounded-full animate-pulse"></div>
+</div>
+<span class="text-xs font-bold text-white hidden sm:block">Trajectory</span>
+</div>
+<!-- Step 3: Pending -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-dark border-2 border-surface-border flex items-center justify-center z-10">
+<span class="text-sm font-medium text-text-secondary">3</span>
+</div>
+<span class="text-xs font-medium text-text-secondary hidden sm:block">Curriculum</span>
+</div>
+</div>
+</div>
+<!-- Card Content -->
+<div class="glass-panel rounded-2xl p-6 md:p-10 shadow-card w-full border border-surface-border/50">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column: Text Inputs -->
+<div class="lg:col-span-5 flex flex-col gap-6">
+<div>
+<h1 class="text-3xl font-bold text-white leading-tight mb-2">Define Your Path</h1>
+<p class="text-text-secondary text-base">Tell us about your medical journey so we can calibrate your study materials.</p>
+</div>
+<div class="space-y-5">
+<div class="grid grid-cols-2 gap-4">
+<label class="flex flex-col gap-1.5 group">
+<span class="text-sm font-medium text-text-secondary group-focus-within:text-primary transition-colors">Graduation Year</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-3.5 text-text-secondary text-[20px]">school</span>
+<select class="w-full bg-surface-dark border border-surface-border rounded-lg py-3 pl-10 pr-4 text-white focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none appearance-none cursor-pointer">
+<option>2024</option>
+<option>2025</option>
+<option>2026</option>
+<option selected="">2027</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3.5 text-text-secondary pointer-events-none text-[20px]">expand_more</span>
+</div>
+</label>
+<label class="flex flex-col gap-1.5 group">
+<span class="text-sm font-medium text-text-secondary group-focus-within:text-primary transition-colors">University</span>
+<input class="w-full bg-surface-dark border border-surface-border rounded-lg py-3 px-4 text-white placeholder-text-secondary/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="e.g. Harvard Med" type="text"/>
+</label>
+</div>
+<label class="flex flex-col gap-1.5 group">
+<span class="text-sm font-medium text-text-secondary group-focus-within:text-primary transition-colors">Current Status</span>
+<div class="flex gap-4">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="status" type="radio"/>
+<div class="h-12 flex items-center justify-center rounded-lg border border-surface-border bg-surface-dark text-text-secondary peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary transition-all font-medium">
+                                                Pre-Clinical
+                                            </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="status" type="radio"/>
+<div class="h-12 flex items-center justify-center rounded-lg border border-surface-border bg-surface-dark text-text-secondary peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary transition-all font-medium">
+                                                Clinical
+                                            </div>
+</label>
+</div>
+</label>
+</div>
+<!-- Trust Indicator -->
+<div class="mt-auto pt-6 flex items-center gap-4 border-t border-surface-border/50">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-background-dark bg-gray-300 bg-cover bg-center" data-alt="User avatar 1" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCze24eWvFVi2AlwszgHqK2ar40_uI17eBq_42Ct8iPzI7s17JwzhHFpqyFtmqEwTbpR5ylZrxyMrAKbHgFDRSkImnWoLXTX5CuAqpwhk1-lGBH7wRonIHxRJ1Rg8mVekqQ2uWvt1_EFF3F3ZQlVV30AQ5002ZPmI7azkOsZ9JVa7AFoEkge-tM_EmEaKTVhExskPj7WwGlLb_LLFzG_5EyDIc4GDNHUZsqe72FdgW2ZUb7DmFrLmX57TAyNTS8pLPUmaME2QWZfLU');"></div>
+<div class="w-8 h-8 rounded-full border-2 border-background-dark bg-gray-400 bg-cover bg-center" data-alt="User avatar 2" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDAjezGUbzDKwi4ciM7ZGVlX2bTo_PLrdppkcondOJVOSoj7wXmOVjlDTxuFdTvFzR2pofXnsVGIi21wd29W0So0hRWpSY_grEtdRjbZYJNkiszhCNpPc7BAxtXFAZ-ShTP6iak6o5KJmXJWZQgP44YcCN8oLk4p1fBSpudz7QrphA2JMashXodh63Zt31zmEqhj9ycm3dbKkxK7bQhdLAs2jV4P1AeMeoUZpWD7S8zvYPoOATMdlTx8PkBKa_TRkXV0IT-phWye24');"></div>
+<div class="w-8 h-8 rounded-full border-2 border-background-dark bg-gray-500 bg-cover bg-center" data-alt="User avatar 3" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD20OPlABK4IJVX-39cfHE9qmNcVm-3iGbFLXeKifq6lyKMI4-Q_azL8YytvU0jhuYb-oPwIVRRsKhEZpysyivho33igh2lXpMEJmKQ1_ur7QQLqyHSbhNVLXmvXy_pJCGtsC7bO0JosF80ESH72vLQjlcBiAje6vw_W9ZNPI6ydPPgU0IG60F3nOwlddDgbKomBnX-XtT9GFnyOPTgWn0gLJQ7JtrQiQoiR_FMfdDKTHG4LbhBzHZw9BcWfFnwPoa7iZoT6ZFy0aI');"></div>
+</div>
+<p class="text-xs text-text-secondary">Trusted by <span class="text-white font-bold">10,000+</span> medical students worldwide.</p>
+</div>
+</div>
+<!-- Right Column: Interactive Specialty Grid -->
+<div class="lg:col-span-7 flex flex-col gap-6 lg:border-l lg:border-surface-border/50 lg:pl-10">
+<div>
+<h3 class="text-lg font-bold text-white mb-1">Primary Interest</h3>
+<p class="text-sm text-text-secondary">Select a specialty to customize your dashboard feed.</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Card 1 -->
+<div class="path-card group bg-surface-dark border border-surface-border rounded-xl p-5 cursor-pointer transition-all duration-300 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors text-blue-400">
+<span class="material-symbols-outlined text-[28px]">cardiology</span>
+</div>
+<h4 class="text-white font-bold text-lg mb-1">Cardiology</h4>
+<p class="text-text-secondary text-xs leading-relaxed">Study of the heart and blood vessels.</p>
+</div>
+<!-- Card 2 -->
+<div class="path-card group bg-surface-dark border border-surface-border rounded-xl p-5 cursor-pointer transition-all duration-300 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors text-purple-400">
+<span class="material-symbols-outlined text-[28px]">psychology</span>
+</div>
+<h4 class="text-white font-bold text-lg mb-1">Neurology</h4>
+<p class="text-text-secondary text-xs leading-relaxed">Disorders of the nervous system.</p>
+</div>
+<!-- Card 3 -->
+<div class="path-card group bg-surface-dark border border-surface-border rounded-xl p-5 cursor-pointer transition-all duration-300 relative overflow-hidden ring-2 ring-primary bg-primary/5">
+<div class="absolute top-0 right-0 p-3 opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="w-12 h-12 rounded-lg bg-primary text-white flex items-center justify-center mb-4 transition-colors">
+<span class="material-symbols-outlined text-[28px]">content_cut</span>
+</div>
+<h4 class="text-white font-bold text-lg mb-1">Surgery</h4>
+<p class="text-text-secondary text-xs leading-relaxed">Operative manual and instrumental techniques.</p>
+</div>
+<!-- Card 4 -->
+<div class="path-card group bg-surface-dark border border-surface-border rounded-xl p-5 cursor-pointer transition-all duration-300 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors text-green-400">
+<span class="material-symbols-outlined text-[28px]">child_care</span>
+</div>
+<h4 class="text-white font-bold text-lg mb-1">Pediatrics</h4>
+<p class="text-text-secondary text-xs leading-relaxed">Medical care of infants and children.</p>
+</div>
+</div>
+<button class="mt-4 flex items-center gap-2 text-sm text-text-secondary hover:text-white transition-colors self-start group">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+                                View all specialties
+                            </button>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="mt-10 flex items-center justify-between pt-6 border-t border-surface-border">
+<button class="flex items-center gap-2 text-text-secondary hover:text-white px-4 py-2 rounded-lg hover:bg-surface-dark transition-all">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Back
+                        </button>
+<button class="flex items-center gap-3 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-primary/25 transition-all transform active:scale-95">
+                            Continue
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
