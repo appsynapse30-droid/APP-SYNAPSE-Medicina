@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "APP-SYNAPSE-Medicina",
+    "projectPath": "c:\\Users\\MyPc\\Desktop\\APP-SYNAPSE (Medicina)",
+    "testIds": [],
+    "additionalInstruction": "Focus on high priority tests first. The main issue to investigate is document upload in the Library - when users try to upload documents, nothing happens. Also test login flow, dashboard navigation, and library access. The app uses Supabase for auth and storage.",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-v9bQnrsTIyvbPdyCN5O3w2AQQtQatzRByIl7Oz34VzKqfNTU1TjiOrweCMLCcTj9hyX61A2tGk2WNurARhM2ChzUQlrm2um3-jP5LOaINI-P7yQoyLixMjBo6R9qT4izHs8"
+    }
+  },
+  "serverPort": 61120,
+  "proxy": "http://dab73a7b-e084-4aea-b2c0-d9ff6abca113:m1TeN5DEbzmpGvZUvUa0KZAuqJhUkgcD@tun.testsprite.com:8080"
+}

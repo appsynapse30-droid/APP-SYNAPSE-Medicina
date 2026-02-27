@@ -1,145 +1,86 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabase';
 import {
     Activity,
-    Check,
     ArrowRight,
-    ArrowLeft,
     Mail,
     Lock,
     User,
-    GraduationCap,
-    Building,
     AlertCircle,
     Eye,
     EyeOff,
-    Heart,
-    Brain,
-    Stethoscope,
-    Baby,
-    PlusCircle,
-    CheckCircle
+    CheckCircle,
+    Check,
+    X
 } from 'lucide-react';
 import './Register.css';
 
-// Specialties data
-const SPECIALTIES = [
-    {
-        id: 'cardiology',
-        name: 'Cardiología',
-        description: 'Estudio del corazón y vasos sanguíneos.',
-        icon: Heart,
-        colorClass: 'cardiology'
-    },
-    {
-        id: 'neurology',
-        name: 'Neurología',
-        description: 'Trastornos del sistema nervioso.',
-        icon: Brain,
-        colorClass: 'neurology'
-    },
-    {
-        id: 'surgery',
-        name: 'Cirugía',
-        description: 'Técnicas operativas manuales e instrumentales.',
-        icon: Stethoscope,
-        colorClass: 'surgery'
-    },
-    {
-        id: 'pediatrics',
-        name: 'Pediatría',
-        description: 'Cuidado médico de infantes y niños.',
-        icon: Baby,
-        colorClass: 'pediatrics'
-    }
-];
+// Google SVG icon
+const GoogleIcon = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
+    </svg>
+);
 
-const GRADUATION_YEARS = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+
 
 function Register() {
     const navigate = useNavigate();
     const { signUp, loading, error: authError } = useAuth();
 
-    // Multi-step state
-    const [currentStep, setCurrentStep] = useState(1);
-
-    // Form data
     const [formData, setFormData] = useState({
-        // Step 1: Account
         email: '',
-        password: '',
-        confirmPassword: '',
         displayName: '',
-        // Step 2: Trajectory
-        graduationYear: '2027',
-        university: '',
-        currentStatus: 'preclinical',
-        primaryInterest: ''
+        password: '',
+        confirmPassword: ''
     });
-
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [socialLoading, setSocialLoading] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
         setError('');
     };
 
-    const selectSpecialty = (specialtyId) => {
-        setFormData(prev => ({
-            ...prev,
-            primaryInterest: specialtyId
-        }));
+    // Password strength checks
+    const passwordChecks = {
+        length: formData.password.length >= 8,
+        uppercase: /[A-Z]/.test(formData.password),
+        number: /[0-9]/.test(formData.password)
     };
 
-    const validateStep1 = () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        // Validations
         if (!formData.email || !formData.password || !formData.confirmPassword) {
             setError('Por favor, completa los campos obligatorios');
-            return false;
+            return;
         }
 
         if (!formData.email.includes('@')) {
             setError('Por favor, ingresa un email válido');
-            return false;
+            return;
         }
 
         if (formData.password.length < 8) {
             setError('La contraseña debe tener al menos 8 caracteres');
-            return false;
+            return;
         }
 
         if (formData.password !== formData.confirmPassword) {
             setError('Las contraseñas no coinciden');
-            return false;
+            return;
         }
 
-        return true;
-    };
-
-    const nextStep = () => {
-        if (currentStep === 1 && !validateStep1()) return;
-        setCurrentStep(prev => Math.min(prev + 1, 3));
-    };
-
-    const prevStep = () => {
-        setCurrentStep(prev => Math.max(prev - 1, 1));
-    };
-
-    const handleSubmit = async () => {
-        setError('');
-
         const metadata = {
-            display_name: formData.displayName || formData.email.split('@')[0],
-            university: formData.university || null,
-            graduation_year: parseInt(formData.graduationYear),
-            current_status: formData.currentStatus,
-            primary_interest: formData.primaryInterest || null
+            display_name: formData.displayName || formData.email.split('@')[0]
         };
 
         const { error: signUpError } = await signUp(
@@ -159,11 +100,26 @@ function Register() {
         }
     };
 
-    // Progress calculation
-    const getProgressWidth = () => {
-        if (currentStep === 1) return '0%';
-        if (currentStep === 2) return '50%';
-        return '100%';
+    const handleSocialRegister = async (provider) => {
+        setSocialLoading(provider);
+        setError('');
+
+        try {
+            const { error: socialError } = await supabase.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: `${window.location.origin}/`
+                }
+            });
+
+            if (socialError) {
+                setError(`Error al registrarse con ${provider === 'google' ? 'Google' : 'Apple'}: ${socialError.message}`);
+            }
+        } catch (err) {
+            setError(`Error inesperado: ${err.message}`);
+        } finally {
+            setSocialLoading('');
+        }
     };
 
     // Success Screen
@@ -171,12 +127,12 @@ function Register() {
         return (
             <div className="register-page">
                 <div className="register-background">
-                    <div className="register-background-gradient"></div>
+                    <div className="register-bg-gradient"></div>
                     <div className="register-glow-1"></div>
                     <div className="register-glow-2"></div>
                 </div>
 
-                <header className="register-header">
+                <header className="register-navbar">
                     <div className="register-logo">
                         <div className="register-logo-icon">
                             <Activity />
@@ -186,15 +142,16 @@ function Register() {
                 </header>
 
                 <main className="register-main">
-                    <div className="register-card success-container">
-                        <div className="success-icon">
+                    <div className="register-success-card">
+                        <div className="success-check-wrapper">
                             <CheckCircle />
                         </div>
                         <h2>¡Registro exitoso!</h2>
                         <p>
-                            Tu cuenta ha sido creada correctamente con el email <strong>{formData.email}</strong>.
+                            Tu cuenta ha sido creada con el email <strong>{formData.email}</strong>.
                             <br /><br />
-                            Te hemos enviado un email de verificación. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para activar tu cuenta.
+                            Te hemos enviado un email de verificación. Revisa tu bandeja de entrada
+                            y sigue las instrucciones para activar tu cuenta.
                         </p>
                         <Link to="/login" className="go-login-btn">
                             Ir a Iniciar Sesión
@@ -210,13 +167,13 @@ function Register() {
         <div className="register-page">
             {/* Background */}
             <div className="register-background">
-                <div className="register-background-gradient"></div>
+                <div className="register-bg-gradient"></div>
                 <div className="register-glow-1"></div>
                 <div className="register-glow-2"></div>
             </div>
 
             {/* Header */}
-            <header className="register-header">
+            <header className="register-navbar">
                 <div className="register-logo">
                     <div className="register-logo-icon">
                         <Activity />
@@ -229,390 +186,190 @@ function Register() {
                 </div>
             </header>
 
-            {/* Main Content */}
+            {/* Main */}
             <main className="register-main">
-                <div className="register-content">
-                    {/* Progress Stepper */}
-                    <div className="register-stepper">
-                        <div className="stepper-container">
-                            <div className="stepper-line-bg"></div>
-                            <div
-                                className="stepper-line-progress"
-                                style={{ width: getProgressWidth() }}
-                            ></div>
+                <div className="register-card">
+                    {/* Card Header */}
+                    <div className="register-card-header">
+                        <div className="register-card-logo">
+                            <Activity />
+                        </div>
+                        <h1>Crear tu Cuenta</h1>
+                        <p>Completa tus datos para comenzar tu viaje de estudio médico.</p>
+                    </div>
 
-                            {/* Step 1 */}
-                            <div className="stepper-step">
-                                <div className={`step-circle ${currentStep > 1 ? 'completed' : currentStep === 1 ? 'active' : 'pending'}`}>
-                                    {currentStep > 1 ? <Check /> : currentStep === 1 ? <div className="step-pulse"></div> : '1'}
-                                </div>
-                                <span className={`step-label ${currentStep > 1 ? 'completed' : currentStep === 1 ? 'active' : 'pending'}`}>
-                                    Cuenta
-                                </span>
-                            </div>
+                    {/* Error */}
+                    {(error || authError) && (
+                        <div className="register-error">
+                            <AlertCircle />
+                            <span>{error || authError}</span>
+                        </div>
+                    )}
 
-                            {/* Step 2 */}
-                            <div className="stepper-step">
-                                <div className={`step-circle ${currentStep > 2 ? 'completed' : currentStep === 2 ? 'active' : 'pending'}`}>
-                                    {currentStep > 2 ? <Check /> : currentStep === 2 ? <div className="step-pulse"></div> : '2'}
-                                </div>
-                                <span className={`step-label ${currentStep > 2 ? 'completed' : currentStep === 2 ? 'active' : 'pending'}`}>
-                                    Trayectoria
+                    {/* Form */}
+                    <form className="register-form" onSubmit={handleSubmit}>
+                        {/* Email */}
+                        <div className="register-form-group">
+                            <label htmlFor="reg-email">Email Institucional *</label>
+                            <div className="register-input-wrapper">
+                                <span className="register-input-icon">
+                                    <Mail />
                                 </span>
+                                <input
+                                    type="email"
+                                    id="reg-email"
+                                    name="email"
+                                    className="register-input"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="tu@universidad.edu"
+                                    autoComplete="email"
+                                    disabled={loading}
+                                />
                             </div>
+                        </div>
 
-                            {/* Step 3 */}
-                            <div className="stepper-step">
-                                <div className={`step-circle ${currentStep === 3 ? 'active' : 'pending'}`}>
-                                    {currentStep === 3 ? <div className="step-pulse"></div> : '3'}
-                                </div>
-                                <span className={`step-label ${currentStep === 3 ? 'active' : 'pending'}`}>
-                                    Confirmar
+                        {/* Name */}
+                        <div className="register-form-group">
+                            <label htmlFor="reg-name">Nombre (opcional)</label>
+                            <div className="register-input-wrapper">
+                                <span className="register-input-icon">
+                                    <User />
                                 </span>
+                                <input
+                                    type="text"
+                                    id="reg-name"
+                                    name="displayName"
+                                    className="register-input"
+                                    value={formData.displayName}
+                                    onChange={handleChange}
+                                    placeholder="Tu nombre completo"
+                                    autoComplete="name"
+                                    disabled={loading}
+                                />
                             </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="register-form-group">
+                            <label htmlFor="reg-password">Contraseña *</label>
+                            <div className="register-input-wrapper">
+                                <span className="register-input-icon">
+                                    <Lock />
+                                </span>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="reg-password"
+                                    name="password"
+                                    className="register-input has-toggle"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Mínimo 8 caracteres"
+                                    autoComplete="new-password"
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    className="register-toggle-password"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff /> : <Eye />}
+                                </button>
+                            </div>
+                            {/* Password requirements */}
+                            {formData.password.length > 0 && (
+                                <div className="password-requirements">
+                                    <span className={`password-req ${passwordChecks.length ? 'met' : ''}`}>
+                                        {passwordChecks.length ? <Check /> : <X />}
+                                        8+ caracteres
+                                    </span>
+                                    <span className={`password-req ${passwordChecks.uppercase ? 'met' : ''}`}>
+                                        {passwordChecks.uppercase ? <Check /> : <X />}
+                                        Mayúscula
+                                    </span>
+                                    <span className={`password-req ${passwordChecks.number ? 'met' : ''}`}>
+                                        {passwordChecks.number ? <Check /> : <X />}
+                                        Número
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className="register-form-group">
+                            <label htmlFor="reg-confirm-password">Confirmar Contraseña *</label>
+                            <div className="register-input-wrapper">
+                                <span className="register-input-icon">
+                                    <Lock />
+                                </span>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="reg-confirm-password"
+                                    name="confirmPassword"
+                                    className="register-input"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="Repite tu contraseña"
+                                    autoComplete="new-password"
+                                    disabled={loading}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Submit */}
+                        <button
+                            type="submit"
+                            className="register-button"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="register-spinner"></span>
+                                    Creando cuenta...
+                                </>
+                            ) : (
+                                <>
+                                    <span>Crear Cuenta</span>
+                                    <ArrowRight />
+                                    <span className="register-button-pulse">
+                                        <span className="ping"></span>
+                                        <span className="dot"></span>
+                                    </span>
+                                </>
+                            )}
+                        </button>
+                    </form>
+
+                    {/* Social Auth */}
+                    <div className="register-social-section">
+                        <div className="register-divider">
+                            <div className="register-divider-line"></div>
+                            <span className="register-divider-text">O regístrate con</span>
+                            <div className="register-divider-line"></div>
+                        </div>
+                        <div className="register-social-buttons">
+                            <button
+                                type="button"
+                                className="register-social-btn"
+                                onClick={() => handleSocialRegister('google')}
+                                disabled={loading || !!socialLoading}
+                            >
+                                {socialLoading === 'google' ? (
+                                    <span className="register-spinner"></span>
+                                ) : (
+                                    <GoogleIcon />
+                                )}
+                                <span>Google</span>
+                            </button>
+
                         </div>
                     </div>
 
-                    {/* Card Content */}
-                    <div className="register-card">
-                        {/* Error Message */}
-                        {(error || authError) && (
-                            <div className="register-error">
-                                <AlertCircle />
-                                <span>{error || authError}</span>
-                            </div>
-                        )}
-
-                        {/* Step 1: Account */}
-                        {currentStep === 1 && (
-                            <div className="step-account">
-                                <h1 className="step-title">Crear tu cuenta</h1>
-                                <p className="step-subtitle">
-                                    Ingresa tus datos para comenzar tu viaje de estudio médico.
-                                </p>
-
-                                <div className="form-group">
-                                    <label htmlFor="email">Email Institucional *</label>
-                                    <div className="input-with-icon">
-                                        <span className="icon"><Mail /></span>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
-                                            className="register-input"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            placeholder="tu@universidad.edu"
-                                            autoComplete="email"
-                                            disabled={loading}
-                                            style={{ paddingLeft: '40px' }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="form-group" style={{ marginTop: '16px' }}>
-                                    <label htmlFor="displayName">Nombre (opcional)</label>
-                                    <div className="input-with-icon">
-                                        <span className="icon"><User /></span>
-                                        <input
-                                            type="text"
-                                            id="displayName"
-                                            name="displayName"
-                                            className="register-input"
-                                            value={formData.displayName}
-                                            onChange={handleChange}
-                                            placeholder="Tu nombre"
-                                            autoComplete="name"
-                                            disabled={loading}
-                                            style={{ paddingLeft: '40px' }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="form-group" style={{ marginTop: '16px' }}>
-                                    <label htmlFor="password">Contraseña *</label>
-                                    <div className="password-wrapper">
-                                        <div className="input-with-icon">
-                                            <span className="icon"><Lock /></span>
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                id="password"
-                                                name="password"
-                                                className="register-input"
-                                                value={formData.password}
-                                                onChange={handleChange}
-                                                placeholder="Mínimo 8 caracteres"
-                                                autoComplete="new-password"
-                                                disabled={loading}
-                                                style={{ paddingLeft: '40px', paddingRight: '48px' }}
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="toggle-password"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            tabIndex={-1}
-                                        >
-                                            {showPassword ? <EyeOff /> : <Eye />}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="form-group" style={{ marginTop: '16px' }}>
-                                    <label htmlFor="confirmPassword">Confirmar Contraseña *</label>
-                                    <div className="input-with-icon">
-                                        <span className="icon"><Lock /></span>
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            id="confirmPassword"
-                                            name="confirmPassword"
-                                            className="register-input"
-                                            value={formData.confirmPassword}
-                                            onChange={handleChange}
-                                            placeholder="Repite tu contraseña"
-                                            autoComplete="new-password"
-                                            disabled={loading}
-                                            style={{ paddingLeft: '40px' }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Footer Actions */}
-                                <div className="register-footer-actions">
-                                    <div></div>
-                                    <button
-                                        type="button"
-                                        className="continue-btn"
-                                        onClick={nextStep}
-                                        disabled={loading}
-                                    >
-                                        Continuar
-                                        <ArrowRight />
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Step 2: Trajectory */}
-                        {currentStep === 2 && (
-                            <div className="step-trajectory">
-                                {/* Left Column */}
-                                <div className="trajectory-left">
-                                    <div>
-                                        <h1 className="step-title">Define tu Trayectoria</h1>
-                                        <p className="step-subtitle">
-                                            Cuéntanos sobre tu camino médico para calibrar tus materiales de estudio.
-                                        </p>
-                                    </div>
-
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="graduationYear">Año de Graduación</label>
-                                            <div className="input-with-icon">
-                                                <span className="icon"><GraduationCap /></span>
-                                                <select
-                                                    id="graduationYear"
-                                                    name="graduationYear"
-                                                    className="register-select"
-                                                    value={formData.graduationYear}
-                                                    onChange={handleChange}
-                                                    disabled={loading}
-                                                    style={{ paddingLeft: '40px' }}
-                                                >
-                                                    {GRADUATION_YEARS.map(year => (
-                                                        <option key={year} value={year}>{year}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label htmlFor="university">Universidad</label>
-                                            <input
-                                                type="text"
-                                                id="university"
-                                                name="university"
-                                                className="register-input"
-                                                value={formData.university}
-                                                onChange={handleChange}
-                                                placeholder="ej. Universidad de Medicina"
-                                                disabled={loading}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>Estado Actual</label>
-                                        <div className="status-toggle">
-                                            <div className="status-option">
-                                                <input
-                                                    type="radio"
-                                                    id="preclinical"
-                                                    name="currentStatus"
-                                                    value="preclinical"
-                                                    checked={formData.currentStatus === 'preclinical'}
-                                                    onChange={handleChange}
-                                                />
-                                                <label htmlFor="preclinical">Pre-Clínico</label>
-                                            </div>
-                                            <div className="status-option">
-                                                <input
-                                                    type="radio"
-                                                    id="clinical"
-                                                    name="currentStatus"
-                                                    value="clinical"
-                                                    checked={formData.currentStatus === 'clinical'}
-                                                    onChange={handleChange}
-                                                />
-                                                <label htmlFor="clinical">Clínico</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Trust Indicator */}
-                                    <div className="trust-indicator">
-                                        <div className="trust-avatars">
-                                            <div className="trust-avatar" style={{ background: '#6366f1' }}></div>
-                                            <div className="trust-avatar" style={{ background: '#8b5cf6' }}></div>
-                                            <div className="trust-avatar" style={{ background: '#a855f7' }}></div>
-                                        </div>
-                                        <p className="trust-text">
-                                            Usado por <strong>10,000+</strong> estudiantes de medicina.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Right Column */}
-                                <div className="trajectory-right">
-                                    <div className="specialty-section">
-                                        <h3>Interés Principal</h3>
-                                        <p>Selecciona una especialidad para personalizar tu dashboard.</p>
-                                    </div>
-
-                                    <div className="specialty-grid">
-                                        {SPECIALTIES.map(specialty => {
-                                            const Icon = specialty.icon;
-                                            return (
-                                                <div
-                                                    key={specialty.id}
-                                                    className={`specialty-card ${formData.primaryInterest === specialty.id ? 'selected' : ''}`}
-                                                    onClick={() => selectSpecialty(specialty.id)}
-                                                >
-                                                    <div className="specialty-check">
-                                                        <CheckCircle />
-                                                    </div>
-                                                    <div className={`specialty-icon ${specialty.colorClass}`}>
-                                                        <Icon />
-                                                    </div>
-                                                    <h4>{specialty.name}</h4>
-                                                    <p>{specialty.description}</p>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <button type="button" className="view-all-btn">
-                                        <PlusCircle />
-                                        Ver todas las especialidades
-                                    </button>
-                                </div>
-
-                                {/* Footer Actions */}
-                                <div className="register-footer-actions" style={{ gridColumn: '1 / -1' }}>
-                                    <button
-                                        type="button"
-                                        className="back-btn"
-                                        onClick={prevStep}
-                                    >
-                                        <ArrowLeft />
-                                        Atrás
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="continue-btn"
-                                        onClick={nextStep}
-                                        disabled={loading}
-                                    >
-                                        Continuar
-                                        <ArrowRight />
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Step 3: Confirm */}
-                        {currentStep === 3 && (
-                            <div className="step-account">
-                                <h1 className="step-title">Confirmar Registro</h1>
-                                <p className="step-subtitle">
-                                    Revisa tus datos antes de crear tu cuenta.
-                                </p>
-
-                                <div style={{
-                                    background: 'var(--register-surface-dark)',
-                                    borderRadius: '12px',
-                                    padding: '20px',
-                                    marginBottom: '24px'
-                                }}>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <span style={{ color: 'var(--register-text-secondary)', fontSize: '0.875rem' }}>Email</span>
-                                        <p style={{ fontWeight: '600' }}>{formData.email}</p>
-                                    </div>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <span style={{ color: 'var(--register-text-secondary)', fontSize: '0.875rem' }}>Nombre</span>
-                                        <p style={{ fontWeight: '600' }}>{formData.displayName || formData.email.split('@')[0]}</p>
-                                    </div>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <span style={{ color: 'var(--register-text-secondary)', fontSize: '0.875rem' }}>Universidad</span>
-                                        <p style={{ fontWeight: '600' }}>{formData.university || 'No especificada'}</p>
-                                    </div>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <span style={{ color: 'var(--register-text-secondary)', fontSize: '0.875rem' }}>Año de Graduación</span>
-                                        <p style={{ fontWeight: '600' }}>{formData.graduationYear}</p>
-                                    </div>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <span style={{ color: 'var(--register-text-secondary)', fontSize: '0.875rem' }}>Estado</span>
-                                        <p style={{ fontWeight: '600' }}>{formData.currentStatus === 'preclinical' ? 'Pre-Clínico' : 'Clínico'}</p>
-                                    </div>
-                                    <div>
-                                        <span style={{ color: 'var(--register-text-secondary)', fontSize: '0.875rem' }}>Especialidad de Interés</span>
-                                        <p style={{ fontWeight: '600' }}>
-                                            {SPECIALTIES.find(s => s.id === formData.primaryInterest)?.name || 'No seleccionada'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Footer Actions */}
-                                <div className="register-footer-actions">
-                                    <button
-                                        type="button"
-                                        className="back-btn"
-                                        onClick={prevStep}
-                                    >
-                                        <ArrowLeft />
-                                        Atrás
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="continue-btn"
-                                        onClick={handleSubmit}
-                                        disabled={loading}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <span className="spinner"></span>
-                                                Creando cuenta...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Crear Cuenta
-                                                <ArrowRight />
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                    {/* Login link */}
+                    <div className="register-bottom-link">
+                        ¿Ya tienes una cuenta?
+                        <Link to="/login">Iniciar Sesión</Link>
                     </div>
                 </div>
             </main>

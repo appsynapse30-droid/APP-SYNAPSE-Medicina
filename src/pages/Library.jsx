@@ -182,8 +182,9 @@ export default function Library() {
     }
 
     const processUpload = async () => {
+        let hasError = false
         for (const fileData of uploadFiles) {
-            await addDocument({
+            const result = await addDocument({
                 title: fileData.name,
                 type: fileData.type,
                 category: `Documento ${fileData.type}`,
@@ -195,13 +196,19 @@ export default function Library() {
                 image: fileData.preview || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300&h=200&fit=crop',
                 content: null,
                 isNote: false
-            }, fileData.file) // Pasar el archivo original
+            }, fileData.file)
+
+            if (result?.error) {
+                hasError = true
+            }
         }
 
-        setUploadFiles([])
-        setUploadCollection('')
-        setUploadTags([])
-        setShowUploadModal(false)
+        if (!hasError) {
+            setUploadFiles([])
+            setUploadCollection('')
+            setUploadTags([])
+            setShowUploadModal(false)
+        }
     }
 
     const handleCreateNote = () => {
@@ -365,6 +372,26 @@ export default function Library() {
                     </div>
                 )}
 
+                {/* Error Banner */}
+                {libraryError && (
+                    <div className="library-error-banner">
+                        <AlertCircle size={18} />
+                        <span>{libraryError}</span>
+                        <button onClick={() => { }} className="error-dismiss">×</button>
+                    </div>
+                )}
+
+                {/* Upload Progress Indicator */}
+                {uploading && (
+                    <div className="upload-progress-banner">
+                        <Loader2 size={18} className="spinning" />
+                        <span>Subiendo documento... {uploadProgress}%</span>
+                        <div className="upload-progress-bar">
+                            <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
+                        </div>
+                    </div>
+                )}
+
                 <div className="library-header">
                     <div>
                         <h1>Biblioteca</h1>
@@ -381,9 +408,10 @@ export default function Library() {
                         <button
                             className="btn btn-primary"
                             onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
                         >
-                            <Upload size={18} />
-                            Subir Documento
+                            {uploading ? <Loader2 size={18} className="spinning" /> : <Upload size={18} />}
+                            {uploading ? 'Subiendo...' : 'Subir Documento'}
                         </button>
                         <input
                             ref={fileInputRef}
@@ -719,9 +747,13 @@ export default function Library() {
                             <button
                                 className="btn btn-primary"
                                 onClick={processUpload}
-                                disabled={uploadFiles.length === 0}
+                                disabled={uploadFiles.length === 0 || uploading}
                             >
-                                Subir {uploadFiles.length} archivo(s)
+                                {uploading ? (
+                                    <><Loader2 size={16} className="spinning" /> Subiendo...</>
+                                ) : (
+                                    `Subir ${uploadFiles.length} archivo(s)`
+                                )}
                             </button>
                         </div>
                     </div>

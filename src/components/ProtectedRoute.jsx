@@ -10,8 +10,8 @@ import { useAuth } from '../context/AuthContext';
  * Para reactivar, cambiar BYPASS_AUTH a false
  */
 
-// ⚠️ CAMBIAR A false PARA REACTIVAR AUTENTICACIÓN
-const BYPASS_AUTH = true;
+// ✅ Autenticación ACTIVADA para producción
+const BYPASS_AUTH = false;
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();

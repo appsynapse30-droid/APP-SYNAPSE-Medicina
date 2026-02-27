@@ -5,7 +5,6 @@ import {
     Activity,
     Mail,
     ArrowLeft,
-    ArrowRight,
     AlertCircle,
     CheckCircle,
     Send
@@ -47,7 +46,9 @@ function ForgotPassword() {
         return (
             <div className="forgot-page">
                 <div className="forgot-background">
-                    <div className="forgot-background-overlay"></div>
+                    <div className="forgot-bg-gradient"></div>
+                    <div className="forgot-glow-1"></div>
+                    <div className="forgot-glow-2"></div>
                 </div>
 
                 <div className="forgot-card">
@@ -60,14 +61,14 @@ function ForgotPassword() {
                     </div>
 
                     <div className="success-content">
-                        <div className="success-icon">
+                        <div className="success-icon-wrapper">
                             <CheckCircle />
                         </div>
                         <h2>¡Email Enviado!</h2>
                         <p>
                             Hemos enviado un enlace de recuperación a <strong>{email}</strong>.
                             <br /><br />
-                            Por favor, revisa tu bandeja de entrada (y la carpeta de spam) y sigue las instrucciones para restablecer tu contraseña.
+                            Revisa tu bandeja de entrada (y la carpeta de spam) y sigue las instrucciones para restablecer tu contraseña.
                         </p>
                         <Link to="/login" className="back-to-login-btn">
                             <ArrowLeft />
@@ -83,7 +84,9 @@ function ForgotPassword() {
         <div className="forgot-page">
             {/* Background Layer */}
             <div className="forgot-background">
-                <div className="forgot-background-overlay"></div>
+                <div className="forgot-bg-gradient"></div>
+                <div className="forgot-glow-1"></div>
+                <div className="forgot-glow-2"></div>
             </div>
 
             {/* Forgot Password Card */}
@@ -112,14 +115,14 @@ function ForgotPassword() {
                 {/* Form */}
                 <form className="forgot-form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="email">Email Institucional</label>
-                        <div className="input-wrapper">
-                            <span className="input-icon">
+                        <label htmlFor="forgot-email">Email Institucional</label>
+                        <div className="forgot-input-wrapper">
+                            <span className="forgot-input-icon">
                                 <Mail />
                             </span>
                             <input
                                 type="email"
-                                id="email"
+                                id="forgot-email"
                                 name="email"
                                 className="forgot-input"
                                 value={email}
@@ -127,7 +130,7 @@ function ForgotPassword() {
                                     setEmail(e.target.value);
                                     setError('');
                                 }}
-                                placeholder="tu@email.com"
+                                placeholder="tu@universidad.edu"
                                 autoComplete="email"
                                 disabled={loading}
                             />
@@ -141,7 +144,7 @@ function ForgotPassword() {
                     >
                         {loading ? (
                             <>
-                                <span className="spinner"></span>
+                                <span className="forgot-spinner"></span>
                                 Enviando...
                             </>
                         ) : (

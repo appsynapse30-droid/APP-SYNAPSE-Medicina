@@ -1,0 +1,219 @@
+version: "2"
+type: frontend
+tech_stack:
+  - JavaScript
+  - React 18
+  - Vite 5
+  - React Router DOM 6
+  - Supabase JS SDK
+  - Recharts
+  - React PDF
+  - Lucide React Icons
+routes:
+  - path: /login
+    file: src/pages/Login.jsx
+    auth_required: false
+    description: User login page with email and password
+  - path: /register
+    file: src/pages/Register.jsx
+    auth_required: false
+    description: User registration page with multi-step form
+  - path: /forgot-password
+    file: src/pages/ForgotPassword.jsx
+    auth_required: false
+    description: Password recovery page
+  - path: /
+    file: src/pages/Dashboard.jsx
+    auth_required: true
+    description: Main dashboard with study stats, upcoming exams, and quick actions
+  - path: /dashboard
+    file: src/pages/Dashboard.jsx
+    auth_required: true
+    description: Dashboard alias route
+  - path: /library
+    file: src/pages/Library.jsx
+    auth_required: true
+    description: Document library with file upload, collections, tags, search and filtering
+  - path: /library/document/:id
+    file: src/pages/DocumentReader.jsx
+    auth_required: true
+    description: PDF document reader with viewer
+  - path: /study
+    file: src/pages/StudyAI.jsx
+    auth_required: true
+    description: AI-powered study page with flashcard decks
+  - path: /study/session
+    file: src/pages/StudySession.jsx
+    auth_required: true
+    description: Active flashcard study session with FSRS algorithm
+  - path: /simulations
+    file: src/pages/ClinicalCases.jsx
+    auth_required: true
+    description: Clinical case simulations
+  - path: /analytics
+    file: src/pages/Analytics.jsx
+    auth_required: true
+    description: Study analytics and progress charts
+  - path: /calendar
+    file: src/pages/Calendar.jsx
+    auth_required: true
+    description: Study calendar and exam scheduling
+  - path: /settings
+    file: src/pages/Settings.jsx
+    auth_required: true
+    description: User settings for profile, notifications, appearance, privacy
+features:
+  - name: User Login
+    description: Login with email and password via Supabase Auth
+    files:
+      - src/pages/Login.jsx
+      - src/context/AuthContext.jsx
+      - src/config/supabase.js
+    entry_route: /login
+    user_interactions:
+      - Fill email input field
+      - Fill password input field
+      - Click Login button to submit
+      - See error message on invalid credentials
+      - Click "Forgot password" link to navigate to password recovery
+      - Click "Register" link to navigate to registration
+    api_calls:
+      - method: POST
+        endpoint: supabase.auth.signInWithPassword
+    auth_required: false
+  - name: User Registration
+    description: Multi-step registration form with personal data, academic info, and preferences
+    files:
+      - src/pages/Register.jsx
+      - src/context/AuthContext.jsx
+    entry_route: /register
+    user_interactions:
+      - Fill name, email, password fields in step 1
+      - Select university, career, year in step 2
+      - Select study preferences in step 3
+      - Click next/back to navigate between steps
+      - Submit registration form
+    api_calls:
+      - method: POST
+        endpoint: supabase.auth.signUp
+    auth_required: false
+  - name: Password Recovery
+    description: Send password reset email via Supabase Auth
+    files:
+      - src/pages/ForgotPassword.jsx
+      - src/context/AuthContext.jsx
+    entry_route: /forgot-password
+    user_interactions:
+      - Fill email input
+      - Click send recovery email button
+      - See success/error message
+    api_calls:
+      - method: POST
+        endpoint: supabase.auth.resetPasswordForEmail
+    auth_required: false
+  - name: Document Library
+    description: Upload, browse, search, filter, and manage PDF documents stored in Supabase Storage
+    files:
+      - src/pages/Library.jsx
+      - src/context/LibraryContext.jsx
+      - src/config/supabase.js
+    entry_route: /library
+    user_interactions:
+      - Click upload button to open file picker
+      - Drag and drop files to upload area
+      - Browse documents in grid or list view
+      - Search documents by name or tags
+      - Filter by collection or type
+      - Create and manage collections
+      - Add/remove tags on documents
+      - Delete documents
+      - Click document to open reader
+    api_calls:
+      - method: POST
+        endpoint: supabase.storage.from('documents').upload
+      - method: POST
+        endpoint: supabase.from('documents').insert
+      - method: GET
+        endpoint: supabase.from('documents').select
+      - method: DELETE
+        endpoint: supabase.from('documents').delete
+      - method: DELETE
+        endpoint: supabase.storage.from('documents').remove
+    auth_required: true
+  - name: Document Reader
+    description: View PDF documents using react-pdf inside the app
+    files:
+      - src/pages/DocumentReader.jsx
+    entry_route: /library/document/:id
+    user_interactions:
+      - View PDF pages
+      - Navigate between pages
+      - Zoom in/out
+      - Download document
+    api_calls:
+      - method: GET
+        endpoint: supabase.storage.from('documents').createSignedUrl
+    auth_required: true
+  - name: Dashboard
+    description: Overview page with study statistics, upcoming exams, recent activity, and quick action cards
+    files:
+      - src/pages/Dashboard.jsx
+      - src/context/StudyStatsContext.jsx
+    entry_route: /
+    user_interactions:
+      - View study streak and statistics
+      - See upcoming exams
+      - Click quick action cards to navigate to features
+      - View recent study activity
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('study_sessions').select
+      - method: GET
+        endpoint: supabase.from('exams').select
+    auth_required: true
+  - name: Study Session with FSRS
+    description: Flashcard study sessions using the FSRS spaced repetition algorithm
+    files:
+      - src/pages/StudySession.jsx
+      - src/pages/StudyAI.jsx
+      - src/context/FSRSContext.jsx
+    entry_route: /study
+    user_interactions:
+      - Select a flashcard deck
+      - Start study session
+      - Flip cards to see answers
+      - Rate card difficulty (Again, Hard, Good, Easy)
+      - See session progress and completion stats
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('flashcards').select
+      - method: PATCH
+        endpoint: supabase.from('flashcards').update
+      - method: POST
+        endpoint: supabase.from('review_logs').insert
+    auth_required: true
+  - name: Settings
+    description: User preferences for profile, notifications, appearance, language, and privacy
+    files:
+      - src/pages/Settings.jsx
+      - src/context/SettingsContext.jsx
+    entry_route: /settings
+    user_interactions:
+      - Edit profile information
+      - Toggle notification preferences
+      - Change theme and appearance
+      - Select language
+      - Export/import data
+      - Clear all data
+    api_calls: []
+    auth_required: true
+known_limitations:
+  - issue: Document upload may silently fail if Supabase Storage bucket 'documents' is not properly configured or RLS policies block uploads
+    location: src/context/LibraryContext.jsx
+    impact: Users cannot upload documents - the upload appears to do nothing
+  - issue: Clinical Cases page has extensive CSS but limited interactive functionality
+    location: src/pages/ClinicalCases.jsx
+    impact: Feature may appear incomplete to users
+  - issue: Calendar and Analytics have large component files that may have performance issues
+    location: src/pages/Calendar.jsx, src/pages/Analytics.jsx
+    impact: Potential slow rendering on lower-end devices
