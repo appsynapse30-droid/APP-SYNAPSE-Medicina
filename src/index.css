@@ -637,7 +637,18 @@ textarea:focus {
   grid-template-columns: repeat(4, 1fr);
 }
 
-/* Responsive */
+/* =====================================
+   RESPONSIVE — MOBILE FIRST APPROACH
+   Desktop: sidebar layout (>768px)
+   Mobile: bottom nav layout (<=768px)
+   ===================================== */
+
+/* Global mobile token */
+:root {
+  --bottom-nav-height: 64px;
+}
+
+/* ---- Tablet (<=1024px) ---- */
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
@@ -648,15 +659,54 @@ textarea:focus {
   }
 }
 
+/* ---- Mobile (<=768px) ---- */
 @media (max-width: 768px) {
 
+  /* Layout: no sidebar margin, extra bottom padding for bottom nav */
+  .main-content {
+    margin-left: 0;
+  }
+
+  .page-content {
+    padding: var(--space-md);
+    padding-bottom: calc(var(--bottom-nav-height) + var(--space-md) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Grid collapses to single column on mobile */
   .grid-cols-2,
   .grid-cols-3,
   .grid-cols-4 {
     grid-template-columns: 1fr;
   }
 
+  /* Larger touch targets globally */
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Improve button touch area */
+  .btn {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Cards: reduce hover lift (no mouse hover on mobile) */
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* ---- Small mobile (<=480px) ---- */
+@media (max-width: 480px) {
   .page-content {
-    padding: var(--space-md);
+    padding: var(--space-sm);
+    padding-bottom: calc(var(--bottom-nav-height) + var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Reduce spacing tokens slightly on very small screens */
+  :root {
+    --space-lg: 20px;
+    --space-xl: 28px;
   }
 }

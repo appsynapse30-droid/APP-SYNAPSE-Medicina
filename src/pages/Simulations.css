@@ -564,11 +564,78 @@
 }
 
 @media (max-width: 768px) {
+
+    /* Layout: single column, only timeline visible */
     .sim-content {
         grid-template-columns: 1fr;
     }
 
+    /* Hide sidebars on mobile */
     .patient-sidebar {
         display: none;
+    }
+
+    .analysis-panel {
+        display: none;
+    }
+
+    /* Header: compact */
+    .sim-header {
+        padding: var(--space-sm) var(--space-md);
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+
+    .case-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .case-details h1 {
+        font-size: var(--font-size-base);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .case-meta {
+        display: none;
+    }
+
+    /* Controls: only icons on mobile */
+    .control-btn span:not(.phase-badge):not(.tag) {
+        display: none;
+    }
+
+    .control-btn {
+        padding: var(--space-sm);
+        min-width: 40px;
+        min-height: 40px;
+        justify-content: center;
+    }
+
+    /* Action pills: full width */
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-pill {
+        width: 100%;
+        text-align: center;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Input section: bigger touch targets */
+    .input-section input {
+        min-height: 48px;
+        font-size: var(--font-size-base);
+    }
+
+    .input-section .send-btn {
+        width: 48px;
+        height: 48px;
     }
 }

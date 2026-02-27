@@ -445,10 +445,18 @@
 }
 
 @media (max-width: 768px) {
+
+    /* Stats row: 2 columns on mobile */
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Mini stats: 2 columns */
     .mini-stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    /* Header stacks */
     .analytics-header {
         flex-direction: column;
         gap: var(--space-md);
@@ -456,5 +464,27 @@
 
     .analytics-header button {
         width: 100%;
+        min-height: 44px;
+    }
+
+    /* Chart cards: reduce padding */
+    .chart-card {
+        padding: var(--space-md);
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Stats row: full single column on very small screens */
+    .stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-header h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    .stat-number {
+        font-size: var(--font-size-2xl);
     }
 }

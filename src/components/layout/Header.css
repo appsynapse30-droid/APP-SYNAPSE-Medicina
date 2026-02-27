@@ -108,3 +108,101 @@
         display: none;
     }
 }
+
+/* ===== MOBILE HEADER STYLES ===== */
+.header-mobile {
+    justify-content: space-between;
+    padding: 0 var(--space-md);
+}
+
+.header-mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.header-mobile-brand {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    background: var(--gradient-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.header-mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.header-mobile-icon-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.header-mobile-icon-btn:active {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Mobile search open state - takes full header width */
+.header-mobile-search-open {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex: 1;
+    position: relative;
+}
+
+.header-mobile-search-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.header-mobile-search-input {
+    flex: 1;
+    height: 38px;
+    padding: 0 40px 0 34px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--accent-blue);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+    outline: none;
+}
+
+.header-mobile-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.header-mobile-search-close {
+    position: absolute;
+    right: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}

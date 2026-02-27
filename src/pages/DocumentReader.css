@@ -687,13 +687,51 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+
+    /* Document reader: full width (no AI panel) */
+    .document-reader {
+        grid-template-columns: 1fr;
+    }
+
+    /* Hide AI panel on mobile */
+    .reader-ai-panel {
+        display: none;
+    }
+
+    /* Toolbar: simplified */
     .toolbar-center {
         display: none;
     }
 
     .reader-toolbar {
         justify-content: space-between;
+        padding: var(--space-sm);
+    }
+
+    /* Back button: icon only on small screens */
+    .back-btn span {
+        display: none;
+    }
+
+    /* Toolbar actions: bigger touch targets */
+    .toolbar-actions button {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* Note viewer: reduce padding */
+    .note-viewer {
+        padding: var(--space-md);
+    }
+
+    .note-paper {
+        padding: var(--space-lg);
+    }
+
+    /* Image viewer: full screen */
+    .image-viewer {
+        padding: var(--space-md);
     }
 }
 

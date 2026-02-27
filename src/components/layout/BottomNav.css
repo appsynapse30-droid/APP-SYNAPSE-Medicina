@@ -1,0 +1,194 @@
+/* ===== BOTTOM NAVIGATION — MOBILE ONLY ===== */
+/* Visible only at <= 768px via Layout.jsx conditional rendering */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: var(--bottom-nav-height, 64px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(13, 17, 23, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(48, 54, 61, 0.6);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    padding: 6px 0;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+}
+
+.bottom-nav-item:active {
+    transform: scale(0.9);
+}
+
+.bottom-nav-item.active {
+    color: var(--accent-blue);
+}
+
+/* Active indicator dot */
+.bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 4px;
+    height: 4px;
+    background: var(--accent-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-blue);
+}
+
+.bottom-nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+}
+
+/* ===== "MORE" OVERLAY ===== */
+.bottom-nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: overlayFadeIn 0.2s ease;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ===== "MORE" MENU ===== */
+.bottom-nav-more-menu {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height, 64px) + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+    z-index: 999;
+    background: rgba(22, 27, 34, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(48, 54, 61, 0.6);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    animation: moreMenuSlideUp 0.25s ease;
+}
+
+@keyframes moreMenuSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.more-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.more-menu-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.more-menu-close:active {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.more-menu-items {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+}
+
+.more-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    font-family: inherit;
+    background: none;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.more-menu-item:active {
+    background: var(--bg-tertiary);
+}
+
+.more-menu-item.active {
+    color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.08);
+}
+
+.more-menu-item.logout {
+    color: #ef4444;
+    border-top: 1px solid var(--border-primary);
+    margin-top: 4px;
+    padding-top: 14px;
+}
+
+.more-menu-item.logout:active {
+    background: rgba(239, 68, 68, 0.1);
+}

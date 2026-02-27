@@ -1,17 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/synapse-icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Synapse - Plataforma de estudio de nueva generación para estudiantes de medicina" />
-    <title>Synapse | AI Study Platform</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/synapse-icon.svg" />
+
+  <!-- Viewport: essential for responsive design -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- SEO & Description -->
+  <meta name="description" content="Synapse - Plataforma de estudio de nueva generación para estudiantes de medicina" />
+  <title>Synapse | AI Study Platform</title>
+
+  <!-- PWA: Web App Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- PWA: Theme color for browser chrome (Android + iOS) -->
+  <meta name="theme-color" content="#0d1117" />
+
+  <!-- PWA: iOS-specific meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Synapse" />
+  <link rel="apple-touch-icon" href="/synapse-icon.svg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

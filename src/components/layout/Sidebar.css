@@ -184,3 +184,10 @@
     color: #ffffff;
     letter-spacing: 0.5px;
 }
+
+/* Mobile: Sidebar is fully hidden, replaced by BottomNav */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+}

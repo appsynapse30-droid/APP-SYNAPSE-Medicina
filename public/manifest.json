@@ -1,0 +1,50 @@
+{
+    "name": "Synapse Medicina",
+    "short_name": "Synapse",
+    "description": "Plataforma de estudio de nueva generación para estudiantes de medicina",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0d1117",
+    "theme_color": "#0d1117",
+    "categories": [
+        "education",
+        "medical"
+    ],
+    "lang": "es",
+    "icons": [
+        {
+            "src": "/synapse-icon.svg",
+            "type": "image/svg+xml",
+            "sizes": "any",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Biblioteca",
+            "short_name": "Biblioteca",
+            "description": "Ver documentos de estudio",
+            "url": "/library",
+            "icons": [
+                {
+                    "src": "/synapse-icon.svg",
+                    "sizes": "any"
+                }
+            ]
+        },
+        {
+            "name": "Estudiar",
+            "short_name": "Flashcards",
+            "description": "Iniciar sesión de flashcards",
+            "url": "/study/session",
+            "icons": [
+                {
+                    "src": "/synapse-icon.svg",
+                    "sizes": "any"
+                }
+            ]
+        }
+    ]
+}

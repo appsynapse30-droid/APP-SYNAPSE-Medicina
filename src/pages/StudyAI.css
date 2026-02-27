@@ -566,11 +566,68 @@
 }
 
 @media (max-width: 1024px) {
+
+    /* Stack the layout vertically on tablet */
     .study-ai {
         grid-template-columns: 1fr;
+        height: auto;
+        margin: 0;
     }
 
+    /* Document viewer takes less space */
+    .document-viewer {
+        max-height: 40vh;
+    }
+
+    /* AI panel is visible but compact */
     .ai-panel {
+        display: flex;
+        height: 60vh;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* On mobile: show only AI chat, hide document viewer */
+    .study-ai {
+        grid-template-columns: 1fr;
+        height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
+        margin: calc(var(--space-md) * -1);
+        margin-top: 0;
+    }
+
+    /* Hide the document viewer on mobile - AI chat takes full screen */
+    .document-viewer {
         display: none;
+    }
+
+    /* AI panel takes full remaining height */
+    .ai-panel {
+        display: flex;
+        height: 100%;
+    }
+
+    /* Chat input: bigger on mobile */
+    .chat-input-wrapper input {
+        font-size: var(--font-size-base);
+        min-height: 44px;
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .send-btn {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+    }
+
+    /* Message bubbles: wider on mobile */
+    .message-bubble {
+        max-width: 92%;
+    }
+
+    /* Action cards: bigger touch targets */
+    .action-card {
+        padding: var(--space-md);
+        min-height: 56px;
     }
 }

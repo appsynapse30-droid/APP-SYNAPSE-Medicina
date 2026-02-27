@@ -2336,12 +2336,15 @@
     color: #f85149;
 }
 
-/* Responsive */
+/* Responsive — Mobile */
 @media (max-width: 768px) {
+
+    /* Stats: 2 columns */
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    /* Cases grid: 1 column */
     .cases-grid {
         grid-template-columns: 1fr;
     }
@@ -2350,14 +2353,25 @@
         grid-template-columns: 1fr;
     }
 
+    /* Tabs: horizontal scroll */
     .detail-tabs {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
     }
 
+    .detail-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* Exam grid: single column */
     .exam-grid {
         grid-template-columns: 1fr;
     }
 
+    /* Form: hide nav, stack rows */
     .form-nav {
         display: none;
     }
@@ -2366,11 +2380,37 @@
         flex-direction: column;
     }
 
+    /* Vitals: 2-col grid */
     .vitals-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    /* Rating buttons: stack vertically with large touch targets */
     .rating-buttons {
         flex-direction: column;
+    }
+
+    .rating-btn {
+        min-height: 60px;
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    /* Study navigation: bigger buttons */
+    .study-navigation .btn-nav {
+        min-height: 52px;
+        padding: 0.75rem 1.25rem;
+    }
+
+    /* Reveal headers: bigger touch targets */
+    .reveal-header {
+        min-height: 56px;
+        padding: 1rem 1.25rem;
+    }
+
+    /* Study content: reduce padding */
+    .study-content {
+        padding: 1rem;
     }
 }

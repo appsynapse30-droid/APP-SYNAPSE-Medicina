@@ -603,6 +603,7 @@
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -640,6 +641,7 @@
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -1052,21 +1054,73 @@
 }
 
 @media (max-width: 768px) {
+
+    /* Header stacks vertically */
     .library-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: var(--space-md);
     }
 
+    /* Upload button full width */
+    .library-header .btn {
+        width: 100%;
+        justify-content: center;
+        min-height: 48px;
+    }
+
+    /* Search bar full width */
     .search-section {
         flex-wrap: wrap;
+        gap: var(--space-sm);
     }
 
     .search-bar {
         width: 100%;
+        min-height: 44px;
     }
 
+    /* Filter tabs scroll horizontally */
+    .filter-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+        gap: var(--space-xs);
+    }
+
+    .filter-tab {
+        flex-shrink: 0;
+        min-height: 36px;
+        white-space: nowrap;
+    }
+
+    /* Documents grid: single column */
     .documents-grid.grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Document cards: bigger touch targets */
+    .document-card {
+        padding: var(--space-md);
+    }
+
+    .document-card .btn {
+        min-height: 44px;
+        width: 100%;
+        justify-content: center;
+        margin-top: var(--space-sm);
+    }
+
+    /* Collections sidebar on mobile: shown above content as compact list */
+    .library-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .library-header h1 {
+        font-size: var(--font-size-xl);
     }
 }
 

@@ -661,19 +661,56 @@ input:checked+.toggle-slider:before {
 
 /* Responsive */
 @media (max-width: 768px) {
+
+    /* Page padding and bottom spacing for bottom nav */
     .settings {
         padding: 1rem;
-        padding-bottom: 8rem;
+        padding-bottom: calc(var(--bottom-nav-height, 64px) + 6rem);
     }
 
+    /* Header: compact */
+    .settings-header h1 {
+        font-size: 1.75rem;
+    }
+
+    /* Cards: single column, touch-target height */
     .settings-grid {
         grid-template-columns: 1fr;
     }
 
+    .setting-card {
+        min-height: 72px;
+        padding: 1rem 1.25rem;
+    }
+
+    /* Suppress hover lift on mobile */
+    .setting-card:hover {
+        transform: none;
+    }
+
+    /* Avatar section: stack vertically */
+    .avatar-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    /* Form inputs: bigger on mobile */
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="number"],
+    .form-group input[type="time"],
+    .form-group select,
+    .form-group textarea {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    /* Unsaved changes bar: above bottom nav */
     .unsaved-changes-bar {
         width: 90%;
         min-width: auto;
-        bottom: 1.5rem;
+        bottom: calc(var(--bottom-nav-height, 64px) + 1rem);
         flex-direction: column;
         gap: 1rem;
         padding: 1rem;
@@ -683,5 +720,11 @@ input:checked+.toggle-slider:before {
     .unsaved-actions {
         width: 100%;
         justify-content: flex-end;
+    }
+
+    /* Save notification: above bottom nav */
+    .save-notification {
+        bottom: calc(var(--bottom-nav-height, 64px) + 1rem);
+        right: 1rem;
     }
 }
