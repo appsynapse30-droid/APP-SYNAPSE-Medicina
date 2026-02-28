@@ -31,8 +31,21 @@ const initialCollections = [
 ]
 
 // Constants
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
-const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp']
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
+const ALLOWED_TYPES = [
+    'application/pdf',
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+    'text/csv',
+    'application/rtf',
+    'application/octet-stream' // Fallback genérico para archivos no reconocidos
+]
 
 export function LibraryProvider({ children }) {
     const { user, isAuthenticated } = useAuth()
@@ -83,6 +96,7 @@ export function LibraryProvider({ children }) {
                 id: doc.id,
                 title: doc.name,
                 type: getTypeFromMime(doc.file_type),
+                mimeType: doc.file_type || 'application/octet-stream',
                 category: doc.subject || 'Documento',
                 summary: '',
                 tags: doc.tags || [],
@@ -123,15 +137,28 @@ export function LibraryProvider({ children }) {
         if (mimeType.includes('image')) return 'IMG'
         if (mimeType.includes('word') || mimeType.includes('document')) return 'DOC'
         if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'PPT'
+        if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'XLS'
+        if (mimeType.includes('text/plain') || mimeType.includes('text/csv')) return 'TXT'
         return 'ARCHIVO'
     }
 
     const validateFile = (file) => {
         if (file.size > MAX_FILE_SIZE) {
-            return { valid: false, error: `El archivo "${file.name}" excede el límite de 50MB` }
+            return { valid: false, error: `El archivo "${file.name}" excede el límite de 100MB` }
         }
-        if (!ALLOWED_TYPES.includes(file.type)) {
-            return { valid: false, error: `Tipo de archivo no soportado: ${file.type}` }
+        // Permitir cualquier archivo si tiene un tipo MIME, o si es un tipo reconocido
+        const fileType = file.type || 'application/octet-stream'
+        if (!ALLOWED_TYPES.includes(fileType) && fileType !== 'application/octet-stream') {
+            // Verificar también por extensión como fallback
+            const ext = file.name.split('.').pop().toLowerCase()
+            const allowedExtensions = [
+                'pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
+                'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+                'txt', 'csv', 'rtf'
+            ]
+            if (!allowedExtensions.includes(ext)) {
+                return { valid: false, error: `Tipo de archivo no soportado: ${file.name}` }
+            }
         }
         return { valid: true, error: null }
     }
@@ -193,6 +220,7 @@ export function LibraryProvider({ children }) {
                 id: data.id,
                 title: data.name,
                 type: getTypeFromMime(data.file_type),
+                mimeType: data.file_type || 'application/octet-stream',
                 category: data.subject || 'Documento',
                 summary: docData.summary || '',
                 tags: data.tags || [],
@@ -293,8 +321,25 @@ export function LibraryProvider({ children }) {
         const doc = documents.find(d => d.id === id)
         if (!doc?.filePath) return { url: null, error: 'No file path' }
 
-        const { url, error } = await supabaseHelpers.storage.getSignedUrl(doc.filePath)
+        const { url, error } = await supabaseHelpers.storage.getSignedUrl(doc.filePath, 7200)
         return { url, error }
+    }
+
+    // Get a viewable URL for a document (signed URL with long TTL for viewing)
+    const getDocumentViewUrl = async (docId) => {
+        const doc = documents.find(d => String(d.id) === String(docId))
+        if (!doc) return { url: null, error: 'Documento no encontrado' }
+        if (doc.isSample) return { url: doc.image || null, error: null }
+        if (!doc.filePath) return { url: null, error: 'Sin archivo asociado' }
+
+        try {
+            const { url, error } = await supabaseHelpers.storage.getSignedUrl(doc.filePath, 7200)
+            if (error) throw error
+            return { url, error: null }
+        } catch (err) {
+            console.error('Error getting view URL:', err)
+            return { url: null, error: err.message || 'Error al obtener URL del documento' }
+        }
     }
 
     // Download a document
@@ -476,6 +521,7 @@ export function LibraryProvider({ children }) {
         deleteDocument,
         moveToCollection,
         getDocumentUrl,
+        getDocumentViewUrl,
         downloadDocument,
         // Collection operations
         addCollection,

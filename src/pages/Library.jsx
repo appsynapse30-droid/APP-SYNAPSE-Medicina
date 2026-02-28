@@ -175,9 +175,11 @@ export default function Library() {
     const getFileType = (filename) => {
         const ext = filename.split('.').pop().toLowerCase()
         if (['pdf'].includes(ext)) return 'PDF'
-        if (['doc', 'docx'].includes(ext)) return 'DOC'
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'IMG'
+        if (['doc', 'docx', 'rtf'].includes(ext)) return 'DOC'
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'IMG'
         if (['ppt', 'pptx'].includes(ext)) return 'PPT'
+        if (['xls', 'xlsx', 'csv'].includes(ext)) return 'XLS'
+        if (['txt'].includes(ext)) return 'TXT'
         return 'ARCHIVO'
     }
 
@@ -417,7 +419,7 @@ export default function Library() {
                             ref={fileInputRef}
                             type="file"
                             multiple
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.ppt,.pptx"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp,.svg,.ppt,.pptx,.xls,.xlsx,.txt,.csv,.rtf"
                             style={{ display: 'none' }}
                             onChange={(e) => handleFiles(e.target.files)}
                         />

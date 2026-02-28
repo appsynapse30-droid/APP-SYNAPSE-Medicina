@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft,
-    List,
     Search,
     Highlighter,
     Download,
@@ -14,13 +13,15 @@ import {
     Share2,
     MoreHorizontal,
     Bookmark,
-    MessageSquare,
     BookOpen,
     StickyNote,
     Image as ImageIcon,
     AlertCircle,
     RefreshCw,
-    Trash2
+    Trash2,
+    Loader2,
+    ExternalLink,
+    File
 } from 'lucide-react'
 import { useLibrary } from '../context/LibraryContext'
 import PDFViewer from '../components/PDFViewer'
@@ -29,11 +30,13 @@ import './DocumentReader.css'
 export default function DocumentReader() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { documents, deleteDocument } = useLibrary()
-
+    const { documents, deleteDocument, getDocumentViewUrl, downloadDocument } = useLibrary()
 
     const [document, setDocument] = useState(null)
     const [documentNotFound, setDocumentNotFound] = useState(false)
+    const [fileUrl, setFileUrl] = useState(null)
+    const [fileLoading, setFileLoading] = useState(false)
+    const [fileError, setFileError] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [messages, setMessages] = useState([])
     const [inputValue, setInputValue] = useState('')
@@ -42,20 +45,19 @@ export default function DocumentReader() {
     const [showAIPanel, setShowAIPanel] = useState(true)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
 
+    // Find the document from context
     useEffect(() => {
-        // Buscar documento por ID - comparar como string para evitar problemas con números grandes
         const doc = documents.find(d => String(d.id) === String(id))
 
         if (doc) {
             setDocument(doc)
             setDocumentNotFound(false)
 
-            // Mensaje inicial de la IA
             setMessages([
                 {
                     id: 1,
                     type: 'ai',
-                    content: `He cargado "${doc.title}". ${doc.type === 'PDF' && doc.fileData ? 'Puedes navegar por las páginas usando las flechas o la barra de herramientas.' : ''} ¿Te gustaría que te explique algún concepto en particular o que genere un resumen del contenido?`,
+                    content: `He cargado "${doc.title}". ${doc.type === 'PDF' ? 'Puedes navegar por las páginas usando las flechas o la barra de herramientas.' : ''} ¿Te gustaría que te explique algún concepto en particular o que genere un resumen del contenido?`,
                     time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
                 }
             ])
@@ -63,6 +65,31 @@ export default function DocumentReader() {
             setDocumentNotFound(true)
         }
     }, [id, documents])
+
+    // Fetch the signed URL from Supabase Storage when document is found
+    const fetchFileUrl = useCallback(async () => {
+        if (!document || document.isSample || !document.filePath) return
+
+        setFileLoading(true)
+        setFileError(null)
+
+        try {
+            const { url, error } = await getDocumentViewUrl(document.id)
+            if (error) throw new Error(error)
+            setFileUrl(url)
+        } catch (err) {
+            console.error('Error fetching file URL:', err)
+            setFileError(err.message || 'Error al cargar el archivo')
+        } finally {
+            setFileLoading(false)
+        }
+    }, [document, getDocumentViewUrl])
+
+    useEffect(() => {
+        if (document && document.filePath) {
+            fetchFileUrl()
+        }
+    }, [document?.id]) // Only refetch when document ID changes
 
     const handleSend = () => {
         if (!inputValue.trim()) return
@@ -76,7 +103,6 @@ export default function DocumentReader() {
         setMessages(prev => [...prev, userMessage])
         setInputValue('')
 
-        // Simular respuesta de IA
         setTimeout(() => {
             const aiMessage = {
                 id: Date.now() + 1,
@@ -92,20 +118,38 @@ export default function DocumentReader() {
         setCurrentPage(page)
     }
 
-    const handleDownload = () => {
-        if (document?.fileData) {
-            const link = window.document.createElement('a')
-            link.href = document.fileData
-            link.download = document.title
-            link.click()
+    const handleDownload = async () => {
+        if (document) {
+            if (fileUrl) {
+                // Descargar usando la URL firmada
+                const link = window.document.createElement('a')
+                link.href = fileUrl
+                link.download = document.title
+                link.target = '_blank'
+                link.click()
+            } else if (document.filePath) {
+                // Fallback: usar la función de descarga del contexto
+                await downloadDocument(document.id)
+            }
         }
     }
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (document) {
-            deleteDocument(document.id)
+            await deleteDocument(document.id)
             navigate('/library')
         }
+    }
+
+    // Determinar el tipo de contenido a renderizar
+    const getContentType = () => {
+        if (!document) return 'loading'
+        if (document.isNote || document.type === 'NOTA') return 'note'
+        if (document.type === 'PDF') return 'pdf'
+        if (document.type === 'IMG') return 'image'
+        if (document.type === 'DOC' || document.type === 'PPT' || document.type === 'XLS') return 'office'
+        if (document.type === 'TXT') return 'text'
+        return 'generic'
     }
 
     // Documento no encontrado
@@ -132,10 +176,7 @@ export default function DocumentReader() {
         )
     }
 
-    // Determinar el tipo de contenido a renderizar
-    const isPDF = document.type === 'PDF' && document.fileData
-    const isNote = document.isNote || document.type === 'NOTA'
-    const isImage = document.type === 'IMG'
+    const contentType = getContentType()
 
     return (
         <div className={`document-reader ${!showAIPanel ? 'full-width' : ''}`}>
@@ -150,10 +191,12 @@ export default function DocumentReader() {
 
                     <div className="toolbar-center">
                         <div className="doc-info">
-                            {isPDF && <FileText size={16} />}
-                            {isNote && <StickyNote size={16} />}
-                            {isImage && <ImageIcon size={16} />}
+                            {contentType === 'pdf' && <FileText size={16} />}
+                            {contentType === 'note' && <StickyNote size={16} />}
+                            {contentType === 'image' && <ImageIcon size={16} />}
+                            {(contentType === 'office' || contentType === 'text' || contentType === 'generic') && <File size={16} />}
                             <span className="doc-title-bar">{document.title}</span>
+                            <span className="doc-type-indicator">{document.type}</span>
                         </div>
                     </div>
 
@@ -167,7 +210,7 @@ export default function DocumentReader() {
                         >
                             <Bookmark size={18} />
                         </button>
-                        {document.fileData && (
+                        {(fileUrl || document.filePath) && (
                             <button title="Descargar" onClick={handleDownload}>
                                 <Download size={18} />
                             </button>
@@ -191,10 +234,31 @@ export default function DocumentReader() {
 
                 {/* Document Content */}
                 <div className="reader-content">
+                    {/* Loading state for file URL */}
+                    {fileLoading && (
+                        <div className="reader-file-loading">
+                            <Loader2 size={40} className="spinning" />
+                            <p>Cargando archivo desde el servidor...</p>
+                        </div>
+                    )}
+
+                    {/* Error state */}
+                    {fileError && !fileLoading && (
+                        <div className="reader-file-error">
+                            <AlertCircle size={48} />
+                            <h3>Error al cargar el archivo</h3>
+                            <p>{fileError}</p>
+                            <button className="btn btn-primary" onClick={fetchFileUrl}>
+                                <RefreshCw size={16} />
+                                Reintentar
+                            </button>
+                        </div>
+                    )}
+
                     {/* PDF Viewer */}
-                    {isPDF && (
+                    {contentType === 'pdf' && fileUrl && !fileLoading && !fileError && (
                         <PDFViewer
-                            fileData={document.fileData}
+                            fileUrl={fileUrl}
                             fileName={document.title}
                             onPageChange={handlePageChange}
                             initialPage={1}
@@ -202,7 +266,7 @@ export default function DocumentReader() {
                     )}
 
                     {/* Note Content */}
-                    {isNote && (
+                    {contentType === 'note' && (
                         <div className="note-viewer">
                             <div className="note-paper">
                                 <div className="note-header">
@@ -231,12 +295,16 @@ export default function DocumentReader() {
                     )}
 
                     {/* Image Viewer */}
-                    {isImage && (
+                    {contentType === 'image' && !fileLoading && !fileError && (
                         <div className="image-viewer">
                             <img
-                                src={document.image || document.fileData}
+                                src={fileUrl || document.image}
                                 alt={document.title}
                                 className="image-content"
+                                onError={(e) => {
+                                    e.target.style.display = 'none'
+                                    setFileError('No se pudo cargar la imagen')
+                                }}
                             />
                             <div className="image-caption">
                                 <h3>{document.title}</h3>
@@ -245,13 +313,53 @@ export default function DocumentReader() {
                         </div>
                     )}
 
-                    {/* Fallback for documents without file data */}
-                    {!isPDF && !isNote && !isImage && (
+                    {/* Office Documents (DOC, PPT, XLS) — Google Docs Viewer + Download */}
+                    {contentType === 'office' && fileUrl && !fileLoading && !fileError && (
+                        <div className="office-viewer">
+                            <div className="office-preview-container">
+                                <iframe
+                                    src={`https://docs.google.com/gview?url=${encodeURIComponent(fileUrl)}&embedded=true`}
+                                    title={document.title}
+                                    className="office-iframe"
+                                    frameBorder="0"
+                                />
+                            </div>
+                            <div className="office-fallback">
+                                <p>¿El documento no se muestra correctamente?</p>
+                                <div className="office-fallback-actions">
+                                    <a
+                                        href={fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-secondary"
+                                    >
+                                        <ExternalLink size={16} />
+                                        Abrir en nueva pestaña
+                                    </a>
+                                    <button className="btn btn-primary" onClick={handleDownload}>
+                                        <Download size={16} />
+                                        Descargar archivo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Text file viewer */}
+                    {contentType === 'text' && fileUrl && !fileLoading && !fileError && (
+                        <div className="text-viewer">
+                            <TextFileViewer url={fileUrl} />
+                        </div>
+                    )}
+
+                    {/* Generic file — download prompt */}
+                    {contentType === 'generic' && !fileLoading && (
                         <div className="document-placeholder">
                             <div className="placeholder-content">
                                 <div className="placeholder-icon">📄</div>
                                 <h2>{document.title}</h2>
                                 <p className="placeholder-category">{document.category}</p>
+                                <p className="placeholder-type">Tipo: {document.type} ({document.size})</p>
 
                                 {document.summary && (
                                     <div className="placeholder-summary">
@@ -263,12 +371,30 @@ export default function DocumentReader() {
                                     </div>
                                 )}
 
-                                <div className="placeholder-info">
-                                    <p>
-                                        Este documento no tiene contenido visualizable.
-                                        Sube el archivo PDF original para ver su contenido completo.
-                                    </p>
-                                </div>
+                                {fileUrl ? (
+                                    <div className="placeholder-actions">
+                                        <a
+                                            href={fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-secondary"
+                                        >
+                                            <ExternalLink size={16} />
+                                            Abrir en nueva pestaña
+                                        </a>
+                                        <button className="btn btn-primary" onClick={handleDownload}>
+                                            <Download size={16} />
+                                            Descargar archivo
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="placeholder-info">
+                                        <p>
+                                            Este documento no tiene contenido visualizable.
+                                            Sube el archivo original para ver su contenido completo.
+                                        </p>
+                                    </div>
+                                )}
 
                                 {document.tags && document.tags.length > 0 && (
                                     <div className="placeholder-tags">
@@ -278,6 +404,14 @@ export default function DocumentReader() {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                    )}
+
+                    {/* PDF waiting for URL — show prompt while no URL and no error */}
+                    {contentType === 'pdf' && !fileUrl && !fileLoading && !fileError && !document.isSample && document.filePath && (
+                        <div className="reader-file-loading">
+                            <Loader2 size={40} className="spinning" />
+                            <p>Preparando documento...</p>
                         </div>
                     )}
                 </div>
@@ -291,7 +425,7 @@ export default function DocumentReader() {
                             <h2>Tutor Médico</h2>
                             <span className="ai-status">
                                 <span className="status-dot"></span>
-                                {isPDF ? `LEYENDO PÁGINA ${currentPage}...` : 'ANALIZANDO DOCUMENTO...'}
+                                {contentType === 'pdf' ? `LEYENDO PÁGINA ${currentPage}...` : 'ANALIZANDO DOCUMENTO...'}
                             </span>
                         </div>
                         <button className="more-btn"><MoreHorizontal size={18} /></button>
@@ -345,7 +479,7 @@ export default function DocumentReader() {
                                 className={contextEnabled ? 'active' : ''}
                                 onClick={() => setContextEnabled(!contextEnabled)}
                             />
-                            <span>Contexto: {isPDF ? `Página ${currentPage}` : 'Documento completo'}</span>
+                            <span>Contexto: {contentType === 'pdf' ? `Página ${currentPage}` : 'Documento completo'}</span>
                         </div>
                     </div>
 
@@ -420,6 +554,56 @@ export default function DocumentReader() {
                     </div>
                 </div>
             )}
+        </div>
+    )
+}
+
+// Sub-component: loads and displays plain text files
+function TextFileViewer({ url }) {
+    const [text, setText] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    useEffect(() => {
+        if (!url) return
+        setLoading(true)
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('Error al cargar archivo de texto')
+                return res.text()
+            })
+            .then(content => {
+                setText(content)
+                setError(null)
+            })
+            .catch(err => {
+                console.error('Error loading text file:', err)
+                setError(err.message)
+            })
+            .finally(() => setLoading(false))
+    }, [url])
+
+    if (loading) {
+        return (
+            <div className="text-loading">
+                <Loader2 size={24} className="spinning" />
+                <p>Cargando archivo de texto...</p>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="text-error">
+                <AlertCircle size={32} />
+                <p>{error}</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="text-content-wrapper">
+            <pre className="text-file-content">{text}</pre>
         </div>
     )
 }
