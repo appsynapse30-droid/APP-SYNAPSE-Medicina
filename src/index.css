@@ -211,7 +211,8 @@ button {
 }
 
 input,
-textarea {
+textarea,
+select {
   font-family: inherit;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
@@ -223,10 +224,16 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--accent-blue);
   box-shadow: var(--shadow-glow-blue);
+}
+
+option {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* Scrollbar */
