@@ -511,6 +511,11 @@
     color: var(--accent-yellow);
 }
 
+.quick-actions-list {
+    display: flex;
+    flex-direction: column;
+}
+
 .action-card {
     display: flex;
     align-items: center;
@@ -523,6 +528,7 @@
     margin-bottom: var(--space-sm);
     text-align: left;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .action-card:hover {
@@ -625,8 +631,25 @@
         max-width: 92%;
     }
 
-    /* Action cards: bigger touch targets */
+    /* Action cards: horizontal scroll on mobile */
+    .quick-actions {
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .quick-actions-list {
+        display: flex;
+        flex-direction: row;
+        gap: var(--space-sm);
+        overflow-x: auto;
+        padding-bottom: var(--space-xs);
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+    }
+
     .action-card {
+        flex: 0 0 85%;
+        scroll-snap-align: start;
+        margin-bottom: 0;
         padding: var(--space-md);
         min-height: 56px;
     }

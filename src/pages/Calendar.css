@@ -1156,6 +1156,31 @@
 
 @media (max-width: 768px) {
 
+    /* Header wraps and stacks appropriately */
+    .calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: var(--space-sm);
+    }
+
+    /* Stack sidebar components vertically on mobile */
+    .calendar-sidebar {
+        flex-direction: column;
+    }
+
+    .mini-calendar,
+    .upcoming-section,
+    .categories-legend {
+        width: 100%;
+        min-width: unset;
+    }
+
     /* Form rows stack vertically */
     .form-row {
         grid-template-columns: 1fr;

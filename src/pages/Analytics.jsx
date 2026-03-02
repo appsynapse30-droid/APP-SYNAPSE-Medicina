@@ -90,7 +90,7 @@ export default function Analytics() {
                 <div>
                     <h1>Progreso y Análisis</h1>
                     <p>
-                        Bienvenido de nuevo, {settings.profile?.displayName || 'Dr. García'}.
+                        Bienvenido de nuevo, {settings.profile?.displayName || 'Usuario'}.
                         Tu preparación está al <span className="highlight">{estimatedScore.percentage}%</span>.
                     </p>
                 </div>

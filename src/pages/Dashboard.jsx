@@ -24,6 +24,8 @@ import { useCalendar, eventCategories } from '../context/CalendarContext'
 import { useStudyStats } from '../context/StudyStatsContext'
 import { useClinicalCases, medicalCategories } from '../context/ClinicalCasesContext'
 import { useLibrary } from '../context/LibraryContext'
+import { useSettings } from '../context/SettingsContext'
+import { useAuth } from '../context/AuthContext'
 import './Dashboard.css'
 
 export default function Dashboard() {
@@ -32,6 +34,14 @@ export default function Dashboard() {
     const { getTodayProgress, getStreakInfo, getGreeting, addStudyTime } = useStudyStats()
     const { cases, getStats, getStudyCases } = useClinicalCases()
     const { documents } = useLibrary()
+    const { settings } = useSettings()
+    const { user } = useAuth()
+
+    // Get the user's display name from settings or auth metadata
+    const userName = settings.profile?.displayName
+        || user?.user_metadata?.display_name
+        || user?.email?.split('@')[0]
+        || 'Usuario'
 
     // Tips de estudio médico
     const studyTips = [
@@ -226,7 +236,7 @@ export default function Dashboard() {
         <div className="dashboard">
             <div className="dashboard-main">
                 <div className="greeting-section">
-                    <h1 className="greeting-title">{greeting}, Dr. García</h1>
+                    <h1 className="greeting-title">{greeting}, {userName}</h1>
                     <p className="greeting-subtitle">¿Listo para conectar algunas sinapsis?</p>
                 </div>
 

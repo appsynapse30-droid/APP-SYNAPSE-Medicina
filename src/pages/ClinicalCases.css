@@ -2380,6 +2380,28 @@
         flex-direction: column;
     }
 
+    .case-form-overlay {
+        padding: 1rem;
+    }
+
+    .form-footer {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .action-buttons,
+    .nav-buttons {
+        width: 100%;
+        display: flex;
+    }
+
+    .btn-save,
+    .btn-cancel,
+    .btn-nav {
+        flex: 1;
+        justify-content: center;
+    }
+
     /* Vitals: 2-col grid */
     .vitals-grid {
         grid-template-columns: repeat(2, 1fr);

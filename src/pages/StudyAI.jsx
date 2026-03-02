@@ -200,29 +200,31 @@ export default function StudyAI() {
                         <Sparkles size={14} />
                     </div>
 
-                    <button className="action-card">
-                        <div className="action-icon blue"><Layers size={18} /></div>
-                        <div className="action-text">
-                            <span>Generar 20 Flashcards</span>
-                            <p>Basadas en el contenido del Capítulo 4</p>
-                        </div>
-                    </button>
+                    <div className="quick-actions-list">
+                        <button className="action-card">
+                            <div className="action-icon blue"><Layers size={18} /></div>
+                            <div className="action-text">
+                                <span>Generar 20 Flashcards</span>
+                                <p>Basadas en el contenido del Capítulo 4</p>
+                            </div>
+                        </button>
 
-                    <button className="action-card">
-                        <div className="action-icon purple"><FileText size={18} /></div>
-                        <div className="action-text">
-                            <span>Resumir Conceptos Clave</span>
-                            <p>Crear una hoja de resumen de 1 página</p>
-                        </div>
-                    </button>
+                        <button className="action-card">
+                            <div className="action-icon purple"><FileText size={18} /></div>
+                            <div className="action-text">
+                                <span>Resumir Conceptos Clave</span>
+                                <p>Crear una hoja de resumen de 1 página</p>
+                            </div>
+                        </button>
 
-                    <button className="action-card">
-                        <div className="action-icon green"><Share2 size={18} /></div>
-                        <div className="action-text">
-                            <span>Crear Mapa Mental</span>
-                            <p>Visualizar conexiones del sistema</p>
-                        </div>
-                    </button>
+                        <button className="action-card">
+                            <div className="action-icon green"><Share2 size={18} /></div>
+                            <div className="action-text">
+                                <span>Crear Mapa Mental</span>
+                                <p>Visualizar conexiones del sistema</p>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </aside>
         </div>

@@ -318,6 +318,16 @@ option {
   transform: translateY(-1px);
 }
 
+.btn:active,
+.document-card:active,
+.collection-item:active,
+.action-card:active,
+.stat-card:active,
+.quick-action-btn:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.1s ease;
+}
+
 .btn-secondary {
   background: var(--bg-tertiary);
   color: var(--text-primary);

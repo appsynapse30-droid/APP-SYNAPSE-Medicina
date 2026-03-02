@@ -1058,11 +1058,17 @@
     /* Header stacks vertically */
     .library-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        /* Change from flex-start to stretch for full width */
         gap: var(--space-md);
     }
 
-    /* Upload button full width */
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    /* Buttons full width */
     .library-header .btn {
         width: 100%;
         justify-content: center;
@@ -1071,13 +1077,19 @@
 
     /* Search bar full width */
     .search-section {
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: stretch;
         gap: var(--space-sm);
     }
 
     .search-bar {
         width: 100%;
         min-height: 44px;
+    }
+
+    .semantic-toggle {
+        width: 100%;
+        justify-content: center;
     }
 
     /* Filter tabs scroll horizontally */
