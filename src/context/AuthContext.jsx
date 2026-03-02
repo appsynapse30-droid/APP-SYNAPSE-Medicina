@@ -107,6 +107,11 @@ export function AuthProvider({ children }) {
                 if (event === 'SIGNED_IN' && newSession?.user) {
                     await ensureUserProfile(newSession.user);
                 }
+
+                // Handle password recovery event — redirect to reset page
+                if (event === 'PASSWORD_RECOVERY') {
+                    window.location.href = '/reset-password';
+                }
             }
         );
 
