@@ -7,15 +7,13 @@ import App from './App.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-        <BrowserRouter>
-            <StudyStatsProvider>
-                <CalendarProvider>
-                    <App />
-                </CalendarProvider>
-            </StudyStatsProvider>
-        </BrowserRouter>
-    </React.StrictMode>,
+    <BrowserRouter>
+        <StudyStatsProvider>
+            <CalendarProvider>
+                <App />
+            </CalendarProvider>
+        </StudyStatsProvider>
+    </BrowserRouter>,
 )
 
 
