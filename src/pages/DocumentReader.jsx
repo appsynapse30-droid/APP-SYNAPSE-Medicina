@@ -70,17 +70,21 @@ export default function DocumentReader() {
     const fetchFileUrl = useCallback(async () => {
         if (!document || document.isSample || !document.filePath) return
 
+        console.log("fetchFileUrl: Starting fetch for document path", document.filePath);
         setFileLoading(true)
         setFileError(null)
 
         try {
+            console.log("fetchFileUrl: Calling getDocumentViewUrl");
             const { url, error } = await getDocumentViewUrl(document.id)
+            console.log("fetchFileUrl: getDocumentViewUrl returned", { url, error });
             if (error) throw new Error(error)
             setFileUrl(url)
         } catch (err) {
             console.error('Error fetching file URL:', err)
             setFileError(err.message || 'Error al cargar el archivo')
         } finally {
+            console.log("fetchFileUrl: Setting fileLoading to false");
             setFileLoading(false)
         }
     }, [document, getDocumentViewUrl])

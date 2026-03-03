@@ -210,19 +210,24 @@ export default function Library() {
             setUploadCollection('')
             setUploadTags([])
             setShowUploadModal(false)
+        } else {
+            // Keep the modal open but ensure error is visible
+            console.error("Upload process encountered an error.");
         }
     }
 
-    const handleCreateNote = () => {
+    const handleCreateNote = async () => {
         if (!noteTitle.trim()) return
 
-        createNote(noteTitle, noteContent, noteCollection || null, noteTags)
+        const { error } = await createNote(noteTitle, noteContent, noteCollection || null, noteTags)
 
-        setNoteTitle('')
-        setNoteContent('')
-        setNoteCollection('')
-        setNoteTags([])
-        setShowNoteModal(false)
+        if (!error) {
+            setNoteTitle('')
+            setNoteContent('')
+            setNoteCollection('')
+            setNoteTags([])
+            setShowNoteModal(false)
+        }
     }
 
     const handleCreateCollection = () => {
@@ -663,6 +668,12 @@ export default function Library() {
                             </button>
                         </div>
                         <div className="modal-content">
+                            {libraryError && (
+                                <div className="library-error-banner" style={{ marginBottom: '1rem', position: 'relative', zIndex: 10 }}>
+                                    <AlertCircle size={18} />
+                                    <span>{libraryError}</span>
+                                </div>
+                            )}
                             <div className="upload-files-list">
                                 {uploadFiles.map((file, index) => (
                                     <div key={index} className="upload-file-item">
@@ -773,6 +784,12 @@ export default function Library() {
                             </button>
                         </div>
                         <div className="modal-content">
+                            {libraryError && (
+                                <div className="library-error-banner" style={{ marginBottom: '1rem', position: 'relative', zIndex: 10 }}>
+                                    <AlertCircle size={18} />
+                                    <span>{libraryError}</span>
+                                </div>
+                            )}
                             <div className="form-group">
                                 <label>Título</label>
                                 <input
