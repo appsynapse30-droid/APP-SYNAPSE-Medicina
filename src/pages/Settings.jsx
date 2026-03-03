@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
     User,
     Bell,
@@ -35,9 +35,12 @@ import {
     ExternalLink,
     MessageCircle,
     BookOpen,
-    FileQuestion
+    FileQuestion,
+    Loader2
 } from 'lucide-react'
 import { useSettings } from '../context/SettingsContext'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../config/supabase'
 import './Settings.css'
 
 const ACCENT_COLORS = [
@@ -91,10 +94,78 @@ export default function Settings() {
         revertSettings
     } = useSettings()
 
+    const { user } = useAuth()
+    const avatarInputRef = useRef(null)
+
     const [activeSection, setActiveSection] = useState(null)
     const [showResetConfirm, setShowResetConfirm] = useState(false)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
     const [saveMessage, setSaveMessage] = useState('')
+    const [avatarUploading, setAvatarUploading] = useState(false)
+
+    // Handle profile photo upload
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+        if (!allowedTypes.includes(file.type)) {
+            showSaveMessage('Solo se permiten imágenes (JPG, PNG, WebP, GIF)')
+            return
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            showSaveMessage('La imagen no debe superar los 2MB')
+            return
+        }
+
+        setAvatarUploading(true)
+
+        try {
+            const userId = user?.id || 'anonymous'
+            const ext = file.name.split('.').pop()
+            const fileName = `avatar_${Date.now()}.${ext}`
+            const filePath = `${userId}/avatars/${fileName}`
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('documents')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                })
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError)
+                showSaveMessage('Error al subir la imagen. Intenta de nuevo.')
+                setAvatarUploading(false)
+                return
+            }
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('documents')
+                .getPublicUrl(filePath)
+
+            if (urlData?.publicUrl) {
+                updateProfile({ avatar: urlData.publicUrl })
+                // Auto-save so the avatar persists immediately
+                setTimeout(() => {
+                    saveSettings()
+                }, 100)
+                showSaveMessage('¡Foto de perfil actualizada!')
+            }
+        } catch (err) {
+            console.error('Avatar upload error:', err)
+            showSaveMessage('Error inesperado al subir la foto.')
+        } finally {
+            setAvatarUploading(false)
+            // Reset file input so the same file can be re-selected
+            if (avatarInputRef.current) avatarInputRef.current.value = ''
+        }
+    }
 
     const showSaveMessage = (message) => {
         // Only show message if explicitly provided (manual save)
@@ -183,13 +254,31 @@ export default function Settings() {
                 <div className="avatar-section">
                     <div className="avatar-preview">
                         <img src={settings.profile.avatar} alt="Avatar" />
-                        <button className="avatar-edit">
-                            <Camera size={16} />
+                        <button
+                            className="avatar-edit"
+                            onClick={() => avatarInputRef.current?.click()}
+                            disabled={avatarUploading}
+                        >
+                            {avatarUploading ? <Loader2 size={16} className="spin-icon" /> : <Camera size={16} />}
                         </button>
+                        <input
+                            ref={avatarInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            onChange={handleAvatarChange}
+                            style={{ display: 'none' }}
+                        />
                     </div>
                     <div className="avatar-info">
                         <h3>{settings.profile.displayName}</h3>
                         <p>{settings.profile.specialty}</p>
+                        <button
+                            className="btn-change-photo"
+                            onClick={() => avatarInputRef.current?.click()}
+                            disabled={avatarUploading}
+                        >
+                            {avatarUploading ? 'Subiendo...' : 'Cambiar foto'}
+                        </button>
                     </div>
                 </div>
 

@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useSettings } from '../../context/SettingsContext'
 import {
     LayoutDashboard,
     BookOpen,
@@ -26,6 +27,7 @@ const navItems = [
 
 export default function Sidebar() {
     const { user, signOut, isAuthenticated } = useAuth()
+    const { settings } = useSettings()
     const navigate = useNavigate()
 
     const handleLogout = async () => {
@@ -82,7 +84,7 @@ export default function Sidebar() {
                         <div className="user-profile">
                             <div className="user-avatar">
                                 <img
-                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'default'}`}
+                                    src={settings.profile.avatar}
                                     alt={displayName}
                                 />
                             </div>

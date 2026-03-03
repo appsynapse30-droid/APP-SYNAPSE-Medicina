@@ -432,6 +432,51 @@ input:checked+.toggle-slider:before {
     color: var(--text-secondary);
 }
 
+/* Change Photo Button */
+.btn-change-photo {
+    margin-top: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--primary, #58a6ff);
+    border: 1px solid rgba(88, 166, 255, 0.25);
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-change-photo:hover:not(:disabled) {
+    background: rgba(88, 166, 255, 0.2);
+    border-color: rgba(88, 166, 255, 0.4);
+}
+
+.btn-change-photo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Spinner icon animation */
+.spin-icon {
+    animation: spinIcon 1s linear infinite;
+}
+
+@keyframes spinIcon {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Avatar uploading overlay */
+.avatar-preview.uploading img {
+    opacity: 0.5;
+}
+
 /* Help Cards */
 .help-cards {
     display: grid;
