@@ -126,12 +126,12 @@ export default function Settings() {
         try {
             const userId = user?.id || 'anonymous'
             const ext = file.name.split('.').pop()
-            const fileName = `avatar_${Date.now()}.${ext}`
-            const filePath = `${userId}/avatars/${fileName}`
+            const fileName = `avatar.${ext}`
+            const filePath = `${userId}/${fileName}`
 
-            // Upload to Supabase Storage
+            // Upload to the public "avatars" bucket
             const { error: uploadError } = await supabase.storage
-                .from('documents')
+                .from('avatars')
                 .upload(filePath, file, {
                     cacheControl: '3600',
                     upsert: true
@@ -144,13 +144,15 @@ export default function Settings() {
                 return
             }
 
-            // Get public URL
+            // Get public URL (bucket is public so this works directly in <img>)
             const { data: urlData } = supabase.storage
-                .from('documents')
+                .from('avatars')
                 .getPublicUrl(filePath)
 
             if (urlData?.publicUrl) {
-                updateProfile({ avatar: urlData.publicUrl })
+                // Add cache-buster so the browser loads the fresh image
+                const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`
+                updateProfile({ avatar: avatarUrl })
                 // Auto-save so the avatar persists immediately
                 setTimeout(() => {
                     saveSettings()
