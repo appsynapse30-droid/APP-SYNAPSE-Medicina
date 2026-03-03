@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
+import { useSupabase } from './SupabaseContext'
 
 // Categorías médicas con metadatos
 export const medicalCategories = {
@@ -199,44 +200,60 @@ const createEmptyCase = () => ({
     },
 })
 
-const STORAGE_KEY_PREFIX = 'synapse_clinical_cases'
-
 const ClinicalCasesContext = createContext(null)
 
 export function ClinicalCasesProvider({ children }) {
     const { user } = useAuth()
-
-    // Per-user storage key
-    const storageKey = user?.id
-        ? `${STORAGE_KEY_PREFIX}_${user.id}`
-        : STORAGE_KEY_PREFIX
+    const { cases: supabaseCases } = useSupabase()
 
     const [cases, setCases] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
-    // Load cases when user changes
+    // Load cases from Supabase when user changes
     useEffect(() => {
-        try {
-            const saved = localStorage.getItem(storageKey)
-            if (saved) {
-                const parsed = JSON.parse(saved)
-                setCases(Array.isArray(parsed) ? parsed : [])
-            } else {
-                // New user: start with empty cases
-                setCases([])
+        let isMounted = true;
+
+        const loadCases = async () => {
+            if (!user?.id) {
+                if (isMounted) {
+                    setCases([])
+                    setIsLoading(false)
+                }
+                return
             }
-        } catch {
-            setCases([])
-        }
-    }, [storageKey, user])
 
-    // Persistir en localStorage
-    useEffect(() => {
-        if (storageKey) {
-            localStorage.setItem(storageKey, JSON.stringify(cases))
-        }
-    }, [cases, storageKey])
+            try {
+                if (isMounted) setIsLoading(true)
+                const { data, error } = await supabaseCases.getAll(user.id)
 
-    // Crear nuevo caso
+                if (error) throw error
+
+                if (isMounted && data) {
+                    // Reconstruct from case_data JSONB
+                    const loadedCases = data.map(row => ({
+                        ...row.case_data,
+                        id: row.id, // ensure ID always matches DB
+                        createdAt: row.created_at,
+                        updatedAt: row.updated_at
+                    }))
+                    setCases(loadedCases)
+                }
+            } catch (err) {
+                console.error("Error loading clinical cases from Supabase:", err)
+                if (isMounted) setCases([])
+            } finally {
+                if (isMounted) setIsLoading(false)
+            }
+        }
+
+        loadCases()
+
+        return () => {
+            isMounted = false
+        }
+    }, [user])
+
+    // Crear nuevo caso (Optimistic UI)
     const addCase = (caseData = {}) => {
         const newCase = {
             ...createEmptyCase(),
@@ -245,25 +262,62 @@ export function ClinicalCasesProvider({ children }) {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         }
+
+        // Optimistic UI update
         setCases(prev => [newCase, ...prev])
+
+        // Background sync to Supabase
+        if (user?.id) {
+            supabaseCases.create({
+                id: newCase.id,
+                user_id: user.id,
+                title: newCase.title || 'Caso sin título',
+                category: newCase.category,
+                status: newCase.status,
+                case_data: newCase
+            }).catch(err => console.error("Error creating case in Supabase:", err))
+        }
+
         return newCase.id
     }
 
-    // Actualizar caso
+    // Actualizar caso (Optimistic UI)
     const updateCase = (id, updates) => {
-        setCases(prev => prev.map(c =>
-            c.id === id
-                ? { ...c, ...updates, updatedAt: new Date().toISOString() }
-                : c
-        ))
+        let updatedCase = null;
+
+        // Optimistic UI update
+        setCases(prev => prev.map(c => {
+            if (c.id === id) {
+                updatedCase = { ...c, ...updates, updatedAt: new Date().toISOString() }
+                return updatedCase
+            }
+            return c
+        }))
+
+        // Background sync to Supabase
+        if (user?.id && updatedCase) {
+            supabaseCases.update(id, {
+                title: updatedCase.title || 'Caso sin título',
+                category: updatedCase.category,
+                status: updatedCase.status,
+                case_data: updatedCase
+            }).catch(err => console.error("Error updating case in Supabase:", err))
+        }
     }
 
-    // Eliminar caso
+    // Eliminar caso (Optimistic UI)
     const deleteCase = (id) => {
+        // Optimistic UI update
         setCases(prev => prev.filter(c => c.id !== id))
+
+        // Background sync to Supabase
+        if (user?.id) {
+            supabaseCases.delete(id)
+                .catch(err => console.error("Error deleting case from Supabase:", err))
+        }
     }
 
-    // Duplicar caso
+    // Duplicar caso (Optimistic UI)
     const duplicateCase = (id) => {
         const original = cases.find(c => c.id === id)
         if (!original) return null
@@ -282,7 +336,22 @@ export function ClinicalCasesProvider({ children }) {
                 masteryLevel: 0,
             },
         }
+
+        // Optimistic update
         setCases(prev => [duplicate, ...prev])
+
+        // Background sync
+        if (user?.id) {
+            supabaseCases.create({
+                id: duplicate.id,
+                user_id: user.id,
+                title: duplicate.title,
+                category: duplicate.category,
+                status: duplicate.status,
+                case_data: duplicate
+            }).catch(err => console.error("Error duplicating case in Supabase:", err))
+        }
+
         return duplicate.id
     }
 

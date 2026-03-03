@@ -448,6 +448,57 @@ export const supabaseHelpers = {
                 .order('created_at', { ascending: false });
             return { data, error };
         }
+    },
+
+    // Clinical Cases database helpers
+    cases: {
+        /**
+         * Get all cases for a user
+         */
+        getAll: async (userId) => {
+            const { data, error } = await supabase
+                .from('clinical_cases')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+            return { data, error };
+        },
+
+        /**
+         * Create a new clinical case
+         */
+        create: async (caseRecord) => {
+            const { data, error } = await supabase
+                .from('clinical_cases')
+                .insert(caseRecord)
+                .select()
+                .single();
+            return { data, error };
+        },
+
+        /**
+         * Update an existing clinical case
+         */
+        update: async (id, updates) => {
+            const { data, error } = await supabase
+                .from('clinical_cases')
+                .update({ ...updates, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            return { data, error };
+        },
+
+        /**
+         * Delete a clinical case
+         */
+        delete: async (id) => {
+            const { error } = await supabase
+                .from('clinical_cases')
+                .delete()
+                .eq('id', id);
+            return { error };
+        }
     }
 };
 
