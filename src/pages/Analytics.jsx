@@ -44,17 +44,124 @@ import { useLibrary } from '../context/LibraryContext'
 import { useSettings } from '../context/SettingsContext'
 import './Analytics.css'
 
-// Deep Focus music playlist (royalty-free lo-fi / ambient beats)
+// Deep Focus ambient sound configurations (Web Audio API - no external URLs needed)
 const FOCUS_TRACKS = [
-    { title: 'Lofi Study Beats', url: 'https://cdn.pixabay.com/audio/2024/11/28/audio_3a4b1c5d6e.mp3' },
-    { title: 'Calm Piano Focus', url: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3' },
-    { title: 'Ambient Flow', url: 'https://cdn.pixabay.com/audio/2024/09/10/audio_6e4e1c5d8a.mp3' },
-    { title: 'Rain & Coffee', url: 'https://cdn.pixabay.com/audio/2022/10/09/audio_4d1dcdd069.mp3' },
-    { title: 'Night Owl Jazz', url: 'https://cdn.pixabay.com/audio/2023/07/30/audio_e3e836e56f.mp3' },
-    { title: 'Deep Concentration', url: 'https://cdn.pixabay.com/audio/2023/10/24/audio_3f7541c8b4.mp3' },
-    { title: 'Peaceful Morning', url: 'https://cdn.pixabay.com/audio/2024/02/14/audio_8fdb506997.mp3' },
-    { title: 'Cosmic Drift', url: 'https://cdn.pixabay.com/audio/2023/04/17/audio_55b2e01917.mp3' },
+    { title: 'Lofi Study Beats', baseFreq: 220, type: 'triangle', lfoRate: 0.3, filterFreq: 800 },
+    { title: 'Calm Piano Waves', baseFreq: 261.63, type: 'sine', lfoRate: 0.15, filterFreq: 600 },
+    { title: 'Ambient Flow', baseFreq: 174.61, type: 'sine', lfoRate: 0.2, filterFreq: 500 },
+    { title: 'Rain & Coffee', baseFreq: 146.83, type: 'triangle', lfoRate: 0.4, filterFreq: 1200 },
+    { title: 'Night Owl Jazz', baseFreq: 196, type: 'triangle', lfoRate: 0.25, filterFreq: 900 },
+    { title: 'Deep Concentration', baseFreq: 130.81, type: 'sine', lfoRate: 0.1, filterFreq: 400 },
+    { title: 'Peaceful Morning', baseFreq: 293.66, type: 'sine', lfoRate: 0.35, filterFreq: 700 },
+    { title: 'Cosmic Drift', baseFreq: 110, type: 'triangle', lfoRate: 0.08, filterFreq: 350 },
 ]
+
+// Web Audio API ambient generator
+class AmbientGenerator {
+    constructor() {
+        this.ctx = null
+        this.nodes = []
+        this.gainNode = null
+        this.isPlaying = false
+        this.volume = 0.3
+    }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)()
+            this.gainNode = this.ctx.createGain()
+            this.gainNode.gain.value = this.volume
+            this.gainNode.connect(this.ctx.destination)
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume()
+        }
+    }
+
+    playTrack(trackConfig) {
+        this.stop()
+        this.init()
+
+        const { baseFreq, type, lfoRate, filterFreq } = trackConfig
+
+        // Main pad oscillator
+        const osc1 = this.ctx.createOscillator()
+        osc1.type = type
+        osc1.frequency.value = baseFreq
+
+        // Harmonic layer (perfect fifth above)
+        const osc2 = this.ctx.createOscillator()
+        osc2.type = 'sine'
+        osc2.frequency.value = baseFreq * 1.5
+
+        // Sub bass
+        const osc3 = this.ctx.createOscillator()
+        osc3.type = 'sine'
+        osc3.frequency.value = baseFreq / 2
+
+        // LFO for gentle wobble
+        const lfo = this.ctx.createOscillator()
+        lfo.type = 'sine'
+        lfo.frequency.value = lfoRate
+        const lfoGain = this.ctx.createGain()
+        lfoGain.gain.value = baseFreq * 0.02
+        lfo.connect(lfoGain)
+        lfoGain.connect(osc1.frequency)
+
+        // Low-pass filter for warmth
+        const filter = this.ctx.createBiquadFilter()
+        filter.type = 'lowpass'
+        filter.frequency.value = filterFreq
+        filter.Q.value = 1
+
+        // Gain nodes for mixing
+        const g1 = this.ctx.createGain()
+        g1.gain.value = 0.25
+        const g2 = this.ctx.createGain()
+        g2.gain.value = 0.12
+        const g3 = this.ctx.createGain()
+        g3.gain.value = 0.15
+
+        osc1.connect(g1)
+        osc2.connect(g2)
+        osc3.connect(g3)
+        g1.connect(filter)
+        g2.connect(filter)
+        g3.connect(filter)
+        filter.connect(this.gainNode)
+
+        // Fade in
+        this.gainNode.gain.setValueAtTime(0, this.ctx.currentTime)
+        this.gainNode.gain.linearRampToValueAtTime(this.volume, this.ctx.currentTime + 2)
+
+        osc1.start()
+        osc2.start()
+        osc3.start()
+        lfo.start()
+
+        this.nodes = [osc1, osc2, osc3, lfo]
+        this.isPlaying = true
+    }
+
+    stop() {
+        if (this.gainNode && this.ctx) {
+            this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, this.ctx.currentTime)
+            this.gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5)
+        }
+        setTimeout(() => {
+            this.nodes.forEach(n => { try { n.stop() } catch (e) { /* already stopped */ } })
+            this.nodes = []
+        }, 600)
+        this.isPlaying = false
+    }
+
+    setVolume(v) {
+        this.volume = v
+        if (this.gainNode && this.ctx) {
+            this.gainNode.gain.setValueAtTime(v, this.ctx.currentTime)
+        }
+    }
+}
 
 export default function Analytics() {
     const navigate = useNavigate()
@@ -115,11 +222,10 @@ export default function Analytics() {
     const [showPomodoroSettings, setShowPomodoroSettings] = useState(false)
 
     // Music state
-    const audioRef = useRef(null)
+    const ambientRef = useRef(null)
     const [isMusicPlaying, setIsMusicPlaying] = useState(false)
     const [musicVolume, setMusicVolume] = useState(0.3)
     const [currentTrack, setCurrentTrack] = useState(0)
-    const [musicLoaded, setMusicLoaded] = useState(false)
 
     // Calendar state
     const [hoveredDay, setHoveredDay] = useState(null)
@@ -134,18 +240,15 @@ export default function Analytics() {
                 if (prev <= 1) {
                     clearInterval(interval)
                     if (pomodoroPhase === 'studying') {
-                        // Register study session
                         addPomodoroSession(pomodoroStudyTime, pomodoroBreakTime)
                         if (currentCycle >= pomodoroCycles) {
                             setPomodoroPhase('completed')
                             stopMusic()
                             return 0
                         }
-                        // Start break
                         setPomodoroPhase('break')
                         return pomodoroBreakTime * 60
                     } else if (pomodoroPhase === 'break') {
-                        // Start next study cycle
                         setCurrentCycle(c => c + 1)
                         setPomodoroPhase('studying')
                         return pomodoroStudyTime * 60
@@ -159,38 +262,20 @@ export default function Analytics() {
         return () => clearInterval(interval)
     }, [pomodoroPhase, currentCycle, pomodoroCycles, pomodoroStudyTime, pomodoroBreakTime])
 
-    // Music initialization
+    // Initialize ambient generator
     useEffect(() => {
-        if (!audioRef.current) {
-            audioRef.current = new Audio()
-            audioRef.current.loop = false
-            audioRef.current.volume = musicVolume
-            audioRef.current.addEventListener('ended', () => {
-                setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
-            })
-            audioRef.current.addEventListener('canplaythrough', () => {
-                setMusicLoaded(true)
-            })
-            audioRef.current.addEventListener('error', () => {
-                // Skip to next track on error (bad URL)
-                setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
-            })
-        }
+        ambientRef.current = new AmbientGenerator()
         return () => {
-            if (audioRef.current) {
-                audioRef.current.pause()
-                audioRef.current = null
+            if (ambientRef.current) {
+                ambientRef.current.stop()
             }
         }
     }, [])
 
-    // Track changes
+    // Track changes — play new track if music is playing
     useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.src = FOCUS_TRACKS[currentTrack].url
-            if (isMusicPlaying) {
-                audioRef.current.play().catch(() => { })
-            }
+        if (isMusicPlaying && ambientRef.current) {
+            ambientRef.current.playTrack(FOCUS_TRACKS[currentTrack])
         }
     }, [currentTrack])
 
@@ -231,24 +316,22 @@ export default function Analytics() {
         setCurrentTrack(index)
         if (!isMusicPlaying) {
             setIsMusicPlaying(true)
-            setTimeout(() => {
-                if (audioRef.current) audioRef.current.play().catch(() => { })
-            }, 100)
+            if (ambientRef.current) {
+                ambientRef.current.playTrack(FOCUS_TRACKS[index])
+            }
         }
     }
 
     const startMusic = () => {
-        if (audioRef.current) {
-            audioRef.current.src = FOCUS_TRACKS[currentTrack].url
-            audioRef.current.volume = musicVolume
-            audioRef.current.play().catch(() => { })
+        if (ambientRef.current) {
+            ambientRef.current.playTrack(FOCUS_TRACKS[currentTrack])
             setIsMusicPlaying(true)
         }
     }
 
     const stopMusic = () => {
-        if (audioRef.current) {
-            audioRef.current.pause()
+        if (ambientRef.current) {
+            ambientRef.current.stop()
         }
         setIsMusicPlaying(false)
     }
@@ -264,7 +347,7 @@ export default function Analytics() {
     const handleVolumeChange = (e) => {
         const vol = parseFloat(e.target.value)
         setMusicVolume(vol)
-        if (audioRef.current) audioRef.current.volume = vol
+        if (ambientRef.current) ambientRef.current.setVolume(vol)
     }
 
     // Format seconds to MM:SS
