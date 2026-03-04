@@ -7,6 +7,7 @@ import { SettingsProvider } from './context/SettingsContext'
 import { FSRSProvider } from './context/FSRSContext'
 import { LibraryProvider } from './context/LibraryContext'
 import { ClinicalCasesProvider } from './context/ClinicalCasesContext'
+import { MusicProvider } from './context/MusicContext'
 
 // Components
 import Layout from './components/layout/Layout'
@@ -37,31 +38,33 @@ function App() {
                     <SettingsProvider>
                         <FSRSProvider>
                             <LibraryProvider>
-                                <Routes>
-                                    {/* Public Routes */}
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/register" element={<Register />} />
-                                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                                    <Route path="/reset-password" element={<ResetPassword />} />
+                                <MusicProvider>
+                                    <Routes>
+                                        {/* Public Routes */}
+                                        <Route path="/login" element={<Login />} />
+                                        <Route path="/register" element={<Register />} />
+                                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                                        <Route path="/reset-password" element={<ResetPassword />} />
 
-                                    {/* Protected Routes */}
-                                    <Route path="/" element={
-                                        <ProtectedRoute>
-                                            <Layout />
-                                        </ProtectedRoute>
-                                    }>
-                                        <Route index element={<Dashboard />} />
-                                        <Route path="dashboard" element={<Dashboard />} />
-                                        <Route path="library" element={<Library />} />
-                                        <Route path="library/document/:id" element={<DocumentReader />} />
-                                        <Route path="study" element={<StudyAI />} />
-                                        <Route path="study/session" element={<StudySession />} />
-                                        <Route path="simulations" element={<ClinicalCases />} />
-                                        <Route path="analytics" element={<Analytics />} />
-                                        <Route path="calendar" element={<Calendar />} />
-                                        <Route path="settings" element={<Settings />} />
-                                    </Route>
-                                </Routes>
+                                        {/* Protected Routes */}
+                                        <Route path="/" element={
+                                            <ProtectedRoute>
+                                                <Layout />
+                                            </ProtectedRoute>
+                                        }>
+                                            <Route index element={<Dashboard />} />
+                                            <Route path="dashboard" element={<Dashboard />} />
+                                            <Route path="library" element={<Library />} />
+                                            <Route path="library/document/:id" element={<DocumentReader />} />
+                                            <Route path="study" element={<StudyAI />} />
+                                            <Route path="study/session" element={<StudySession />} />
+                                            <Route path="simulations" element={<ClinicalCases />} />
+                                            <Route path="analytics" element={<Analytics />} />
+                                            <Route path="calendar" element={<Calendar />} />
+                                            <Route path="settings" element={<Settings />} />
+                                        </Route>
+                                    </Routes>
+                                </MusicProvider>
                             </LibraryProvider>
                         </FSRSProvider>
                     </SettingsProvider>

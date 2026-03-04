@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     TrendingUp,
@@ -42,126 +42,9 @@ import { useStudyStats } from '../context/StudyStatsContext'
 import { useClinicalCases, medicalCategories } from '../context/ClinicalCasesContext'
 import { useLibrary } from '../context/LibraryContext'
 import { useSettings } from '../context/SettingsContext'
+import { useMusic } from '../context/MusicContext'
 import './Analytics.css'
 
-// Deep Focus ambient sound configurations (Web Audio API - no external URLs needed)
-const FOCUS_TRACKS = [
-    { title: 'Lofi Study Beats', baseFreq: 220, type: 'triangle', lfoRate: 0.3, filterFreq: 800 },
-    { title: 'Calm Piano Waves', baseFreq: 261.63, type: 'sine', lfoRate: 0.15, filterFreq: 600 },
-    { title: 'Ambient Flow', baseFreq: 174.61, type: 'sine', lfoRate: 0.2, filterFreq: 500 },
-    { title: 'Rain & Coffee', baseFreq: 146.83, type: 'triangle', lfoRate: 0.4, filterFreq: 1200 },
-    { title: 'Night Owl Jazz', baseFreq: 196, type: 'triangle', lfoRate: 0.25, filterFreq: 900 },
-    { title: 'Deep Concentration', baseFreq: 130.81, type: 'sine', lfoRate: 0.1, filterFreq: 400 },
-    { title: 'Peaceful Morning', baseFreq: 293.66, type: 'sine', lfoRate: 0.35, filterFreq: 700 },
-    { title: 'Cosmic Drift', baseFreq: 110, type: 'triangle', lfoRate: 0.08, filterFreq: 350 },
-]
-
-// Web Audio API ambient generator
-class AmbientGenerator {
-    constructor() {
-        this.ctx = null
-        this.nodes = []
-        this.gainNode = null
-        this.isPlaying = false
-        this.volume = 0.3
-    }
-
-    init() {
-        if (!this.ctx) {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)()
-            this.gainNode = this.ctx.createGain()
-            this.gainNode.gain.value = this.volume
-            this.gainNode.connect(this.ctx.destination)
-        }
-        if (this.ctx.state === 'suspended') {
-            this.ctx.resume()
-        }
-    }
-
-    playTrack(trackConfig) {
-        this.stop()
-        this.init()
-
-        const { baseFreq, type, lfoRate, filterFreq } = trackConfig
-
-        // Main pad oscillator
-        const osc1 = this.ctx.createOscillator()
-        osc1.type = type
-        osc1.frequency.value = baseFreq
-
-        // Harmonic layer (perfect fifth above)
-        const osc2 = this.ctx.createOscillator()
-        osc2.type = 'sine'
-        osc2.frequency.value = baseFreq * 1.5
-
-        // Sub bass
-        const osc3 = this.ctx.createOscillator()
-        osc3.type = 'sine'
-        osc3.frequency.value = baseFreq / 2
-
-        // LFO for gentle wobble
-        const lfo = this.ctx.createOscillator()
-        lfo.type = 'sine'
-        lfo.frequency.value = lfoRate
-        const lfoGain = this.ctx.createGain()
-        lfoGain.gain.value = baseFreq * 0.02
-        lfo.connect(lfoGain)
-        lfoGain.connect(osc1.frequency)
-
-        // Low-pass filter for warmth
-        const filter = this.ctx.createBiquadFilter()
-        filter.type = 'lowpass'
-        filter.frequency.value = filterFreq
-        filter.Q.value = 1
-
-        // Gain nodes for mixing
-        const g1 = this.ctx.createGain()
-        g1.gain.value = 0.25
-        const g2 = this.ctx.createGain()
-        g2.gain.value = 0.12
-        const g3 = this.ctx.createGain()
-        g3.gain.value = 0.15
-
-        osc1.connect(g1)
-        osc2.connect(g2)
-        osc3.connect(g3)
-        g1.connect(filter)
-        g2.connect(filter)
-        g3.connect(filter)
-        filter.connect(this.gainNode)
-
-        // Fade in
-        this.gainNode.gain.setValueAtTime(0, this.ctx.currentTime)
-        this.gainNode.gain.linearRampToValueAtTime(this.volume, this.ctx.currentTime + 2)
-
-        osc1.start()
-        osc2.start()
-        osc3.start()
-        lfo.start()
-
-        this.nodes = [osc1, osc2, osc3, lfo]
-        this.isPlaying = true
-    }
-
-    stop() {
-        if (this.gainNode && this.ctx) {
-            this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, this.ctx.currentTime)
-            this.gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5)
-        }
-        setTimeout(() => {
-            this.nodes.forEach(n => { try { n.stop() } catch (e) { /* already stopped */ } })
-            this.nodes = []
-        }, 600)
-        this.isPlaying = false
-    }
-
-    setVolume(v) {
-        this.volume = v
-        if (this.gainNode && this.ctx) {
-            this.gainNode.gain.setValueAtTime(v, this.ctx.currentTime)
-        }
-    }
-}
 
 export default function Analytics() {
     const navigate = useNavigate()
@@ -221,11 +104,20 @@ export default function Analytics() {
     const [timeLeft, setTimeLeft] = useState(25 * 60) // in seconds
     const [showPomodoroSettings, setShowPomodoroSettings] = useState(false)
 
-    // Music state
-    const ambientRef = useRef(null)
-    const [isMusicPlaying, setIsMusicPlaying] = useState(false)
-    const [musicVolume, setMusicVolume] = useState(0.3)
-    const [currentTrack, setCurrentTrack] = useState(0)
+    // --- Music from global context (persists across routes) ---
+    const {
+        tracks: FOCUS_TRACKS,
+        isPlaying: isMusicPlaying,
+        currentTrack,
+        volume: musicVolume,
+        play: startMusic,
+        stop: stopMusic,
+        toggle: toggleMusic,
+        next: nextTrack,
+        prev: prevTrack,
+        selectTrack,
+        changeVolume,
+    } = useMusic()
 
     // Calendar state
     const [hoveredDay, setHoveredDay] = useState(null)
@@ -262,23 +154,6 @@ export default function Analytics() {
         return () => clearInterval(interval)
     }, [pomodoroPhase, currentCycle, pomodoroCycles, pomodoroStudyTime, pomodoroBreakTime])
 
-    // Initialize ambient generator
-    useEffect(() => {
-        ambientRef.current = new AmbientGenerator()
-        return () => {
-            if (ambientRef.current) {
-                ambientRef.current.stop()
-            }
-        }
-    }, [])
-
-    // Track changes — play new track if music is playing
-    useEffect(() => {
-        if (isMusicPlaying && ambientRef.current) {
-            ambientRef.current.playTrack(FOCUS_TRACKS[currentTrack])
-        }
-    }, [currentTrack])
-
     const startPomodoro = () => {
         setPomodoroPhase('studying')
         setTimeLeft(pomodoroStudyTime * 60)
@@ -304,50 +179,8 @@ export default function Analytics() {
         stopMusic()
     }
 
-    const nextTrack = () => {
-        setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
-    }
-
-    const prevTrack = () => {
-        setCurrentTrack(prev => (prev - 1 + FOCUS_TRACKS.length) % FOCUS_TRACKS.length)
-    }
-
-    const selectTrack = (index) => {
-        setCurrentTrack(index)
-        if (!isMusicPlaying) {
-            setIsMusicPlaying(true)
-            if (ambientRef.current) {
-                ambientRef.current.playTrack(FOCUS_TRACKS[index])
-            }
-        }
-    }
-
-    const startMusic = () => {
-        if (ambientRef.current) {
-            ambientRef.current.playTrack(FOCUS_TRACKS[currentTrack])
-            setIsMusicPlaying(true)
-        }
-    }
-
-    const stopMusic = () => {
-        if (ambientRef.current) {
-            ambientRef.current.stop()
-        }
-        setIsMusicPlaying(false)
-    }
-
-    const toggleMusic = () => {
-        if (isMusicPlaying) {
-            stopMusic()
-        } else {
-            startMusic()
-        }
-    }
-
     const handleVolumeChange = (e) => {
-        const vol = parseFloat(e.target.value)
-        setMusicVolume(vol)
-        if (ambientRef.current) ambientRef.current.setVolume(vol)
+        changeVolume(parseFloat(e.target.value))
     }
 
     // Format seconds to MM:SS
