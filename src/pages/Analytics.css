@@ -768,13 +768,38 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
 }
 
 .music-label {
     font-size: var(--font-size-base);
     font-weight: 600;
     color: var(--text-primary);
+}
+
+.music-header-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.music-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background: transparent;
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.music-nav-btn:hover {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
 }
 
 .music-toggle {
@@ -796,47 +821,253 @@
     border-color: var(--accent-cyan);
 }
 
-/* Music Visualizer */
-.music-visualizer {
+/* Now Playing */
+.now-playing {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-sm);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.now-playing .playing-text {
+    color: var(--accent-cyan);
+    font-weight: 500;
+}
+
+/* Track List */
+.track-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: var(--space-sm);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) transparent;
+}
+
+.track-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.track-list::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
+}
+
+.track-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 8px var(--space-sm);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.track-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.track-item.active {
+    background: rgba(57, 213, 255, 0.1);
+    color: var(--accent-cyan);
+}
+
+.track-number {
+    width: 20px;
+    text-align: center;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.track-item.active .track-number {
+    color: var(--accent-cyan);
+}
+
+.track-title {
+    flex: 1;
+}
+
+/* Track Playing Animation */
+.track-playing-icon {
     display: flex;
     align-items: flex-end;
-    justify-content: center;
-    gap: 3px;
-    height: 50px;
-    margin-bottom: var(--space-md);
+    gap: 2px;
+    height: 14px;
 }
 
-.music-bar {
-    width: 6px;
+.track-playing-icon span {
+    width: 3px;
     background: var(--accent-cyan);
-    border-radius: 3px 3px 0 0;
-    opacity: 0.3;
-    transition: height 0.3s ease;
+    border-radius: 1px;
+    animation: trackBars 0.6s ease-in-out infinite alternate;
 }
 
-.music-bar.playing {
-    opacity: 1;
-    animation: musicPulse 0.8s ease-in-out infinite alternate;
+.track-playing-icon span:nth-child(1) {
+    height: 40%;
+    animation-delay: 0s;
 }
 
-@keyframes musicPulse {
+.track-playing-icon span:nth-child(2) {
+    height: 70%;
+    animation-delay: 0.2s;
+}
+
+.track-playing-icon span:nth-child(3) {
+    height: 50%;
+    animation-delay: 0.4s;
+}
+
+@keyframes trackBars {
     0% {
-        height: 15%;
-        opacity: 0.5;
-    }
-
-    50% {
-        height: 80%;
-        opacity: 1;
+        height: 30%;
     }
 
     100% {
-        height: 30%;
-        opacity: 0.7;
+        height: 100%;
     }
 }
 
-/* Volume Control */
+/* Playlist Controls */
+.playlist-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-sm);
+}
+
+.playlist-controls button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.playlist-controls button:hover {
+    color: var(--accent-cyan);
+}
+
+/* ==========================================
+   MEDIA QUERIES
+   ========================================== */
+
+/* Mobile devices (portrait and landscape) */
+@media (max-width: 767px) {
+    .pomodoro-container {
+        flex-direction: column;
+        gap: var(--space-lg);
+        padding: var(--space-md);
+    }
+
+    .pomodoro-main-content {
+        width: 100%;
+        max-width: 400px;
+        /* Limit width on smaller screens */
+    }
+
+    .pomodoro-side-panel {
+        width: 100%;
+        max-width: 400px;
+        /* Limit width on smaller screens */
+    }
+
+    .timer-display {
+        font-size: 4rem;
+    }
+
+    .timer-controls {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .timer-btn {
+        width: 100%;
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .music-card {
+        padding: var(--space-md);
+    }
+
+    .track-list {
+        max-height: 150px;
+    }
+
+    .today-pomodoro-stats {
+        padding: var(--space-md);
+    }
+
+    .pomo-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .heatmap-section {
+        padding: var(--space-md);
+    }
+
+    .heatmap-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-xs);
+    }
+
+    .heatmap-header h2 {
+        font-size: var(--font-size-base);
+    }
+
+    .heatmap-legend {
+        font-size: var(--font-size-xs);
+    }
+
+    .heatmap-grid-wrapper {
+        flex-direction: column;
+    }
+
+    .heatmap-days-label {
+        flex-direction: row;
+        width: auto;
+        justify-content: space-around;
+        padding-left: 32px;
+        /* Align with month labels */
+    }
+
+    .heatmap-days-label span {
+        width: 12px;
+        /* Match cell width */
+        text-align: center;
+    }
+
+    .heatmap-months {
+        grid-auto-columns: 12px;
+        /* Match cell width */
+        margin-left: 0;
+        justify-content: space-between;
+    }
+
+    .heatmap-grid {
+        flex-direction: column;
+    }
+
+    .heatmap-week {
+        flex-direction: row;
+    }
+}
+
 .volume-control {
     display: flex;
     align-items: center;
@@ -1099,24 +1330,173 @@
 @media (max-width: 768px) {
     .pomodoro-section {
         grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+
+    .pomodoro-timer-card {
+        padding: var(--space-md);
     }
 
     .timer-visual {
-        width: 220px;
-        height: 220px;
+        width: 200px;
+        height: 200px;
     }
 
     .timer-time {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+    }
+
+    .timer-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .timer-btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+        min-height: 44px;
+    }
+
+    .pomodoro-settings {
+        padding: var(--space-sm);
     }
 
     .pomo-stat-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-xs);
+    }
+
+    .pomo-stat-value {
+        font-size: var(--font-size-lg);
+    }
+
+    .music-card {
+        padding: var(--space-md);
+    }
+
+    .track-list {
+        max-height: 160px;
+    }
+
+    .music-header-controls {
+        gap: 4px;
+    }
+
+    .music-nav-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .music-toggle {
+        width: 32px;
+        height: 32px;
+    }
+
+    .today-pomodoro-stats {
+        padding: var(--space-md);
+    }
+
+    .heatmap-section {
+        padding: var(--space-md);
     }
 
     .heatmap-header {
         flex-direction: column;
         gap: var(--space-sm);
         align-items: flex-start;
+    }
+
+    .heatmap-cell {
+        width: 10px;
+        height: 10px;
+    }
+
+    .heatmap-days-label {
+        width: 22px;
+    }
+
+    .heatmap-days-label span {
+        font-size: 8px;
+        height: 10px;
+    }
+
+    .heatmap-months {
+        grid-auto-columns: 12px;
+        margin-left: 26px;
+    }
+
+    .month-label {
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pomodoro-header {
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+
+    .timer-visual {
+        width: 180px;
+        height: 180px;
+    }
+
+    .timer-time {
+        font-size: 2rem;
+    }
+
+    .timer-phase {
+        font-size: var(--font-size-xs);
+    }
+
+    .timer-btn {
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-xs);
+    }
+
+    .pomodoro-title h2 {
+        font-size: var(--font-size-base);
+    }
+
+    .music-label {
+        font-size: var(--font-size-sm);
+    }
+
+    .now-playing {
+        font-size: var(--font-size-xs);
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .track-item {
+        padding: 6px var(--space-xs);
+        font-size: var(--font-size-xs);
+    }
+
+    .pomo-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .daily-progress-text {
+        font-size: 11px;
+    }
+
+    .heatmap-cell {
+        width: 8px;
+        height: 8px;
+    }
+
+    .heatmap-days-label {
+        display: none;
+    }
+
+    .heatmap-months {
+        margin-left: 0;
+        grid-auto-columns: 10px;
+    }
+
+    .legend-cell {
+        width: 10px;
+        height: 10px;
     }
 }

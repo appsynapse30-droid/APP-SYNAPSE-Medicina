@@ -19,7 +19,10 @@ import {
     Settings,
     Timer,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    SkipForward,
+    SkipBack,
+    Music
 } from 'lucide-react'
 import {
     RadarChart,
@@ -41,11 +44,16 @@ import { useLibrary } from '../context/LibraryContext'
 import { useSettings } from '../context/SettingsContext'
 import './Analytics.css'
 
-// Deep Focus music URLs (royalty-free lo-fi beats)
+// Deep Focus music playlist (royalty-free lo-fi / ambient beats)
 const FOCUS_TRACKS = [
-    'https://cdn.pixabay.com/audio/2024/11/28/audio_3a4b1c5d6e.mp3',
-    'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3',
-    'https://cdn.pixabay.com/audio/2024/09/10/audio_6e4e1c5d8a.mp3',
+    { title: 'Lofi Study Beats', url: 'https://cdn.pixabay.com/audio/2024/11/28/audio_3a4b1c5d6e.mp3' },
+    { title: 'Calm Piano Focus', url: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3' },
+    { title: 'Ambient Flow', url: 'https://cdn.pixabay.com/audio/2024/09/10/audio_6e4e1c5d8a.mp3' },
+    { title: 'Rain & Coffee', url: 'https://cdn.pixabay.com/audio/2022/10/09/audio_4d1dcdd069.mp3' },
+    { title: 'Night Owl Jazz', url: 'https://cdn.pixabay.com/audio/2023/07/30/audio_e3e836e56f.mp3' },
+    { title: 'Deep Concentration', url: 'https://cdn.pixabay.com/audio/2023/10/24/audio_3f7541c8b4.mp3' },
+    { title: 'Peaceful Morning', url: 'https://cdn.pixabay.com/audio/2024/02/14/audio_8fdb506997.mp3' },
+    { title: 'Cosmic Drift', url: 'https://cdn.pixabay.com/audio/2023/04/17/audio_55b2e01917.mp3' },
 ]
 
 export default function Analytics() {
@@ -164,7 +172,7 @@ export default function Analytics() {
                 setMusicLoaded(true)
             })
             audioRef.current.addEventListener('error', () => {
-                // Skip to next track on error
+                // Skip to next track on error (bad URL)
                 setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
             })
         }
@@ -179,7 +187,7 @@ export default function Analytics() {
     // Track changes
     useEffect(() => {
         if (audioRef.current) {
-            audioRef.current.src = FOCUS_TRACKS[currentTrack]
+            audioRef.current.src = FOCUS_TRACKS[currentTrack].url
             if (isMusicPlaying) {
                 audioRef.current.play().catch(() => { })
             }
@@ -211,9 +219,27 @@ export default function Analytics() {
         stopMusic()
     }
 
+    const nextTrack = () => {
+        setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
+    }
+
+    const prevTrack = () => {
+        setCurrentTrack(prev => (prev - 1 + FOCUS_TRACKS.length) % FOCUS_TRACKS.length)
+    }
+
+    const selectTrack = (index) => {
+        setCurrentTrack(index)
+        if (!isMusicPlaying) {
+            setIsMusicPlaying(true)
+            setTimeout(() => {
+                if (audioRef.current) audioRef.current.play().catch(() => { })
+            }, 100)
+        }
+    }
+
     const startMusic = () => {
         if (audioRef.current) {
-            audioRef.current.src = FOCUS_TRACKS[currentTrack]
+            audioRef.current.src = FOCUS_TRACKS[currentTrack].url
             audioRef.current.volume = musicVolume
             audioRef.current.play().catch(() => { })
             setIsMusicPlaying(true)
@@ -456,23 +482,51 @@ export default function Analytics() {
 
                 {/* Music + Today Stats Panel */}
                 <div className="pomodoro-side-panel">
-                    {/* Deep Focus Music */}
+                    {/* Deep Focus Music Playlist */}
                     <div className="music-card">
                         <div className="music-header">
                             <span className="music-label">🎵 Deep Focus</span>
-                            <button className="music-toggle" onClick={toggleMusic}>
-                                {isMusicPlaying ? <Volume2 size={18} /> : <VolumeX size={18} />}
-                            </button>
+                            <div className="music-header-controls">
+                                <button className="music-nav-btn" onClick={prevTrack} title="Anterior">
+                                    <SkipBack size={16} />
+                                </button>
+                                <button className="music-toggle" onClick={toggleMusic}>
+                                    {isMusicPlaying ? <Pause size={18} /> : <Play size={18} />}
+                                </button>
+                                <button className="music-nav-btn" onClick={nextTrack} title="Siguiente">
+                                    <SkipForward size={16} />
+                                </button>
+                            </div>
                         </div>
-                        <div className="music-visualizer">
-                            {[...Array(12)].map((_, i) => (
-                                <div
+
+                        {/* Now Playing */}
+                        <div className="now-playing">
+                            <Music size={14} />
+                            <span className={isMusicPlaying ? 'playing-text' : ''}>
+                                {FOCUS_TRACKS[currentTrack].title}
+                            </span>
+                        </div>
+
+                        {/* Track List */}
+                        <div className="track-list">
+                            {FOCUS_TRACKS.map((track, i) => (
+                                <button
                                     key={i}
-                                    className={`music-bar ${isMusicPlaying ? 'playing' : ''}`}
-                                    style={{ animationDelay: `${i * 0.1}s`, height: `${Math.random() * 60 + 20}%` }}
-                                />
+                                    className={`track-item ${i === currentTrack ? 'active' : ''}`}
+                                    onClick={() => selectTrack(i)}
+                                >
+                                    <span className="track-number">{i + 1}</span>
+                                    <span className="track-title">{track.title}</span>
+                                    {i === currentTrack && isMusicPlaying && (
+                                        <div className="track-playing-icon">
+                                            <span /><span /><span />
+                                        </div>
+                                    )}
+                                </button>
                             ))}
                         </div>
+
+                        {/* Volume */}
                         <div className="volume-control">
                             <VolumeX size={14} />
                             <input
