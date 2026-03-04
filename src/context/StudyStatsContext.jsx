@@ -23,6 +23,7 @@ const createInitialState = () => ({
     longestStreak: 0,
     totalStudyTime: 0,
     lastStudyDate: null,
+    pomodoroSessions: [], // { date, studyMinutes, breakMinutes, completedAt }
 })
 
 export function StudyStatsProvider({ children }) {
@@ -222,6 +223,74 @@ export function StudyStatsProvider({ children }) {
         return 'Buenas noches'
     }
 
+    // Registrar sesión Pomodoro completada
+    const addPomodoroSession = (studyMinutes, breakMinutes) => {
+        const today = getToday()
+        const session = {
+            date: today,
+            studyMinutes,
+            breakMinutes,
+            completedAt: new Date().toISOString(),
+        }
+        addStudyTime(studyMinutes)
+        setStats(prev => ({
+            ...prev,
+            pomodoroSessions: [...(prev.pomodoroSessions || []), session],
+        }))
+    }
+
+    // Obtener sesiones Pomodoro de hoy
+    const getTodayPomodoros = () => {
+        const today = getToday()
+        return (stats.pomodoroSessions || []).filter(s => s.date === today)
+    }
+
+    // Datos para calendario heatmap (últimos 365 días)
+    const getCalendarHeatmapData = () => {
+        const days = []
+        for (let i = 364; i >= 0; i--) {
+            const date = new Date()
+            date.setDate(date.getDate() - i)
+            const dateStr = date.toISOString().split('T')[0]
+            const minutes = stats.studyHistory[dateStr] || 0
+            const hours = parseFloat((minutes / 60).toFixed(1))
+            // Intensity level: 0=none, 1=light, 2=medium, 3=high, 4=intense
+            let level = 0
+            if (minutes > 0 && minutes < 60) level = 1
+            else if (minutes >= 60 && minutes < 120) level = 2
+            else if (minutes >= 120 && minutes < 240) level = 3
+            else if (minutes >= 240) level = 4
+
+            days.push({
+                date: dateStr,
+                minutes,
+                hours,
+                level,
+                dayOfWeek: date.getDay(),
+                month: date.getMonth(),
+                monthName: date.toLocaleDateString('es-ES', { month: 'short' }),
+            })
+        }
+        return days
+    }
+
+    // Obtener estudio acumulado en un rango de fechas
+    const getStudyInRange = (startDate, endDate) => {
+        let total = 0
+        const start = new Date(startDate + 'T00:00:00')
+        const end = new Date(endDate + 'T00:00:00')
+        const current = new Date(start)
+        while (current <= end) {
+            const dateStr = current.toISOString().split('T')[0]
+            total += stats.studyHistory[dateStr] || 0
+            current.setDate(current.getDate() + 1)
+        }
+        return {
+            totalMinutes: total,
+            totalHours: parseFloat((total / 60).toFixed(1)),
+        }
+    }
+
     const value = {
         stats,
         addStudyTime,
@@ -232,6 +301,10 @@ export function StudyStatsProvider({ children }) {
         getLast30Days,
         getWeeklyData,
         getGreeting,
+        addPomodoroSession,
+        getTodayPomodoros,
+        getCalendarHeatmapData,
+        getStudyInRange,
     }
 
     return (

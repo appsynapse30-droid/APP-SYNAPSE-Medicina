@@ -488,3 +488,635 @@
         font-size: var(--font-size-2xl);
     }
 }
+
+/* ==========================================
+   POMODORO TIMER
+   ========================================== */
+
+/* Heatmap Color Variables */
+.analytics {
+    --heatmap-0: #161b22;
+    --heatmap-1: rgba(57, 213, 255, 0.2);
+    --heatmap-2: rgba(57, 213, 255, 0.4);
+    --heatmap-3: rgba(57, 213, 255, 0.65);
+    --heatmap-4: rgba(57, 213, 255, 0.9);
+}
+
+.pomodoro-section {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: var(--space-md);
+}
+
+.pomodoro-timer-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pomodoro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: var(--space-md);
+}
+
+.pomodoro-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--accent-cyan);
+}
+
+.pomodoro-title h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.pomodoro-settings-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pomodoro-settings-btn:hover {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+}
+
+/* Settings Panel */
+.pomodoro-settings {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.setting-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.setting-row label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.setting-row label strong {
+    color: var(--accent-cyan);
+}
+
+.setting-row input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-full);
+    outline: none;
+}
+
+.setting-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(57, 213, 255, 0.4);
+}
+
+.setting-row input[type="range"]:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Timer Visual */
+.timer-visual {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: var(--space-md) 0;
+}
+
+.timer-svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 12px rgba(57, 213, 255, 0.15));
+}
+
+.timer-progress-circle {
+    transition: stroke-dashoffset 0.5s linear;
+}
+
+.timer-progress-circle.studying {
+    filter: drop-shadow(0 0 8px rgba(57, 213, 255, 0.5));
+}
+
+.timer-progress-circle.break {
+    filter: drop-shadow(0 0 8px rgba(63, 185, 80, 0.5));
+}
+
+.timer-display {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.timer-time {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Space Grotesk', monospace;
+    letter-spacing: 2px;
+}
+
+.timer-phase {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.timer-phase.studying {
+    color: var(--accent-cyan);
+}
+
+.timer-phase.break {
+    color: var(--accent-green);
+}
+
+.timer-phase.completed {
+    color: var(--accent-orange);
+}
+
+.timer-cycles {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+/* Timer Controls */
+.timer-controls {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.timer-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.timer-btn.primary {
+    background: var(--gradient-blue);
+    color: #fff;
+    border: none;
+}
+
+.timer-btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(57, 213, 255, 0.3);
+}
+
+.timer-btn.primary.active {
+    background: linear-gradient(135deg, #f85149, #da3633);
+}
+
+.timer-btn.secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+}
+
+.timer-btn.secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.timer-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   SIDE PANEL (Music + Today Stats)
+   ========================================== */
+
+.pomodoro-side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Music Card */
+.music-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.music-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.music-label {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.music-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.music-toggle:hover {
+    background: rgba(57, 213, 255, 0.15);
+    border-color: var(--accent-cyan);
+}
+
+/* Music Visualizer */
+.music-visualizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    height: 50px;
+    margin-bottom: var(--space-md);
+}
+
+.music-bar {
+    width: 6px;
+    background: var(--accent-cyan);
+    border-radius: 3px 3px 0 0;
+    opacity: 0.3;
+    transition: height 0.3s ease;
+}
+
+.music-bar.playing {
+    opacity: 1;
+    animation: musicPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes musicPulse {
+    0% {
+        height: 15%;
+        opacity: 0.5;
+    }
+
+    50% {
+        height: 80%;
+        opacity: 1;
+    }
+
+    100% {
+        height: 30%;
+        opacity: 0.7;
+    }
+}
+
+/* Volume Control */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--text-muted);
+}
+
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    cursor: pointer;
+}
+
+/* Today Pomodoro Stats */
+.today-pomodoro-stats {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    flex: 1;
+}
+
+.today-pomodoro-stats h3 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.pomo-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.pomo-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+}
+
+.pomo-stat-value {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pomo-stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.daily-progress-bar {
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-sm);
+}
+
+.daily-progress-fill {
+    height: 100%;
+    background: var(--gradient-blue);
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease;
+}
+
+.daily-progress-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    text-align: center;
+    display: block;
+}
+
+/* ==========================================
+   CALENDAR HEATMAP
+   ========================================== */
+
+.heatmap-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    position: relative;
+}
+
+.heatmap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.heatmap-header h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.heatmap-header p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.legend-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.heatmap-container {
+    overflow-x: auto;
+}
+
+.heatmap-months {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 14px;
+    gap: 2px;
+    margin-bottom: 4px;
+    margin-left: 32px;
+}
+
+.month-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.heatmap-grid-wrapper {
+    display: flex;
+    gap: 4px;
+}
+
+.heatmap-days-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 0;
+    width: 28px;
+}
+
+.heatmap-days-label span {
+    height: 12px;
+    font-size: 9px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
+
+.heatmap-grid {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+}
+
+.heatmap-week {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.heatmap-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.4);
+    outline: 1px solid var(--accent-cyan);
+}
+
+.heatmap-cell.empty {
+    background: transparent;
+    cursor: default;
+}
+
+.heatmap-cell.empty:hover {
+    transform: none;
+    outline: none;
+}
+
+.heatmap-cell.level-0 {
+    background: var(--heatmap-0);
+    border: 1px solid var(--border-primary);
+}
+
+.heatmap-cell.level-1 {
+    background: var(--heatmap-1);
+}
+
+.heatmap-cell.level-2 {
+    background: var(--heatmap-2);
+}
+
+.heatmap-cell.level-3 {
+    background: var(--heatmap-3);
+}
+
+.heatmap-cell.level-4 {
+    background: var(--heatmap-4);
+    box-shadow: 0 0 6px rgba(57, 213, 255, 0.3);
+}
+
+/* Tooltip */
+.heatmap-tooltip {
+    position: fixed;
+    transform: translate(-50%, -100%);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+    font-size: var(--font-size-xs);
+    color: var(--text-primary);
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================
+   RESPONSIVE OVERRIDES FOR NEW SECTIONS
+   ========================================== */
+
+@media (max-width: 1024px) {
+    .pomodoro-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .pomodoro-section {
+        grid-template-columns: 1fr;
+    }
+
+    .timer-visual {
+        width: 220px;
+        height: 220px;
+    }
+
+    .timer-time {
+        font-size: 2.5rem;
+    }
+
+    .pomo-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .heatmap-header {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: flex-start;
+    }
+}

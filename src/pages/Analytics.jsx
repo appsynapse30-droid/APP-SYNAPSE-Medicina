@@ -1,15 +1,25 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     TrendingUp,
     Clock,
     Brain,
     Play,
+    Pause,
+    RotateCcw,
     AlertCircle,
     AlertTriangle,
     Flame,
     BookOpen,
     Target,
-    Calendar
+    Calendar,
+    Volume2,
+    VolumeX,
+    Coffee,
+    Settings,
+    Timer,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react'
 import {
     RadarChart,
@@ -31,17 +41,28 @@ import { useLibrary } from '../context/LibraryContext'
 import { useSettings } from '../context/SettingsContext'
 import './Analytics.css'
 
+// Deep Focus music URLs (royalty-free lo-fi beats)
+const FOCUS_TRACKS = [
+    'https://cdn.pixabay.com/audio/2024/11/28/audio_3a4b1c5d6e.mp3',
+    'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3',
+    'https://cdn.pixabay.com/audio/2024/09/10/audio_6e4e1c5d8a.mp3',
+]
+
 export default function Analytics() {
     const navigate = useNavigate()
 
-    // Get data from contexts
+    // --- Existing context hooks ---
     const {
         stats,
         getTodayProgress,
         getStreakInfo,
         getGeneralStats,
         getWeeklyData,
-        getLast30Days
+        getLast30Days,
+        addPomodoroSession,
+        getTodayPomodoros,
+        getCalendarHeatmapData,
+        getStudyInRange,
     } = useStudyStats()
 
     const {
@@ -55,7 +76,7 @@ export default function Analytics() {
     const { documents, collections } = useLibrary()
     const { settings } = useSettings()
 
-    // Get computed data
+    // --- Existing computed data ---
     const todayProgress = getTodayProgress()
     const streakInfo = getStreakInfo()
     const generalStats = getGeneralStats()
@@ -65,23 +86,233 @@ export default function Analytics() {
     const diagnosticItems = getCasesNeedingReview(4)
     const estimatedScore = getEstimatedScore()
 
-    // Calculate week comparison
     const lastWeekTotal = weeklyData.slice(0, 2).reduce((sum, w) => sum + w.hours, 0)
     const thisWeekTotal = weeklyData.slice(2, 4).reduce((sum, w) => sum + w.hours, 0)
     const weekChange = thisWeekTotal - lastWeekTotal
 
-    // Handlers
-    const handleStartReview = () => {
-        navigate('/simulations')
-    }
+    const handleStartReview = () => navigate('/simulations')
+    const handleReviewCase = () => navigate('/simulations')
 
-    const handleReviewCase = (caseId) => {
-        navigate('/simulations')
-    }
-
-    // Default knowledge data if no cases
     const displayKnowledgeData = knowledgeData.length > 0 ? knowledgeData : [
         { subject: 'Sin datos', value: 0 }
+    ]
+
+    // ============ POMODORO STATE ============
+    const [pomodoroStudyTime, setPomodoroStudyTime] = useState(25)
+    const [pomodoroBreakTime, setPomodoroBreakTime] = useState(5)
+    const [pomodoroCycles, setPomodoroCycles] = useState(4)
+    const [currentCycle, setCurrentCycle] = useState(1)
+    const [pomodoroPhase, setPomodoroPhase] = useState('idle') // idle, studying, break, completed
+    const [timeLeft, setTimeLeft] = useState(25 * 60) // in seconds
+    const [showPomodoroSettings, setShowPomodoroSettings] = useState(false)
+
+    // Music state
+    const audioRef = useRef(null)
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false)
+    const [musicVolume, setMusicVolume] = useState(0.3)
+    const [currentTrack, setCurrentTrack] = useState(0)
+    const [musicLoaded, setMusicLoaded] = useState(false)
+
+    // Calendar state
+    const [hoveredDay, setHoveredDay] = useState(null)
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
+
+    // Pomodoro timer effect
+    useEffect(() => {
+        if (pomodoroPhase === 'idle' || pomodoroPhase === 'completed') return
+
+        const interval = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval)
+                    if (pomodoroPhase === 'studying') {
+                        // Register study session
+                        addPomodoroSession(pomodoroStudyTime, pomodoroBreakTime)
+                        if (currentCycle >= pomodoroCycles) {
+                            setPomodoroPhase('completed')
+                            stopMusic()
+                            return 0
+                        }
+                        // Start break
+                        setPomodoroPhase('break')
+                        return pomodoroBreakTime * 60
+                    } else if (pomodoroPhase === 'break') {
+                        // Start next study cycle
+                        setCurrentCycle(c => c + 1)
+                        setPomodoroPhase('studying')
+                        return pomodoroStudyTime * 60
+                    }
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [pomodoroPhase, currentCycle, pomodoroCycles, pomodoroStudyTime, pomodoroBreakTime])
+
+    // Music initialization
+    useEffect(() => {
+        if (!audioRef.current) {
+            audioRef.current = new Audio()
+            audioRef.current.loop = false
+            audioRef.current.volume = musicVolume
+            audioRef.current.addEventListener('ended', () => {
+                setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
+            })
+            audioRef.current.addEventListener('canplaythrough', () => {
+                setMusicLoaded(true)
+            })
+            audioRef.current.addEventListener('error', () => {
+                // Skip to next track on error
+                setCurrentTrack(prev => (prev + 1) % FOCUS_TRACKS.length)
+            })
+        }
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause()
+                audioRef.current = null
+            }
+        }
+    }, [])
+
+    // Track changes
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.src = FOCUS_TRACKS[currentTrack]
+            if (isMusicPlaying) {
+                audioRef.current.play().catch(() => { })
+            }
+        }
+    }, [currentTrack])
+
+    const startPomodoro = () => {
+        setPomodoroPhase('studying')
+        setTimeLeft(pomodoroStudyTime * 60)
+        setCurrentCycle(1)
+        startMusic()
+    }
+
+    const togglePomodoro = () => {
+        if (pomodoroPhase === 'idle' || pomodoroPhase === 'completed') {
+            startPomodoro()
+        } else {
+            setPomodoroPhase('idle')
+            setTimeLeft(pomodoroStudyTime * 60)
+            setCurrentCycle(1)
+            stopMusic()
+        }
+    }
+
+    const resetPomodoro = () => {
+        setPomodoroPhase('idle')
+        setTimeLeft(pomodoroStudyTime * 60)
+        setCurrentCycle(1)
+        stopMusic()
+    }
+
+    const startMusic = () => {
+        if (audioRef.current) {
+            audioRef.current.src = FOCUS_TRACKS[currentTrack]
+            audioRef.current.volume = musicVolume
+            audioRef.current.play().catch(() => { })
+            setIsMusicPlaying(true)
+        }
+    }
+
+    const stopMusic = () => {
+        if (audioRef.current) {
+            audioRef.current.pause()
+        }
+        setIsMusicPlaying(false)
+    }
+
+    const toggleMusic = () => {
+        if (isMusicPlaying) {
+            stopMusic()
+        } else {
+            startMusic()
+        }
+    }
+
+    const handleVolumeChange = (e) => {
+        const vol = parseFloat(e.target.value)
+        setMusicVolume(vol)
+        if (audioRef.current) audioRef.current.volume = vol
+    }
+
+    // Format seconds to MM:SS
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0')
+        const s = (seconds % 60).toString().padStart(2, '0')
+        return `${m}:${s}`
+    }
+
+    // Timer circle calculations
+    const totalSeconds = pomodoroPhase === 'break' ? pomodoroBreakTime * 60 : pomodoroStudyTime * 60
+    const progress = totalSeconds > 0 ? (1 - timeLeft / totalSeconds) : 0
+    const circleRadius = 120
+    const circleCircumference = 2 * Math.PI * circleRadius
+    const strokeDashoffset = circleCircumference * (1 - progress)
+
+    // Calendar heatmap data
+    const heatmapData = getCalendarHeatmapData()
+    const todayPomodoros = getTodayPomodoros()
+
+    // Group heatmap data into weeks for rendering
+    const getHeatmapWeeks = () => {
+        const weeks = []
+        let currentWeek = []
+        // Pad the first week with empty cells
+        const firstDayOfWeek = heatmapData[0]?.dayOfWeek || 0
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            currentWeek.push(null)
+        }
+        heatmapData.forEach(day => {
+            currentWeek.push(day)
+            if (currentWeek.length === 7) {
+                weeks.push(currentWeek)
+                currentWeek = []
+            }
+        })
+        if (currentWeek.length > 0) {
+            weeks.push(currentWeek)
+        }
+        return weeks
+    }
+
+    // Get month labels for heatmap
+    const getMonthLabels = () => {
+        const labels = []
+        let lastMonth = -1
+        const weeks = getHeatmapWeeks()
+        weeks.forEach((week, weekIndex) => {
+            const validDay = week.find(d => d !== null)
+            if (validDay && validDay.month !== lastMonth) {
+                lastMonth = validDay.month
+                labels.push({ weekIndex, name: validDay.monthName })
+            }
+        })
+        return labels
+    }
+
+    const handleDayHover = (day, e) => {
+        if (day) {
+            setHoveredDay(day)
+            const rect = e.target.getBoundingClientRect()
+            setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top - 8 })
+        }
+    }
+
+    const heatmapWeeks = getHeatmapWeeks()
+    const monthLabels = getMonthLabels()
+
+    const levelColors = [
+        'var(--heatmap-0)',
+        'var(--heatmap-1)',
+        'var(--heatmap-2)',
+        'var(--heatmap-3)',
+        'var(--heatmap-4)',
     ]
 
     return (
@@ -100,7 +331,260 @@ export default function Analytics() {
                 </button>
             </div>
 
-            {/* Stats Cards */}
+            {/* ====== POMODORO TIMER SECTION ====== */}
+            <div className="pomodoro-section">
+                <div className="pomodoro-timer-card">
+                    <div className="pomodoro-header">
+                        <div className="pomodoro-title">
+                            <Timer size={22} />
+                            <h2>Pomodoro Timer</h2>
+                        </div>
+                        <button
+                            className="pomodoro-settings-btn"
+                            onClick={() => setShowPomodoroSettings(!showPomodoroSettings)}
+                        >
+                            <Settings size={18} />
+                        </button>
+                    </div>
+
+                    {/* Settings Panel */}
+                    {showPomodoroSettings && (
+                        <div className="pomodoro-settings">
+                            <div className="setting-row">
+                                <label>Estudio: <strong>{pomodoroStudyTime} min</strong></label>
+                                <input
+                                    type="range"
+                                    min="5"
+                                    max="90"
+                                    step="5"
+                                    value={pomodoroStudyTime}
+                                    onChange={e => {
+                                        setPomodoroStudyTime(Number(e.target.value))
+                                        if (pomodoroPhase === 'idle') setTimeLeft(Number(e.target.value) * 60)
+                                    }}
+                                    disabled={pomodoroPhase !== 'idle'}
+                                />
+                            </div>
+                            <div className="setting-row">
+                                <label>Descanso: <strong>{pomodoroBreakTime} min</strong></label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="30"
+                                    step="1"
+                                    value={pomodoroBreakTime}
+                                    onChange={e => setPomodoroBreakTime(Number(e.target.value))}
+                                    disabled={pomodoroPhase !== 'idle'}
+                                />
+                            </div>
+                            <div className="setting-row">
+                                <label>Ciclos: <strong>{pomodoroCycles}</strong></label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="8"
+                                    step="1"
+                                    value={pomodoroCycles}
+                                    onChange={e => setPomodoroCycles(Number(e.target.value))}
+                                    disabled={pomodoroPhase !== 'idle'}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Timer Circle */}
+                    <div className="timer-visual">
+                        <svg className="timer-svg" viewBox="0 0 280 280">
+                            <circle
+                                className="timer-bg-circle"
+                                cx="140"
+                                cy="140"
+                                r={circleRadius}
+                                fill="none"
+                                stroke="var(--border-primary)"
+                                strokeWidth="8"
+                            />
+                            <circle
+                                className={`timer-progress-circle ${pomodoroPhase}`}
+                                cx="140"
+                                cy="140"
+                                r={circleRadius}
+                                fill="none"
+                                stroke={pomodoroPhase === 'break' ? 'var(--accent-green)' : 'var(--accent-cyan)'}
+                                strokeWidth="8"
+                                strokeLinecap="round"
+                                strokeDasharray={circleCircumference}
+                                strokeDashoffset={strokeDashoffset}
+                                transform="rotate(-90 140 140)"
+                            />
+                        </svg>
+                        <div className="timer-display">
+                            <span className="timer-time">{formatTime(timeLeft)}</span>
+                            <span className={`timer-phase ${pomodoroPhase}`}>
+                                {pomodoroPhase === 'idle' && 'Listo para estudiar'}
+                                {pomodoroPhase === 'studying' && '🧠 Estudiando...'}
+                                {pomodoroPhase === 'break' && '☕ Descanso'}
+                                {pomodoroPhase === 'completed' && '🎉 ¡Completado!'}
+                            </span>
+                            <span className="timer-cycles">
+                                Ciclo {currentCycle} / {pomodoroCycles}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Timer Controls */}
+                    <div className="timer-controls">
+                        <button
+                            className={`timer-btn primary ${pomodoroPhase === 'studying' || pomodoroPhase === 'break' ? 'active' : ''}`}
+                            onClick={togglePomodoro}
+                        >
+                            {pomodoroPhase === 'idle' || pomodoroPhase === 'completed' ? (
+                                <><Play size={20} /> Iniciar</>
+                            ) : (
+                                <><Pause size={20} /> Detener</>
+                            )}
+                        </button>
+                        <button
+                            className="timer-btn secondary"
+                            onClick={resetPomodoro}
+                            disabled={pomodoroPhase === 'idle'}
+                        >
+                            <RotateCcw size={18} /> Reset
+                        </button>
+                    </div>
+                </div>
+
+                {/* Music + Today Stats Panel */}
+                <div className="pomodoro-side-panel">
+                    {/* Deep Focus Music */}
+                    <div className="music-card">
+                        <div className="music-header">
+                            <span className="music-label">🎵 Deep Focus</span>
+                            <button className="music-toggle" onClick={toggleMusic}>
+                                {isMusicPlaying ? <Volume2 size={18} /> : <VolumeX size={18} />}
+                            </button>
+                        </div>
+                        <div className="music-visualizer">
+                            {[...Array(12)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={`music-bar ${isMusicPlaying ? 'playing' : ''}`}
+                                    style={{ animationDelay: `${i * 0.1}s`, height: `${Math.random() * 60 + 20}%` }}
+                                />
+                            ))}
+                        </div>
+                        <div className="volume-control">
+                            <VolumeX size={14} />
+                            <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={musicVolume}
+                                onChange={handleVolumeChange}
+                                className="volume-slider"
+                            />
+                            <Volume2 size={14} />
+                        </div>
+                    </div>
+
+                    {/* Today Pomodoro Stats */}
+                    <div className="today-pomodoro-stats">
+                        <h3>Hoy</h3>
+                        <div className="pomo-stat-grid">
+                            <div className="pomo-stat">
+                                <span className="pomo-stat-value">{todayPomodoros.length}</span>
+                                <span className="pomo-stat-label">Pomodoros</span>
+                            </div>
+                            <div className="pomo-stat">
+                                <span className="pomo-stat-value">{todayProgress.hours}h</span>
+                                <span className="pomo-stat-label">Estudiado</span>
+                            </div>
+                            <div className="pomo-stat">
+                                <span className="pomo-stat-value">{todayProgress.percentage}%</span>
+                                <span className="pomo-stat-label">Meta Diaria</span>
+                            </div>
+                            <div className="pomo-stat">
+                                <span className="pomo-stat-value">{streakInfo.current}🔥</span>
+                                <span className="pomo-stat-label">Racha</span>
+                            </div>
+                        </div>
+                        <div className="daily-progress-bar">
+                            <div className="daily-progress-fill" style={{ width: `${todayProgress.percentage}%` }} />
+                        </div>
+                        <span className="daily-progress-text">
+                            {todayProgress.remaining > 0
+                                ? `Faltan ${(todayProgress.remaining / 60).toFixed(1)}h para tu meta`
+                                : '¡Meta diaria cumplida! 🎉'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ====== CALENDAR HEATMAP SECTION ====== */}
+            <div className="heatmap-section">
+                <div className="heatmap-header">
+                    <div>
+                        <h2>Calendario de Estudio</h2>
+                        <p>{generalStats.totalHours} horas totales de estudio</p>
+                    </div>
+                    <div className="heatmap-legend">
+                        <span>Menos</span>
+                        {levelColors.map((color, i) => (
+                            <div
+                                key={i}
+                                className="legend-cell"
+                                style={{ background: color }}
+                            />
+                        ))}
+                        <span>Más</span>
+                    </div>
+                </div>
+                <div className="heatmap-container">
+                    <div className="heatmap-months">
+                        {monthLabels.map((label, i) => (
+                            <span key={i} className="month-label" style={{ gridColumn: label.weekIndex + 1 }}>
+                                {label.name}
+                            </span>
+                        ))}
+                    </div>
+                    <div className="heatmap-grid-wrapper">
+                        <div className="heatmap-days-label">
+                            <span>Lun</span>
+                            <span></span>
+                            <span>Mié</span>
+                            <span></span>
+                            <span>Vie</span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div className="heatmap-grid">
+                            {heatmapWeeks.map((week, wi) => (
+                                <div key={wi} className="heatmap-week">
+                                    {week.map((day, di) => (
+                                        <div
+                                            key={di}
+                                            className={`heatmap-cell ${day ? `level-${day.level}` : 'empty'}`}
+                                            onMouseEnter={day ? (e) => handleDayHover(day, e) : undefined}
+                                            onMouseLeave={() => setHoveredDay(null)}
+                                        />
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                {hoveredDay && (
+                    <div
+                        className="heatmap-tooltip"
+                        style={{ left: tooltipPos.x, top: tooltipPos.y }}
+                    >
+                        <strong>{hoveredDay.hours}h</strong> el {new Date(hoveredDay.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
+                )}
+            </div>
+
+            {/* ====== EXISTING STATS CARDS ====== */}
             <div className="stats-row">
                 <div className="stat-card blue">
                     <div className="stat-icon">
