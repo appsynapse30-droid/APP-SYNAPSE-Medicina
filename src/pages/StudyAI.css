@@ -137,7 +137,7 @@
 /* ── Notebooks Grid ── */
 .notebooks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: var(--space-md);
 }
 
@@ -149,12 +149,12 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
-    padding: var(--space-lg);
+    padding: var(--space-md);
     cursor: pointer;
     transition: all 0.25s ease;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-sm);
     animation: fadeIn 0.4s ease forwards;
     opacity: 0;
 }
@@ -200,7 +200,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 200px;
+    min-height: 140px;
     background: rgba(22, 27, 34, 0.4);
 }
 
@@ -210,15 +210,15 @@
 }
 
 .new-card-icon {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     border-radius: var(--radius-full);
     background: rgba(88, 166, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent-blue);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs);
     transition: all 0.3s ease;
 }
 
@@ -320,19 +320,19 @@
 
 /* Card Icon */
 .notebook-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-md);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     flex-shrink: 0;
 }
 
 /* Card Body */
 .notebook-card-body h3 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
@@ -484,7 +484,9 @@
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-xl);
     width: 100%;
-    max-width: 520px;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
     box-shadow: var(--shadow-lg);
     animation: modalSlideIn 0.3s ease;
 }
@@ -505,8 +507,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid var(--border-primary);
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 1;
 }
 
 .modal-header h2 {
