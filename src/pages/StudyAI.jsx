@@ -1,232 +1,338 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useStudyAI } from '../context/StudyAIContext'
 import {
-    Minus,
     Plus,
-    List,
     Search,
-    Highlighter,
-    Download,
-    Quote,
+    Brain,
+    MessageSquare,
+    MoreVertical,
+    Pin,
+    PinOff,
+    Pencil,
+    Trash2,
+    X,
     Sparkles,
-    Send,
-    ToggleRight,
-    Layers,
-    FileText,
-    Share2,
-    MoreHorizontal
+    BookOpen
 } from 'lucide-react'
 import './StudyAI.css'
 
-const chatMessages = [
-    {
-        id: 1,
-        type: 'ai',
-        content: "He notado que estás revisando el **ciclo cardíaco**. ¿Te gustaría que te explique la diferencia entre las presiones de sístole y diástole en el contexto del diagrama?",
-        time: '10:23 AM'
-    },
-    {
-        id: 2,
-        type: 'user',
-        content: "Sí, específicamente explícame la relación del bucle presión-volumen aquí."
-    }
-]
-
 export default function StudyAI() {
-    const [zoom, setZoom] = useState(120)
-    const [messages, setMessages] = useState(chatMessages)
-    const [inputValue, setInputValue] = useState('')
-    const [contextEnabled, setContextEnabled] = useState(true)
+    const navigate = useNavigate()
+    const {
+        notebooks,
+        searchQuery,
+        setSearchQuery,
+        createNotebook,
+        updateNotebook,
+        deleteNotebook,
+        togglePinNotebook,
+        setActiveNotebookId,
+        SPECIALTIES,
+        NOTEBOOK_ICONS,
+        NOTEBOOK_COLORS
+    } = useStudyAI()
 
-    const handleSend = () => {
-        if (!inputValue.trim()) return
-        setMessages([...messages, { id: Date.now(), type: 'user', content: inputValue }])
-        setInputValue('')
+    const [showCreateModal, setShowCreateModal] = useState(false)
+    const [editingNotebook, setEditingNotebook] = useState(null)
+    const [contextMenu, setContextMenu] = useState(null)
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        specialty: '',
+        icon: '📚',
+        color: '#58a6ff'
+    })
+
+    // Sort: pinned first, then by updatedAt
+    const sortedNotebooks = [...notebooks].sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1
+        if (!a.isPinned && b.isPinned) return 1
+        return new Date(b.updatedAt) - new Date(a.updatedAt)
+    })
+
+    const openNotebook = (notebook) => {
+        setActiveNotebookId(notebook.id)
+        navigate(`/study/notebook/${notebook.id}`)
+    }
+
+    const handleCreate = () => {
+        if (!formData.title.trim()) return
+        if (editingNotebook) {
+            updateNotebook(editingNotebook.id, formData)
+        } else {
+            createNotebook(formData)
+        }
+        closeModal()
+    }
+
+    const openEditModal = (notebook) => {
+        setEditingNotebook(notebook)
+        setFormData({
+            title: notebook.title,
+            description: notebook.description || '',
+            specialty: notebook.specialty || '',
+            icon: notebook.icon,
+            color: notebook.color
+        })
+        setShowCreateModal(true)
+        setContextMenu(null)
+    }
+
+    const closeModal = () => {
+        setShowCreateModal(false)
+        setEditingNotebook(null)
+        setFormData({ title: '', description: '', specialty: '', icon: '📚', color: '#58a6ff' })
+    }
+
+    const handleDelete = (id) => {
+        deleteNotebook(id)
+        setContextMenu(null)
+    }
+
+    const formatDate = (date) => {
+        const now = new Date()
+        const d = new Date(date)
+        const diffMs = now - d
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+        if (diffDays === 0) return 'Hoy'
+        if (diffDays === 1) return 'Ayer'
+        if (diffDays < 7) return `Hace ${diffDays} días`
+        return d.toLocaleDateString('es', { month: 'short', day: 'numeric' })
     }
 
     return (
-        <div className="study-ai">
-            {/* Document Viewer */}
-            <div className="document-viewer">
-                <div className="viewer-toolbar">
-                    <div className="zoom-controls">
-                        <button onClick={() => setZoom(Math.max(50, zoom - 10))}><Minus size={16} /></button>
-                        <span>{zoom}%</span>
-                        <button onClick={() => setZoom(Math.min(200, zoom + 10))}><Plus size={16} /></button>
-                    </div>
-                    <div className="doc-title">
-                        <List size={16} />
-                        <span>Anatomía de Gray: Cardiov...</span>
-                    </div>
-                    <div className="viewer-actions">
-                        <button><Search size={16} /></button>
-                        <button><Highlighter size={16} /></button>
-                        <button><Download size={16} /></button>
+        <div className="study-ai-page">
+            {/* Page Header */}
+            <div className="study-ai-header">
+                <div className="study-ai-header-left">
+                    <div className="study-ai-icon-title">
+                        <div className="study-ai-page-icon">
+                            <Brain size={24} />
+                        </div>
+                        <div>
+                            <h1>Estudio IA</h1>
+                            <p className="study-ai-subtitle">Tu asistente médico especializado</p>
+                        </div>
                     </div>
                 </div>
-
-                <div className="document-content" style={{ transform: `scale(${zoom / 100})` }}>
-                    <div className="document-page">
-                        <div className="chapter-header">
-                            <span className="chapter-label">CAPÍTULO 4</span>
-                            <span className="page-number">Página 42</span>
-                        </div>
-                        <h1 className="chapter-title">El Ciclo Cardíaco</h1>
-
-                        <div className="content-grid">
-                            <div className="content-text">
-                                <p>
-                                    El ciclo cardíaco describe la secuencia de eventos que ocurren cuando el corazón
-                                    late. Hay dos fases del ciclo cardíaco: la fase de diástole y la
-                                    fase de sístole.
-                                </p>
-                                <p>
-                                    En la <span className="highlight">fase de diástole</span>, los ventrículos del corazón
-                                    están relajados y el corazón se llena de sangre. En la fase de sístole, los ventrículos
-                                    se contraen y bombean sangre fuera del corazón hacia las arterias. Un ciclo cardíaco se
-                                    completa cuando el corazón se llena de sangre y la sangre es bombeada fuera del corazón.
-                                </p>
-
-                                <h2>Cambios de Presión</h2>
-                                <p>
-                                    Durante el ciclo cardíaco, la presión dentro de las cámaras cardíacas sube y baja.
-                                    Estos cambios de presión abren y cierran las válvulas del corazón. La apertura y
-                                    cierre de estas válvulas producen sonidos que pueden escucharse con un estetoscopio.
-                                </p>
-                            </div>
-
-                            <div className="content-figure">
-                                <img
-                                    src="https://images.unsplash.com/photo-1559757175-5700dde675bc?w=200&h=200&fit=crop"
-                                    alt="Corte transversal del corazón"
-                                />
-                                <span className="figure-caption">Fig 4.1 Corte transversal del corazón humano</span>
-
-                                <div className="text-selection-popup">
-                                    <button className="popup-btn">
-                                        <Quote size={14} />
-                                        Citar
-                                    </button>
-                                    <button className="popup-btn ai">
-                                        <Sparkles size={14} />
-                                        Preguntar IA
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="content-list">
-                            <p>Los eventos del ciclo cardíaco son:</p>
-                            <ul>
-                                <li><strong>Sístole auricular:</strong> Las aurículas se contraen, empujando sangre hacia los ventrículos.</li>
-                                <li><strong>Sístole ventricular:</strong> Los ventrículos se contraen, la presión sube, las válvulas AV se cierran.</li>
-                                <li><strong>Período de relajación:</strong> Los ventrículos se relajan, la presión baja, las válvulas semilunares se cierran.</li>
-                            </ul>
-                        </div>
+                <div className="study-ai-header-right">
+                    <div className="study-ai-search">
+                        <Search size={16} />
+                        <input
+                            type="text"
+                            placeholder="Buscar cuadernos..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                            <button className="search-clear" onClick={() => setSearchQuery('')}>
+                                <X size={14} />
+                            </button>
+                        )}
                     </div>
+                    <button className="create-notebook-btn" onClick={() => setShowCreateModal(true)}>
+                        <Plus size={18} />
+                        <span>Nuevo Cuaderno</span>
+                    </button>
                 </div>
             </div>
 
-            {/* AI Chat Panel */}
-            <aside className="ai-panel">
-                <div className="ai-panel-header">
-                    <div className="ai-title">
-                        <h2>Tutor Médico</h2>
-                        <span className="ai-status">
-                            <span className="status-dot"></span>
-                            LEYENDO PÁGINA 42...
-                        </span>
-                    </div>
-                    <button className="more-btn"><MoreHorizontal size={18} /></button>
-                </div>
+            {/* Notebooks Grid */}
+            {sortedNotebooks.length > 0 ? (
+                <div className="notebooks-grid">
+                    {/* New notebook card */}
+                    <button className="notebook-card new-card" onClick={() => setShowCreateModal(true)}>
+                        <div className="new-card-icon">
+                            <Plus size={32} />
+                        </div>
+                        <span>Crear Cuaderno</span>
+                        <p>Organiza un nuevo tema de estudio</p>
+                    </button>
 
-                <div className="chat-container">
-                    <span className="chat-date">HOY 10:23 AM</span>
-
-                    <div className="chat-messages">
-                        {messages.map((msg) => (
-                            <div key={msg.id} className={`chat-message ${msg.type}`}>
-                                {msg.type === 'ai' && (
-                                    <div className="ai-avatar">
-                                        <Sparkles size={16} />
-                                    </div>
-                                )}
-                                <div className="message-bubble">
-                                    <span className="message-sender">
-                                        {msg.type === 'ai' ? 'Synapse IA' : ''}
-                                    </span>
-                                    <p dangerouslySetInnerHTML={{
-                                        __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<a href="#" class="inline-link">$1</a>')
-                                    }} />
+                    {sortedNotebooks.map((notebook) => (
+                        <div
+                            key={notebook.id}
+                            className="notebook-card"
+                            onClick={() => openNotebook(notebook)}
+                        >
+                            {notebook.isPinned && (
+                                <div className="pin-indicator">
+                                    <Pin size={12} />
                                 </div>
-                                {msg.type === 'user' && (
-                                    <div className="user-avatar">
-                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=DrSmith" alt="Tú" />
-                                    </div>
+                            )}
+
+                            <button
+                                className="notebook-menu-btn"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setContextMenu(contextMenu === notebook.id ? null : notebook.id)
+                                }}
+                            >
+                                <MoreVertical size={16} />
+                            </button>
+
+                            {contextMenu === notebook.id && (
+                                <div className="notebook-context-menu" onClick={(e) => e.stopPropagation()}>
+                                    <button onClick={() => { togglePinNotebook(notebook.id); setContextMenu(null) }}>
+                                        {notebook.isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+                                        <span>{notebook.isPinned ? 'Desfijar' : 'Fijar'}</span>
+                                    </button>
+                                    <button onClick={() => openEditModal(notebook)}>
+                                        <Pencil size={14} />
+                                        <span>Editar</span>
+                                    </button>
+                                    <button className="delete-action" onClick={() => handleDelete(notebook.id)}>
+                                        <Trash2 size={14} />
+                                        <span>Eliminar</span>
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="notebook-card-icon" style={{ background: `${notebook.color}20` }}>
+                                <span>{notebook.icon}</span>
+                            </div>
+
+                            <div className="notebook-card-body">
+                                <h3>{notebook.title}</h3>
+                                {notebook.specialty && (
+                                    <span className="notebook-specialty" style={{ color: notebook.color }}>
+                                        {notebook.specialty}
+                                    </span>
+                                )}
+                                {notebook.description && (
+                                    <p className="notebook-description">{notebook.description}</p>
                                 )}
                             </div>
-                        ))}
 
-                        <div className="typing-indicator">
-                            <div className="ai-avatar"><Sparkles size={16} /></div>
-                            <div className="typing-dots">
-                                <span></span><span></span><span></span>
+                            <div className="notebook-card-footer">
+                                <div className="notebook-meta">
+                                    <MessageSquare size={12} />
+                                    <span>{notebook.chatsCount} chats</span>
+                                </div>
+                                <span className="notebook-date">{formatDate(notebook.updatedAt)}</span>
                             </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                /* Empty State */
+                <div className="study-ai-empty">
+                    <div className="empty-illustration">
+                        <div className="empty-icon-ring">
+                            <BookOpen size={48} />
+                        </div>
+                        <div className="empty-sparkle s1"><Sparkles size={16} /></div>
+                        <div className="empty-sparkle s2"><Sparkles size={12} /></div>
+                        <div className="empty-sparkle s3"><Sparkles size={14} /></div>
+                    </div>
+                    <h2>Comienza tu estudio con IA</h2>
+                    <p>Crea tu primer cuaderno para organizar temas de estudio. Cada cuaderno contiene chats con tu asistente médico especializado que responde con láminas interactivas.</p>
+                    <button className="create-notebook-btn large" onClick={() => setShowCreateModal(true)}>
+                        <Plus size={20} />
+                        <span>Crear mi primer cuaderno</span>
+                    </button>
+                </div>
+            )}
+
+            {/* Click outside to close context menu */}
+            {contextMenu && (
+                <div className="context-menu-overlay" onClick={() => setContextMenu(null)} />
+            )}
+
+            {/* Create / Edit Modal */}
+            {showCreateModal && (
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>{editingNotebook ? 'Editar Cuaderno' : 'Nuevo Cuaderno'}</h2>
+                            <button className="modal-close" onClick={closeModal}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            {/* Icon + Color selector */}
+                            <div className="form-row icon-color-row">
+                                <div className="form-group">
+                                    <label>Icono</label>
+                                    <div className="icon-picker">
+                                        {NOTEBOOK_ICONS.map(icon => (
+                                            <button
+                                                key={icon}
+                                                className={`icon-option ${formData.icon === icon ? 'active' : ''}`}
+                                                onClick={() => setFormData({ ...formData, icon })}
+                                            >
+                                                {icon}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Color</label>
+                                    <div className="color-picker">
+                                        {NOTEBOOK_COLORS.map(color => (
+                                            <button
+                                                key={color}
+                                                className={`color-option ${formData.color === color ? 'active' : ''}`}
+                                                style={{ background: color }}
+                                                onClick={() => setFormData({ ...formData, color })}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Nombre del cuaderno</label>
+                                <input
+                                    type="text"
+                                    placeholder="ej. Cardiología Clínica"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Especialidad</label>
+                                <select
+                                    value={formData.specialty}
+                                    onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                                >
+                                    <option value="">Seleccionar especialidad...</option>
+                                    {SPECIALTIES.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Descripción <span className="optional">(opcional)</span></label>
+                                <input
+                                    type="text"
+                                    placeholder="Breve descripción del cuaderno"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="btn-cancel" onClick={closeModal}>Cancelar</button>
+                            <button
+                                className="btn-create"
+                                onClick={handleCreate}
+                                disabled={!formData.title.trim()}
+                            >
+                                <span style={{ fontSize: '18px' }}>{formData.icon}</span>
+                                {editingNotebook ? 'Guardar cambios' : 'Crear cuaderno'}
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <div className="chat-input-section">
-                    <div className="chat-input-wrapper">
-                        <input
-                            type="text"
-                            placeholder="Haz una pregunta de seguimiento..."
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        />
-                        <button className="send-btn" onClick={handleSend}>
-                            <Send size={18} />
-                        </button>
-                    </div>
-                    <div className="context-toggle">
-                        <ToggleRight size={18} className={contextEnabled ? 'active' : ''} />
-                        <span>Contexto: Página 42</span>
-                    </div>
-                </div>
-
-                <div className="quick-actions">
-                    <div className="actions-header">
-                        <h3>ACCIONES RÁPIDAS</h3>
-                        <Sparkles size={14} />
-                    </div>
-
-                    <div className="quick-actions-list">
-                        <button className="action-card">
-                            <div className="action-icon blue"><Layers size={18} /></div>
-                            <div className="action-text">
-                                <span>Generar 20 Flashcards</span>
-                                <p>Basadas en el contenido del Capítulo 4</p>
-                            </div>
-                        </button>
-
-                        <button className="action-card">
-                            <div className="action-icon purple"><FileText size={18} /></div>
-                            <div className="action-text">
-                                <span>Resumir Conceptos Clave</span>
-                                <p>Crear una hoja de resumen de 1 página</p>
-                            </div>
-                        </button>
-
-                        <button className="action-card">
-                            <div className="action-icon green"><Share2 size={18} /></div>
-                            <div className="action-text">
-                                <span>Crear Mapa Mental</span>
-                                <p>Visualizar conexiones del sistema</p>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </aside>
+            )}
         </div>
     )
 }
