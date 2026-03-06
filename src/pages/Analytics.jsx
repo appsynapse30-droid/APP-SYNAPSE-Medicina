@@ -43,6 +43,7 @@ import { useClinicalCases, medicalCategories } from '../context/ClinicalCasesCon
 import { useLibrary } from '../context/LibraryContext'
 import { useSettings } from '../context/SettingsContext'
 import { useMusic } from '../context/MusicContext'
+import useNotifications from '../hooks/useNotifications'
 import './Analytics.css'
 
 
@@ -104,6 +105,13 @@ export default function Analytics() {
     const [timeLeft, setTimeLeft] = useState(25 * 60) // in seconds
     const [showPomodoroSettings, setShowPomodoroSettings] = useState(false)
 
+    const {
+        pomodoroStarted,
+        pomodoroCompleted,
+        pomodoroBreakStarted,
+        pomodoroBreakEnded
+    } = useNotifications()
+
     // --- Music from global context (persists across routes) ---
     const {
         tracks: FOCUS_TRACKS,
@@ -136,13 +144,16 @@ export default function Analytics() {
                         if (currentCycle >= pomodoroCycles) {
                             setPomodoroPhase('completed')
                             stopMusic()
+                            pomodoroCompleted(pomodoroStudyTime * pomodoroCycles)
                             return 0
                         }
                         setPomodoroPhase('break')
+                        pomodoroBreakStarted(pomodoroBreakTime)
                         return pomodoroBreakTime * 60
                     } else if (pomodoroPhase === 'break') {
                         setCurrentCycle(c => c + 1)
                         setPomodoroPhase('studying')
+                        pomodoroBreakEnded()
                         return pomodoroStudyTime * 60
                     }
                     return 0
@@ -159,6 +170,7 @@ export default function Analytics() {
         setTimeLeft(pomodoroStudyTime * 60)
         setCurrentCycle(1)
         startMusic()
+        pomodoroStarted(pomodoroStudyTime)
     }
 
     const togglePomodoro = () => {

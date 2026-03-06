@@ -28,6 +28,7 @@ import {
     AlertCircle
 } from 'lucide-react'
 import { useLibrary } from '../context/LibraryContext'
+import useNotifications from '../hooks/useNotifications'
 import './Library.css'
 
 export default function Library() {
@@ -53,6 +54,8 @@ export default function Library() {
         validateFile,
         MAX_FILE_SIZE
     } = useLibrary()
+
+    const { documentUploaded } = useNotifications()
 
     const [viewMode, setViewMode] = useState('grid')
     const [searchQuery, setSearchQuery] = useState('')
@@ -206,6 +209,7 @@ export default function Library() {
         }
 
         if (!hasError) {
+            uploadFiles.forEach(f => documentUploaded(f.name))
             setUploadFiles([])
             setUploadCollection('')
             setUploadTags([])

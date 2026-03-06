@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Check, Bookmark, Share2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Copy, Check, Bookmark, Share2, ChevronDown, ChevronUp, Layers } from 'lucide-react'
 import './AISlideCard.css'
 
 /**
@@ -18,8 +18,9 @@ import './AISlideCard.css'
  *       highlight?: boolean
  *     }]
  *   }
+ *   onGenerateFlashcards: (slideData: object) => void (optional)
  */
-export default function AISlideCard({ slideData, animationDelay = 0 }) {
+export default function AISlideCard({ slideData, animationDelay = 0, onGenerateFlashcards }) {
     const [copied, setCopied] = useState(false)
     const [saved, setSaved] = useState(false)
     const [collapsed, setCollapsed] = useState(false)
@@ -146,6 +147,15 @@ export default function AISlideCard({ slideData, animationDelay = 0 }) {
                             <Share2 size={14} />
                             <span>Compartir</span>
                         </button>
+                        {onGenerateFlashcards && (
+                            <button
+                                className="slide-action-btn ai-action-btn"
+                                onClick={() => onGenerateFlashcards(slideData)}
+                            >
+                                <Layers size={14} />
+                                <span>Crear Flashcards</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

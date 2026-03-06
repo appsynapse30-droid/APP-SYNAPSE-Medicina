@@ -40,6 +40,7 @@ import {
 } from 'lucide-react'
 import { useSettings } from '../context/SettingsContext'
 import { useAuth } from '../context/AuthContext'
+import useNotifications from '../hooks/useNotifications'
 import { supabase } from '../config/supabase'
 import './Settings.css'
 
@@ -95,12 +96,12 @@ export default function Settings() {
     } = useSettings()
 
     const { user } = useAuth()
+    const { success, error: notifyError, settingsSaved, dataExported, dataImported } = useNotifications()
     const avatarInputRef = useRef(null)
 
     const [activeSection, setActiveSection] = useState(null)
     const [showResetConfirm, setShowResetConfirm] = useState(false)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
-    const [saveMessage, setSaveMessage] = useState('')
     const [avatarUploading, setAvatarUploading] = useState(false)
 
     // Handle profile photo upload
@@ -139,7 +140,7 @@ export default function Settings() {
 
             if (uploadError) {
                 console.error('Upload error:', uploadError)
-                showSaveMessage('Error al subir la imagen. Intenta de nuevo.')
+                showSaveMessage('Error al subir la imagen. Intenta de nuevo.', 'error')
                 setAvatarUploading(false)
                 return
             }
@@ -161,7 +162,7 @@ export default function Settings() {
             }
         } catch (err) {
             console.error('Avatar upload error:', err)
-            showSaveMessage('Error inesperado al subir la foto.')
+            showSaveMessage('Error inesperado al subir la foto.', 'error')
         } finally {
             setAvatarUploading(false)
             // Reset file input so the same file can be re-selected
@@ -169,17 +170,17 @@ export default function Settings() {
         }
     }
 
-    const showSaveMessage = (message) => {
+    const showSaveMessage = (message, type = 'success') => {
         // Only show message if explicitly provided (manual save)
         if (message && typeof message === 'string') {
-            setSaveMessage(message)
-            setTimeout(() => setSaveMessage(''), 2000)
+            if (type === 'error') notifyError('Error', message)
+            else success(message)
         }
     }
 
     const handleManualSave = () => {
         if (saveSettings()) {
-            showSaveMessage('¡Cambios guardados correctamente!')
+            settingsSaved()
         }
     }
 
@@ -188,9 +189,9 @@ export default function Settings() {
         if (file) {
             try {
                 await importSettings(file)
-                showSaveMessage('Configuración importada correctamente')
+                dataImported()
             } catch (err) {
-                showSaveMessage('Error al importar configuración')
+                notifyError('Error', 'Error al importar configuración')
             }
         }
     }
@@ -666,7 +667,7 @@ export default function Settings() {
                     </div>
 
                     <div className="data-actions">
-                        <button className="btn btn-secondary" onClick={exportSettings}>
+                        <button className="btn btn-secondary" onClick={() => { exportSettings(); dataExported(); }}>
                             <Download size={16} />
                             Exportar mis datos
                         </button>

@@ -264,8 +264,21 @@
     color: var(--text-primary);
 }
 
-.slide-action-btn.active {
+.slide-action-btn.active span {
+    color: var(--text-primary);
+}
+
+.ai-action-btn {
+    margin-left: auto;
     color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.1);
+    border: 1px dashed rgba(88, 166, 255, 0.3);
+}
+
+.ai-action-btn:hover {
+    background: rgba(88, 166, 255, 0.15) !important;
+    border-color: var(--accent-blue) !important;
+    color: var(--accent-blue-hover) !important;
 }
 
 /* ── Collapsed state ── */

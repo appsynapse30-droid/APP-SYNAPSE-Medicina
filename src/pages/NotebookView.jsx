@@ -1,7 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStudyAI } from '../context/StudyAIContext'
+import { useFSRS } from '../context/FSRSContext'
 import AISlideCard from '../components/study/AISlideCard'
+import FlashcardGeneratorModal from '../components/study/FlashcardGeneratorModal'
+import ImageOcclusionModal from '../components/study/ImageOcclusionModal'
+import MindMapModal from '../components/study/MindMapModal'
+import MnemonicGeneratorModal from '../components/study/MnemonicGeneratorModal'
+import { sileo as toast } from 'sileo'
 import {
     ArrowLeft,
     Plus,
@@ -14,7 +20,9 @@ import {
     Menu,
     X,
     Brain,
-    Loader2
+    Loader2,
+    Wand2,
+    Image as ImageIcon
 } from 'lucide-react'
 import './NotebookView.css'
 
@@ -35,12 +43,19 @@ export default function NotebookView() {
         renameChat,
         sendMessage
     } = useStudyAI()
+    const { addFlashcards } = useFSRS()
 
     const [inputValue, setInputValue] = useState('')
     const [showSidebar, setShowSidebar] = useState(false)
     const [editingChatId, setEditingChatId] = useState(null)
     const [editChatTitle, setEditChatTitle] = useState('')
     const [chatMenuId, setChatMenuId] = useState(null)
+    const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false)
+    const [selectedSlideData, setSelectedSlideData] = useState(null)
+    const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false)
+    const [isOcclusionModalOpen, setIsOcclusionModalOpen] = useState(false)
+    const [isMindMapModalOpen, setIsMindMapModalOpen] = useState(false)
+    const [isMnemonicModalOpen, setIsMnemonicModalOpen] = useState(false)
     const messagesEndRef = useRef(null)
     const inputRef = useRef(null)
 
@@ -145,7 +160,13 @@ export default function NotebookView() {
                             <Sparkles size={14} />
                         </div>
                         <div className="ai-msg-content">
-                            <AISlideCard slideData={slideData} />
+                            <AISlideCard
+                                slideData={slideData}
+                                onGenerateFlashcards={(data) => {
+                                    setSelectedSlideData(data)
+                                    setIsFlashcardModalOpen(true)
+                                }}
+                            />
                         </div>
                     </div>
                 )
@@ -334,6 +355,40 @@ export default function NotebookView() {
                 {/* Input Area */}
                 <div className="chat-input-area">
                     <div className="chat-input-container">
+                        <div className="tools-menu-wrapper">
+                            <button
+                                className="tools-trigger-btn"
+                                onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
+                            >
+                                <Plus size={20} />
+                            </button>
+
+                            {isToolsMenuOpen && (
+                                <div className="tools-dropdown-menu">
+                                    <button onClick={() => {
+                                        setIsToolsMenuOpen(false)
+                                        setIsOcclusionModalOpen(true)
+                                    }}>
+                                        <ImageIcon size={16} />
+                                        <span>Oclusión de Imagen</span>
+                                    </button>
+                                    <button onClick={() => {
+                                        setIsToolsMenuOpen(false)
+                                        setIsMindMapModalOpen(true)
+                                    }}>
+                                        <Brain size={16} />
+                                        <span>Crear Mapa Mental</span>
+                                    </button>
+                                    <button onClick={() => {
+                                        setIsToolsMenuOpen(false)
+                                        setIsMnemonicModalOpen(true)
+                                    }}>
+                                        <Wand2 size={16} />
+                                        <span>Generar Mnemotecnia</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                         <input
                             ref={inputRef}
                             type="text"
@@ -357,7 +412,82 @@ export default function NotebookView() {
                     </p>
                 </div>
             </main>
-        </div>
+
+            {/* Flashcard Generator Modal */}
+            <FlashcardGeneratorModal
+                isOpen={isFlashcardModalOpen}
+                onClose={() => setIsFlashcardModalOpen(false)}
+                slideData={selectedSlideData}
+                onSave={async (cards) => {
+                    const success = await addFlashcards(cards)
+                    if (success) {
+                        toast.success({
+                            title: 'Flashcards guardadas',
+                            content: `Se han añadido ${cards.length} tarjetas a tu mazo de repaso.`,
+                            color: '#3fb950'
+                        })
+                    } else {
+                        toast.error({
+                            title: 'Error',
+                            content: 'No se pudieron guardar las tarjetas.',
+                            color: '#f85149'
+                        })
+                    }
+                }}
+            />
+
+            {/* Image Occlusion Modal */}
+            <ImageOcclusionModal
+                isOpen={isOcclusionModalOpen}
+                onClose={() => setIsOcclusionModalOpen(false)}
+                onSave={async (cards) => {
+                    const success = await addFlashcards(cards)
+                    if (success) {
+                        toast.success({
+                            title: 'Máscaras guardadas',
+                            content: `Se han añadido ${cards.length} tarjetas visuales a tu mazo de repaso.`,
+                            color: '#39d5ff'
+                        })
+                    } else {
+                        toast.error({
+                            title: 'Error',
+                            content: 'No se pudieron guardar las máscaras.',
+                            color: '#f85149'
+                        })
+                    }
+                }}
+            />
+
+            {/* Mind Map Modal */}
+            <MindMapModal
+                isOpen={isMindMapModalOpen}
+                onClose={() => setIsMindMapModalOpen(false)}
+                topic={notebook.title || inputValue || 'Tema Seleccionado'}
+            />
+
+            {/* Mnemonic Modal */}
+            <MnemonicGeneratorModal
+                isOpen={isMnemonicModalOpen}
+                onClose={() => setIsMnemonicModalOpen(false)}
+                topic={notebook.title || inputValue || 'Concepto Médico'}
+                onSave={async (cards) => {
+                    const success = await addFlashcards(cards)
+                    if (success) {
+                        toast.success({
+                            title: 'Mnemotecnia guardada',
+                            content: `Recurso visual guardado en tu mazo de repaso.`,
+                            color: '#f472b6'
+                        })
+                    } else {
+                        toast.error({
+                            title: 'Error',
+                            content: 'No se pudo guardar la mnemotecnia.',
+                            color: '#f85149'
+                        })
+                    }
+                }}
+            />
+        </div >
     )
 }
 

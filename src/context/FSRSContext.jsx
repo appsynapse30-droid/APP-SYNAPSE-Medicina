@@ -366,6 +366,31 @@ export function FSRSProvider({ children }) {
         }
     }, [user]);
 
+    /**
+     * Add new flashcards (Simulated for AI Generator)
+     */
+    const addFlashcards = useCallback(async (cards, deckId = null) => {
+        if (!user) return false;
+
+        try {
+            setLoading(true);
+            // Simulate network delay
+            await new Promise(r => setTimeout(r, 800));
+
+            // Here we would normally insert into Supabase
+            // For now, we mock success
+            console.log(`[Mock] Added ${cards.length} cards to deck ${deckId || 'default'}`);
+
+            return true;
+        } catch (error) {
+            console.error('Error adding flashcards:', error);
+            setError(error.message);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
     const value = {
         // State
         studyQueue,
@@ -385,6 +410,7 @@ export function FSRSProvider({ children }) {
         skipCard,
         getProgress,
         getDueCardsCount,
+        addFlashcards,
 
         // Constants
         Rating,

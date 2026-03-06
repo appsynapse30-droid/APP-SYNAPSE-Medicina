@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sileo'
 
 // Providers
 import { SupabaseProvider } from './context/SupabaseContext'
@@ -13,6 +14,7 @@ import { StudyAIProvider } from './context/StudyAIContext'
 // Components
 import Layout from './components/layout/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import NotificationWatcher from './components/NotificationWatcher'
 
 // Public Pages
 import Login from './pages/Login'
@@ -34,48 +36,60 @@ import NotebookView from './pages/NotebookView'
 
 function App() {
     return (
-        <SupabaseProvider>
-            <AuthProvider>
-                <ClinicalCasesProvider>
-                    <SettingsProvider>
-                        <FSRSProvider>
-                            <LibraryProvider>
-                                <MusicProvider>
-                                    <StudyAIProvider>
-                                        <Routes>
-                                            {/* Public Routes */}
-                                            <Route path="/login" element={<Login />} />
-                                            <Route path="/register" element={<Register />} />
-                                            <Route path="/forgot-password" element={<ForgotPassword />} />
-                                            <Route path="/reset-password" element={<ResetPassword />} />
+        <>
+            <Toaster
+                position="top-right"
+                offset={{ top: 16, right: 16 }}
+                options={{
+                    fill: '#161b22',
+                    roundness: 14,
+                    autopilot: { expand: 800, collapse: 4000 },
+                }}
+            />
+            <SupabaseProvider>
+                <AuthProvider>
+                    <ClinicalCasesProvider>
+                        <SettingsProvider>
+                            <FSRSProvider>
+                                <LibraryProvider>
+                                    <MusicProvider>
+                                        <StudyAIProvider>
+                                            <NotificationWatcher />
+                                            <Routes>
+                                                {/* Public Routes */}
+                                                <Route path="/login" element={<Login />} />
+                                                <Route path="/register" element={<Register />} />
+                                                <Route path="/forgot-password" element={<ForgotPassword />} />
+                                                <Route path="/reset-password" element={<ResetPassword />} />
 
-                                            {/* Protected Routes */}
-                                            <Route path="/" element={
-                                                <ProtectedRoute>
-                                                    <Layout />
-                                                </ProtectedRoute>
-                                            }>
-                                                <Route index element={<Dashboard />} />
-                                                <Route path="dashboard" element={<Dashboard />} />
-                                                <Route path="library" element={<Library />} />
-                                                <Route path="library/document/:id" element={<DocumentReader />} />
-                                                <Route path="study" element={<StudyAI />} />
-                                                <Route path="study/notebook/:notebookId" element={<NotebookView />} />
-                                                <Route path="study/session" element={<StudySession />} />
-                                                <Route path="simulations" element={<ClinicalCases />} />
-                                                <Route path="analytics" element={<Analytics />} />
-                                                <Route path="calendar" element={<Calendar />} />
-                                                <Route path="settings" element={<Settings />} />
-                                            </Route>
-                                        </Routes>
-                                    </StudyAIProvider>
-                                </MusicProvider>
-                            </LibraryProvider>
-                        </FSRSProvider>
-                    </SettingsProvider>
-                </ClinicalCasesProvider>
-            </AuthProvider>
-        </SupabaseProvider>
+                                                {/* Protected Routes */}
+                                                <Route path="/" element={
+                                                    <ProtectedRoute>
+                                                        <Layout />
+                                                    </ProtectedRoute>
+                                                }>
+                                                    <Route index element={<Dashboard />} />
+                                                    <Route path="dashboard" element={<Dashboard />} />
+                                                    <Route path="library" element={<Library />} />
+                                                    <Route path="library/document/:id" element={<DocumentReader />} />
+                                                    <Route path="study" element={<StudyAI />} />
+                                                    <Route path="study/notebook/:notebookId" element={<NotebookView />} />
+                                                    <Route path="study/session" element={<StudySession />} />
+                                                    <Route path="simulations" element={<ClinicalCases />} />
+                                                    <Route path="analytics" element={<Analytics />} />
+                                                    <Route path="calendar" element={<Calendar />} />
+                                                    <Route path="settings" element={<Settings />} />
+                                                </Route>
+                                            </Routes>
+                                        </StudyAIProvider>
+                                    </MusicProvider>
+                                </LibraryProvider>
+                            </FSRSProvider>
+                        </SettingsProvider>
+                    </ClinicalCasesProvider>
+                </AuthProvider>
+            </SupabaseProvider>
+        </>
     )
 }
 

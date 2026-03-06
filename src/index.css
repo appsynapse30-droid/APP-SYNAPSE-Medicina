@@ -67,6 +67,23 @@
   /* Sidebar */
   --sidebar-width: 240px;
   --header-height: 64px;
+
+  /* ─── Sileo Toast Overrides ──────────────────────────── */
+  --sileo-state-success: oklch(0.72 0.19 152);
+  /* SYNAPSE green  */
+  --sileo-state-loading: oklch(0.65 0.17 237);
+  /* SYNAPSE blue   */
+  --sileo-state-error: oklch(0.64 0.22 27);
+  /* SYNAPSE red    */
+  --sileo-state-warning: oklch(0.78 0.17 65);
+  /* SYNAPSE orange */
+  --sileo-state-info: oklch(0.68 0.18 237);
+  /* SYNAPSE cyan   */
+  --sileo-state-action: oklch(0.62 0.21 290);
+  /* SYNAPSE purple */
+  --sileo-width: 370px;
+  --sileo-height: 42px;
+  --sileo-duration: 550ms;
 }
 
 /* Light Theme */

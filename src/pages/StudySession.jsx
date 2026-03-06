@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import FlashcardView from '../components/study/FlashcardView';
 import RatingButtons from '../components/study/RatingButtons';
 import StudyProgress from '../components/study/StudyProgress';
+import useNotifications from '../hooks/useNotifications';
 import './StudySession.css';
 
 function StudySession() {
@@ -31,6 +32,7 @@ function StudySession() {
     const [showAnswer, setShowAnswer] = useState(false);
     const [isFlipping, setIsFlipping] = useState(false);
     const [sessionComplete, setSessionComplete] = useState(false);
+    const { sessionStarted: notifySessionStarted, sessionCompleted: notifySessionCompleted, cardMastered } = useNotifications();
 
     // Start session on mount
     useEffect(() => {
@@ -48,6 +50,7 @@ function StudySession() {
         if (isStudying && studyQueue.length > 0) {
             const progress = getProgress();
             if (progress.remaining === 0 && progress.completed > 0) {
+                notifySessionCompleted(sessionStats.studied, progress.accuracy);
                 setSessionComplete(true);
             }
         }
@@ -68,6 +71,8 @@ function StudySession() {
     const handleRating = async (rating) => {
         setShowAnswer(false);
         await answerCard(rating);
+        // Notify milestones every 10 cards
+        cardMastered(sessionStats.studied + 1);
     };
 
     const handleSkip = () => {

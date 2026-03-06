@@ -15,6 +15,7 @@ import {
     Check,
     X
 } from 'lucide-react';
+import useNotifications from '../hooks/useNotifications';
 import './Register.css';
 
 // Google SVG icon
@@ -29,6 +30,7 @@ const GoogleIcon = () => (
 function Register() {
     const navigate = useNavigate();
     const { signUp, loading, clearError } = useAuth();
+    const { accountCreated: notifyAccountCreated } = useNotifications();
 
     const [formData, setFormData] = useState({
         email: '',
@@ -108,6 +110,7 @@ function Register() {
                 setError('Error al crear la cuenta. Intenta nuevamente.');
             }
         } else {
+            notifyAccountCreated();
             setSuccess(true);
         }
     };

@@ -11,6 +11,7 @@ import {
     Mail,
     AlertCircle
 } from 'lucide-react';
+import useNotifications from '../hooks/useNotifications';
 import './Login.css';
 
 // Google SVG icon
@@ -25,6 +26,7 @@ const GoogleIcon = () => (
 function Login() {
     const navigate = useNavigate();
     const { signIn, loading, clearError } = useAuth();
+    const { welcomeBack, error: notifyError } = useNotifications();
 
     const [formData, setFormData] = useState({
         email: '',
@@ -77,6 +79,8 @@ function Login() {
                 setError('Error al iniciar sesión. Intenta nuevamente.');
             }
         } else {
+            const displayName = formData.email.split('@')[0];
+            welcomeBack(displayName);
             navigate('/');
         }
     };
