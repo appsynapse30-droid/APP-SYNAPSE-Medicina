@@ -22,7 +22,8 @@ import {
     Brain,
     Loader2,
     Wand2,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Layers
 } from 'lucide-react'
 import './NotebookView.css'
 
@@ -355,40 +356,6 @@ export default function NotebookView() {
                 {/* Input Area */}
                 <div className="chat-input-area">
                     <div className="chat-input-container">
-                        <div className="tools-menu-wrapper">
-                            <button
-                                className="tools-trigger-btn"
-                                onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
-                            >
-                                <Plus size={20} />
-                            </button>
-
-                            {isToolsMenuOpen && (
-                                <div className="tools-dropdown-menu">
-                                    <button onClick={() => {
-                                        setIsToolsMenuOpen(false)
-                                        setIsOcclusionModalOpen(true)
-                                    }}>
-                                        <ImageIcon size={16} />
-                                        <span>Oclusión de Imagen</span>
-                                    </button>
-                                    <button onClick={() => {
-                                        setIsToolsMenuOpen(false)
-                                        setIsMindMapModalOpen(true)
-                                    }}>
-                                        <Brain size={16} />
-                                        <span>Crear Mapa Mental</span>
-                                    </button>
-                                    <button onClick={() => {
-                                        setIsToolsMenuOpen(false)
-                                        setIsMnemonicModalOpen(true)
-                                    }}>
-                                        <Wand2 size={16} />
-                                        <span>Generar Mnemotecnia</span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
                         <input
                             ref={inputRef}
                             type="text"
@@ -412,6 +379,45 @@ export default function NotebookView() {
                     </p>
                 </div>
             </main>
+
+            {/* Studio Sidebar (Right Panel) */}
+            <aside className="studio-sidebar">
+                <div className="studio-header">
+                    <h3>Studio</h3>
+                    <p>Herramientas de Aprendizaje Activo</p>
+                </div>
+                <div className="studio-tools-grid">
+                    <button className="studio-tool-btn" onClick={() => setIsFlashcardModalOpen(true)}>
+                        <div className="tool-icon flashcard-icon">
+                            <Layers size={20} />
+                        </div>
+                        <span>Tarjetas...</span>
+                    </button>
+                    <button className="studio-tool-btn" onClick={() => setIsMindMapModalOpen(true)}>
+                        <div className="tool-icon map-icon">
+                            <Brain size={20} />
+                        </div>
+                        <span>Mapa...</span>
+                    </button>
+                    <button className="studio-tool-btn" onClick={() => setIsOcclusionModalOpen(true)}>
+                        <div className="tool-icon img-icon">
+                            <ImageIcon size={20} />
+                        </div>
+                        <span>Oclusión...</span>
+                    </button>
+                    <button className="studio-tool-btn" onClick={() => setIsMnemonicModalOpen(true)}>
+                        <div className="tool-icon wand-icon">
+                            <Wand2 size={20} />
+                        </div>
+                        <span>Mnemotecnia...</span>
+                    </button>
+                </div>
+
+                <div className="studio-info">
+                    <Sparkles size={16} />
+                    <p>Selecciona una opción para procesar el aprendizaje activo de tu sesión actual y generar recursos de estudio.</p>
+                </div>
+            </aside>
 
             {/* Flashcard Generator Modal */}
             <FlashcardGeneratorModal
