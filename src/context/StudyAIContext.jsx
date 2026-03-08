@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
+import { useAuth } from './AuthContext'
 
 const StudyAIContext = createContext(null)
 
@@ -197,6 +198,7 @@ const SIMULATED_RESPONSES = [
 // ==========================================
 
 export function StudyAIProvider({ children }) {
+    const { user } = useAuth()
     const [notebooks, setNotebooks] = useState(INITIAL_NOTEBOOKS)
     const [chats, setChats] = useState(INITIAL_CHATS)
     const [messages, setMessages] = useState(INITIAL_MESSAGES)
@@ -333,43 +335,113 @@ export function StudyAIProvider({ children }) {
             [chatId]: [...(prev[chatId] || []), userMessage]
         }))
 
-        // Simulate AI response
         setIsAILoading(true)
 
-        // Simulate network delay (1.5 - 3 seconds)
-        const delay = 1500 + Math.random() * 1500
-        await new Promise(resolve => setTimeout(resolve, delay))
+        try {
+            // Obtener datos del cuaderno actual para contexto
+            const currentChat = Object.values(chats).flat().find(c => c.id === chatId)
+            const notebook = notebooks.find(n => n.id === currentChat?.notebookId)
 
-        // Generate a contextual mock response
-        const slideResponse = generateMockSlide(content)
+            const response = await fetch('https://n8n-n8n.8noypn.easypanel.host/webhook/estudio-ia/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: user?.id || 'default_user',
+                    chat_id: chatId,
+                    academic_level: 'pregrado',
+                    specialty: notebook?.specialty || 'medicina general',
+                    query_text: content,
+                    generate_flashcards: false,
+                    attachments: []
+                })
+            })
 
-        const aiMessage = {
-            id: `msg-${Date.now() + 1}`,
-            chatId,
-            role: 'assistant',
-            content: JSON.stringify(slideResponse),
-            contentType: 'slide',
-            createdAt: new Date()
-        }
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
 
-        setMessages(prev => ({
-            ...prev,
-            [chatId]: [...(prev[chatId] || []), aiMessage]
-        }))
+            const data = await response.json()
 
-        setIsAILoading(false)
+            const slideData = {
+                title: notebook?.title || 'Estudio IA',
+                subtitle: `Análisis Socrático (Confianza: ${data.confidence_level || 100}%)`,
+                sections: [
+                    { icon: '🧠', title: 'Respuesta', content: data.response_text || 'Sin respuesta' }
+                ]
+            }
 
-        // Update chat's updatedAt
-        const chat = Object.values(chats).flat().find(c => c.id === chatId)
-        if (chat) {
-            setChats(prev => ({
+            if (data.pedagogical_actions?.reflection_questions?.length > 0) {
+                slideData.sections.push({
+                    icon: '🤔',
+                    title: 'Para Reflexionar',
+                    content: '',
+                    list: data.pedagogical_actions.reflection_questions
+                })
+            }
+
+            if (data.pedagogical_actions?.next_topics?.length > 0) {
+                slideData.sections.push({
+                    icon: '➡️',
+                    title: 'Siguientes Temas',
+                    content: '',
+                    list: data.pedagogical_actions.next_topics
+                })
+            }
+
+            if (data.references?.length > 0) {
+                slideData.sections.push({
+                    icon: '📚',
+                    title: 'Referencias',
+                    content: '',
+                    list: data.references
+                })
+            }
+
+            const aiMessage = {
+                id: `msg-${Date.now() + 1}`,
+                chatId,
+                role: 'assistant',
+                content: JSON.stringify(slideData),
+                contentType: 'slide',
+                createdAt: new Date()
+            }
+
+            setMessages(prev => ({
                 ...prev,
-                [chat.notebookId]: (prev[chat.notebookId] || []).map(c =>
-                    c.id === chatId ? { ...c, updatedAt: new Date() } : c
-                )
+                [chatId]: [...(prev[chatId] || []), aiMessage]
             }))
+
+        } catch (error) {
+            console.error('Error contactando al motor de IA (n8n):', error)
+            const errorMessage = {
+                id: `msg-${Date.now() + 1}`,
+                chatId,
+                role: 'assistant',
+                content: 'Hubo un error al procesar tu solicitud con el Asistente IA. Revisa la consola o asegúrate de que el workflow de n8n esté activo y tenga configuradas las API Keys.',
+                contentType: 'text',
+                createdAt: new Date()
+            }
+            setMessages(prev => ({
+                ...prev,
+                [chatId]: [...(prev[chatId] || []), errorMessage]
+            }))
+        } finally {
+            setIsAILoading(false)
+
+            // Update chat's updatedAt
+            const chat = Object.values(chats).flat().find(c => c.id === chatId)
+            if (chat) {
+                setChats(prev => ({
+                    ...prev,
+                    [chat.notebookId]: (prev[chat.notebookId] || []).map(c =>
+                        c.id === chatId ? { ...c, updatedAt: new Date() } : c
+                    )
+                }))
+            }
         }
-    }, [chats])
+    }, [chats, notebooks, user])
 
     const value = {
         // State
@@ -423,81 +495,6 @@ export function useStudyAI() {
         throw new Error('useStudyAI must be used within a StudyAIProvider')
     }
     return context
-}
-
-// ==========================================
-// MOCK AI RESPONSE GENERATOR
-// ==========================================
-
-function generateMockSlide(userQuestion) {
-    const question = userQuestion.toLowerCase()
-
-    // Try to detect medical topic and generate contextual response
-    if (question.includes('corazón') || question.includes('cardí') || question.includes('infarto') || question.includes('arritmia')) {
-        return {
-            title: 'Cardiología',
-            subtitle: extractTopic(userQuestion),
-            sections: [
-                { icon: '📋', title: 'Definición', content: `En relación a tu pregunta sobre "${extractTopic(userQuestion)}", este concepto es fundamental en cardiología. Se refiere a los mecanismos y procesos que afectan el funcionamiento del sistema cardiovascular.` },
-                { icon: '🔬', title: 'Fisiopatología', content: '', list: ['**Alteración hemodinámica** — Cambios en precarga, postcarga y contractilidad.', '**Respuesta neurohumoral** — Activación del SRAA y sistema simpático.', '**Remodelado cardíaco** — Cambios adaptativos y desadaptativos en el miocardio.'] },
-                { icon: '🩺', title: 'Clínica', content: 'Los hallazgos clínicos principales incluyen:', list: ['Disnea de esfuerzo progresiva.', 'Dolor torácico con características específicas.', 'Alteraciones en la auscultación cardíaca.', 'Edema periférico y signos de congestión.'] },
-                { icon: '💊', title: 'Tratamiento', content: '', list: ['**IECA/ARA-II** — Reducción de postcarga y remodelado.', '**Beta-bloqueantes** — Reducción de FC y demanda miocárdica de O₂.', '**Diuréticos** — Manejo de la congestión y sobrecarga de volumen.'] },
-                { icon: '💡', title: 'Perla Clínica', content: 'En la evaluación cardiovascular, siempre realizar ECG de 12 derivaciones como estudio inicial. La elevación del segmento ST > 1mm en dos derivaciones contiguas sugiere IAMCEST y requiere activación del protocolo de reperfusión inmediata.', highlight: true }
-            ]
-        }
-    }
-
-    if (question.includes('neuro') || question.includes('cerebr') || question.includes('nervio') || question.includes('craneal')) {
-        return {
-            title: 'Neurología',
-            subtitle: extractTopic(userQuestion),
-            sections: [
-                { icon: '📋', title: 'Definición', content: `Respecto a "${extractTopic(userQuestion)}", este es un concepto clave en neurociencias. Comprende las estructuras y funciones del sistema nervioso central y periférico.` },
-                { icon: '🧠', title: 'Neuroanatomía', content: '', list: ['**Corteza cerebral** — Áreas funcionales y sus especializaciones.', '**Ganglios basales** — Regulación del movimiento y tono muscular.', '**Tronco encefálico** — Funciones vitales y origen de pares craneales.', '**Cerebelo** — Coordinación motora y equilibrio.'] },
-                { icon: '🩺', title: 'Exploración Neurológica', content: 'La evaluación sistemática incluye:', list: ['Estado mental y funciones cognitivas superiores.', 'Pares craneales (I al XII).', 'Sistema motor: fuerza, tono, reflejos.', 'Sistema sensitivo: tacto, dolor, propiocepción.', 'Coordinación y marcha.'] },
-                { icon: '💡', title: 'Perla Clínica', content: 'La regla de la "O" para recordar los pares craneales sensitivos, motores y mixtos: Some Say Marry Money But My Brother Says Big Brains Matter More (S=Sensitivo, M=Motor, B=Both/Mixto).', highlight: true }
-            ]
-        }
-    }
-
-    if (question.includes('fármaco') || question.includes('medicamento') || question.includes('dosis') || question.includes('antibiótico') || question.includes('farma')) {
-        return {
-            title: 'Farmacología',
-            subtitle: extractTopic(userQuestion),
-            sections: [
-                { icon: '📋', title: 'Definición', content: `Sobre "${extractTopic(userQuestion)}", este tema abarca los principios farmacológicos fundamentales para la práctica clínica.` },
-                { icon: '⚗️', title: 'Farmacocinética', content: '', list: ['**Absorción** — Biodisponibilidad y vías de administración.', '**Distribución** — Volumen de distribución y unión a proteínas plasmáticas.', '**Metabolismo** — Enzimas CYP450 y reacciones de fase I y II.', '**Excreción** — Eliminación renal y hepática.'] },
-                { icon: '🎯', title: 'Farmacodinamia', content: 'Los mecanismos de acción pueden clasificarse en:', list: ['Agonistas y antagonistas de receptores.', 'Inhibidores enzimáticos.', 'Moduladores de canales iónicos.', 'Alteración del transporte de membrana.'] },
-                { icon: '⚠️', title: 'Efectos Adversos', content: 'Es fundamental conocer el perfil de seguridad de cada fármaco y las interacciones medicamentosas más relevantes.' },
-                { icon: '💡', title: 'Perla Clínica', content: 'Recuerda: "Start low, go slow" (Iniciar con dosis bajas e incrementar gradualmente) es la regla de oro en farmacoterapia, especialmente en ancianos y pacientes con insuficiencia renal o hepática.', highlight: true }
-            ]
-        }
-    }
-
-    // Default generic medical response
-    return {
-        title: 'Medicina',
-        subtitle: extractTopic(userQuestion),
-        sections: [
-            { icon: '📋', title: 'Definición', content: `Excelente pregunta sobre "${extractTopic(userQuestion)}". Permíteme explicarte este concepto de manera detallada y estructurada.` },
-            { icon: '🔬', title: 'Fisiopatología', content: 'Los mecanismos involucrados incluyen múltiples vías que se interrelacionan:', list: ['**Proceso primario** — Mecanismo patológico inicial y su desencadenante.', '**Cascada fisiopatológica** — Eventos secundarios y respuesta del organismo.', '**Mecanismos compensatorios** — Adaptaciones fisiológicas ante la noxa.'] },
-            { icon: '🩺', title: 'Presentación Clínica', content: 'Los hallazgos más relevantes en la práctica clínica:', list: ['Síntomas principales de presentación.', 'Signos en la exploración física.', 'Hallazgos de laboratorio e imagen.'] },
-            { icon: '📊', title: 'Diagnóstico', content: 'El abordaje diagnóstico debe ser sistemático:', list: ['**Historia clínica** — Anamnesis dirigida con antecedentes relevantes.', '**Exploración física** — Búsqueda de signos patognomónicos.', '**Estudios complementarios** — Laboratorio, imagen y estudios especiales.'] },
-            { icon: '💊', title: 'Tratamiento', content: '', list: ['**Medidas generales** — Soporte básico y modificaciones del estilo de vida.', '**Tratamiento farmacológico** — Según guías de práctica clínica actualizadas.', '**Seguimiento** — Plan de monitorización y criterios de referencia.'] },
-            { icon: '💡', title: 'Perla Clínica', content: 'En la práctica médica, la clave del éxito diagnóstico radica en una historia clínica completa. Se estima que el 70-80% de los diagnósticos se pueden orientar solo con una buena anamnesis, incluso antes de solicitar estudios complementarios.', highlight: true }
-        ]
-    }
-}
-
-function extractTopic(question) {
-    // Remove common question words and extract the core topic
-    const cleaned = question
-        .replace(/^(explícame|explica|qué es|que es|cómo|como|cuáles|cuales|dime|háblame|hablame|puedes explicar|me puedes explicar|qué|que)\s*/i, '')
-        .replace(/\?/g, '')
-        .trim()
-
-    // Capitalize first letter
-    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
 }
 
 export default StudyAIContext
