@@ -48,6 +48,7 @@ export default function NotebookView() {
 
     const [inputValue, setInputValue] = useState('')
     const [showSidebar, setShowSidebar] = useState(false)
+    const [showStudio, setShowStudio] = useState(false)
     const [editingChatId, setEditingChatId] = useState(null)
     const [editChatTitle, setEditChatTitle] = useState('')
     const [chatMenuId, setChatMenuId] = useState(null)
@@ -299,6 +300,12 @@ export default function NotebookView() {
                             </span>
                         </div>
                     </div>
+
+                    <div className="chat-header-right">
+                        <button className="header-studio-btn" onClick={() => setShowStudio(true)}>
+                            <Wand2 size={18} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Messages Area */}
@@ -381,7 +388,10 @@ export default function NotebookView() {
             </main>
 
             {/* Studio Sidebar (Right Panel) */}
-            <aside className="studio-sidebar">
+            {showStudio && (
+                <div className="sidebar-overlay" onClick={() => setShowStudio(false)}></div>
+            )}
+            <aside className={`studio-sidebar ${showStudio ? 'open' : ''}`}>
                 <div className="studio-header">
                     <h3>Studio</h3>
                     <p>Herramientas de Aprendizaje Activo</p>

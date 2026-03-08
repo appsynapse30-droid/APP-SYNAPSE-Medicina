@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 
 const StudyAIContext = createContext(null)
@@ -197,15 +197,41 @@ const SIMULATED_RESPONSES = [
 // PROVIDER
 // ==========================================
 
+// Funciones auxiliares para LocalStorage
+const loadFromStorage = (key, defaultData) => {
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultData;
+    } catch (e) {
+        return defaultData;
+    }
+}
+
 export function StudyAIProvider({ children }) {
     const { user } = useAuth()
-    const [notebooks, setNotebooks] = useState(INITIAL_NOTEBOOKS)
-    const [chats, setChats] = useState(INITIAL_CHATS)
-    const [messages, setMessages] = useState(INITIAL_MESSAGES)
+
+    // Inicializar desde localStorage
+    const [notebooks, setNotebooks] = useState(() => loadFromStorage('study_ai_notebooks', INITIAL_NOTEBOOKS))
+    const [chats, setChats] = useState(() => loadFromStorage('study_ai_chats', INITIAL_CHATS))
+    const [messages, setMessages] = useState(() => loadFromStorage('study_ai_messages', INITIAL_MESSAGES))
+
     const [activeNotebookId, setActiveNotebookId] = useState(null)
     const [activeChatId, setActiveChatId] = useState(null)
     const [isAILoading, setIsAILoading] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+
+    // Guardar en localStorage cuando cambien
+    useEffect(() => {
+        localStorage.setItem('study_ai_notebooks', JSON.stringify(notebooks));
+    }, [notebooks]);
+
+    useEffect(() => {
+        localStorage.setItem('study_ai_chats', JSON.stringify(chats));
+    }, [chats]);
+
+    useEffect(() => {
+        localStorage.setItem('study_ai_messages', JSON.stringify(messages));
+    }, [messages]);
 
     // ── Computed values ──
     const activeNotebook = notebooks.find(n => n.id === activeNotebookId) || null
