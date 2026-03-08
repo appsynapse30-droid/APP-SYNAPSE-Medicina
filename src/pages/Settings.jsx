@@ -1049,13 +1049,6 @@ export default function Settings() {
             <div className="settings">
                 {renderSection()}
 
-                {/* Save notification */}
-                {saveMessage && (
-                    <div className="save-notification">
-                        <Check size={16} />
-                        {saveMessage}
-                    </div>
-                )}
 
                 {/* Clear data confirmation modal */}
                 {showClearConfirm && (
@@ -1142,13 +1135,7 @@ export default function Settings() {
                 <p>Synapse v1.0.0 • Hecho con ❤️ para estudiantes de medicina</p>
             </div>
 
-            {/* Save notification */}
-            {saveMessage && (
-                <div className="save-notification">
-                    <Check size={16} />
-                    {saveMessage}
-                </div>
-            )}
+
             {/* Unsaved Changes Bar (Main View) */}
             {hasUnsavedChanges && (
                 <div className="unsaved-changes-bar">
