@@ -362,7 +362,38 @@ export function StudyAIProvider({ children }) {
                 throw new Error(`HTTP error! status: ${response.status}`)
             }
 
-            const data = await response.json()
+            const rawData = await response.json()
+
+            let data = rawData;
+
+            // Manejar si n8n devuelve el string puro o markdown dentro de un array
+            if (Array.isArray(rawData) && rawData[0] && typeof rawData[0].text === 'string') {
+                const text = rawData[0].text;
+                try {
+                    const jsonMatch = text.match(/```json[\s\S]*?({[\s\S]*})[\s\S]*?```/);
+                    if (jsonMatch && jsonMatch[1]) {
+                        data = JSON.parse(jsonMatch[1]);
+                    } else {
+                        const pureJsonMatch = text.match(/\{[\s\S]*\}/);
+                        if (pureJsonMatch) {
+                            data = JSON.parse(pureJsonMatch[0]);
+                        } else {
+                            data = { response_text: text, confidence_level: 100 };
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Fallo el parsing de JSON extraído, cayendo a texto plano.");
+                    data = { response_text: text, confidence_level: 100 };
+                }
+            } else if (Array.isArray(rawData) && rawData.length > 0) {
+                // Si N8N retorna el array del JSON pero ya parseado
+                data = rawData[0];
+            }
+
+            // Mapeo adaptativo si Gemini decide llamarlo "respuesta" en vez de "response_text"
+            if (data.respuesta && !data.response_text) {
+                data.response_text = data.respuesta;
+            }
 
             const slideData = {
                 title: notebook?.title || 'Estudio IA',
