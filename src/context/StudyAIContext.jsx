@@ -370,13 +370,22 @@ export function StudyAIProvider({ children }) {
             if (Array.isArray(rawData) && rawData[0] && typeof rawData[0].text === 'string') {
                 const text = rawData[0].text;
                 try {
-                    const jsonMatch = text.match(/```json[\s\S]*?({[\s\S]*})[\s\S]*?```/);
+                    const jsonMatch = text.match(/```json([\s\S]*?)```/);
                     if (jsonMatch && jsonMatch[1]) {
                         data = JSON.parse(jsonMatch[1]);
+                        // Asignar el texto que esta fuera del json
+                        const outsideText = text.replace(jsonMatch[0], '').trim();
+                        if (outsideText && !data.response_text && !data.respuesta) {
+                            data.response_text = outsideText;
+                        }
                     } else {
                         const pureJsonMatch = text.match(/\{[\s\S]*\}/);
                         if (pureJsonMatch) {
                             data = JSON.parse(pureJsonMatch[0]);
+                            const outsideText = text.replace(pureJsonMatch[0], '').replace(/```/g, '').trim();
+                            if (outsideText && !data.response_text && !data.respuesta) {
+                                data.response_text = outsideText;
+                            }
                         } else {
                             data = { response_text: text, confidence_level: 100 };
                         }
