@@ -366,24 +366,42 @@ export function StudyAIProvider({ children }) {
             const currentChat = Object.values(chats).flat().find(c => c.id === chatId)
             const notebook = notebooks.find(n => n.id === currentChat?.notebookId)
 
-            const response = await fetch('https://n8n-n8n.8noypn.easypanel.host/webhook/estudio-ia/query', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: user?.id || 'default_user',
-                    chat_id: chatId,
-                    academic_level: 'pregrado',
-                    specialty: notebook?.specialty || 'medicina general',
-                    query_text: content,
-                    generate_flashcards: false,
-                    attachments: []
-                })
-            })
+            let response;
+            let retries = 3;
+            let currentDelay = 1000;
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`)
+            while (retries > 0) {
+                try {
+                    response = await fetch('https://n8n-n8n.8noypn.easypanel.host/webhook/estudio-ia/query', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: user?.id || 'default_user',
+                            chat_id: chatId,
+                            academic_level: 'pregrado',
+                            specialty: notebook?.specialty || 'medicina general',
+                            query_text: content,
+                            generate_flashcards: false,
+                            attachments: []
+                        })
+                    })
+
+                    if (response.ok) {
+                        break; // exito
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } catch (fetchErr) {
+                    retries--;
+                    if (retries === 0) {
+                        throw fetchErr;
+                    }
+                    // Esperar antes de reintentar
+                    await new Promise(res => setTimeout(res, currentDelay));
+                    currentDelay *= 2; // backoff exponencial
+                }
             }
 
             const rawData = await response.json()
