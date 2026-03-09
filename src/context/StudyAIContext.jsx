@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useAuth } from './AuthContext'
+import { supabaseHelpers } from '../config/supabase'
 
 const StudyAIContext = createContext(null)
 
 // ==========================================
-// MOCK DATA — será reemplazado por N8N
+// CONSTANTS
 // ==========================================
 
 const SPECIALTIES = [
@@ -197,41 +198,104 @@ const SIMULATED_RESPONSES = [
 // PROVIDER
 // ==========================================
 
-// Funciones auxiliares para LocalStorage
-const loadFromStorage = (key, defaultData) => {
-    try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultData;
-    } catch (e) {
-        return defaultData;
-    }
-}
-
 export function StudyAIProvider({ children }) {
     const { user } = useAuth()
 
-    // Inicializar desde localStorage
-    const [notebooks, setNotebooks] = useState(() => loadFromStorage('study_ai_notebooks', INITIAL_NOTEBOOKS))
-    const [chats, setChats] = useState(() => loadFromStorage('study_ai_chats', INITIAL_CHATS))
-    const [messages, setMessages] = useState(() => loadFromStorage('study_ai_messages', INITIAL_MESSAGES))
+    const [notebooks, setNotebooks] = useState([])
+    const [chats, setChats] = useState({})
+    const [messages, setMessages] = useState({})
 
     const [activeNotebookId, setActiveNotebookId] = useState(null)
     const [activeChatId, setActiveChatId] = useState(null)
     const [isAILoading, setIsAILoading] = useState(false)
+    const [isLoadingData, setIsLoadingData] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
 
-    // Guardar en localStorage cuando cambien
+    // Cargar datos reales desde Supabase
     useEffect(() => {
-        localStorage.setItem('study_ai_notebooks', JSON.stringify(notebooks));
-    }, [notebooks]);
+        let isMounted = true;
 
-    useEffect(() => {
-        localStorage.setItem('study_ai_chats', JSON.stringify(chats));
-    }, [chats]);
+        const loadSupabaseData = async () => {
+            if (!user?.id) {
+                if (isMounted) {
+                    setNotebooks([])
+                    setChats({})
+                    setMessages({})
+                    setIsLoadingData(false)
+                }
+                return
+            }
 
-    useEffect(() => {
-        localStorage.setItem('study_ai_messages', JSON.stringify(messages));
-    }, [messages]);
+            if (isMounted) setIsLoadingData(true)
+
+            try {
+                // 1. Fetch notebooks
+                const { data: nbData, error: nbError } = await supabaseHelpers.studyAI.getNotebooks(user.id)
+                if (nbError) throw nbError
+
+                const mappedNotebooks = nbData.map(nb => ({
+                    id: nb.id,
+                    title: nb.title,
+                    description: nb.description,
+                    icon: nb.icon,
+                    color: nb.color,
+                    specialty: nb.specialty,
+                    isPinned: nb.is_pinned,
+                    chatsCount: nb.chats_count,
+                    createdAt: new Date(nb.created_at),
+                    updatedAt: new Date(nb.updated_at)
+                }))
+
+                // 2. Fetch chats
+                const { data: chData, error: chError } = await supabaseHelpers.studyAI.getChats(user.id)
+                if (chError) throw chError
+
+                const chatsMap = {}
+                chData.forEach(ch => {
+                    if (!chatsMap[ch.notebook_id]) chatsMap[ch.notebook_id] = []
+                    chatsMap[ch.notebook_id].push({
+                        id: ch.id,
+                        notebookId: ch.notebook_id,
+                        title: ch.title,
+                        createdAt: new Date(ch.created_at),
+                        updatedAt: new Date(ch.updated_at)
+                    })
+                })
+
+                // 3. Fetch messages
+                const chatIds = chData.map(ch => ch.id)
+                const { data: msgData, error: msgError } = await supabaseHelpers.studyAI.getMessages(chatIds)
+                if (msgError) throw msgError
+
+                const messagesMap = {}
+                msgData.forEach(msg => {
+                    if (!messagesMap[msg.chat_id]) messagesMap[msg.chat_id] = []
+                    messagesMap[msg.chat_id].push({
+                        id: msg.id,
+                        chatId: msg.chat_id,
+                        role: msg.role,
+                        content: msg.content,
+                        contentType: msg.content_type,
+                        createdAt: new Date(msg.created_at)
+                    })
+                })
+
+                if (isMounted) {
+                    setNotebooks(mappedNotebooks)
+                    setChats(chatsMap)
+                    setMessages(messagesMap)
+                }
+            } catch (err) {
+                console.error("Error cargando datos de StudyAI:", err)
+            } finally {
+                if (isMounted) setIsLoadingData(false)
+            }
+        }
+
+        loadSupabaseData()
+
+        return () => { isMounted = false }
+    }, [user])
 
     // ── Computed values ──
     const activeNotebook = notebooks.find(n => n.id === activeNotebookId) || null
@@ -244,35 +308,74 @@ export function StudyAIProvider({ children }) {
     )
 
     // ── Notebook CRUD ──
-    const createNotebook = useCallback((data) => {
-        const newNotebook = {
-            id: `nb-${Date.now()}`,
+    const createNotebook = useCallback(async (data) => {
+        if (!user) return null
+
+        // Prepare DB notebook
+        const dbNotebook = {
+            user_id: user.id,
             title: data.title || 'Nuevo Cuaderno',
             description: data.description || '',
             icon: data.icon || '📚',
             color: data.color || '#58a6ff',
             specialty: data.specialty || '',
-            isPinned: false,
-            chatsCount: 0,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            is_pinned: false,
+            chats_count: 0
         }
+
+        const { data: created, error } = await supabaseHelpers.studyAI.createNotebook(dbNotebook)
+        if (error) {
+            console.error("Error al crear el cuaderno")
+            return null
+        }
+
+        const newNotebook = {
+            id: created.id,
+            title: created.title,
+            description: created.description,
+            icon: created.icon,
+            color: created.color,
+            specialty: created.specialty,
+            isPinned: created.is_pinned,
+            chatsCount: created.chats_count,
+            createdAt: new Date(created.created_at),
+            updatedAt: new Date(created.updated_at)
+        }
+
         setNotebooks(prev => [newNotebook, ...prev])
         setChats(prev => ({ ...prev, [newNotebook.id]: [] }))
         return newNotebook
-    }, [])
+    }, [user])
 
-    const updateNotebook = useCallback((id, updates) => {
+    const updateNotebook = useCallback(async (id, updates) => {
+        const dbUpdates = {}
+        if (updates.title !== undefined) dbUpdates.title = updates.title
+        if (updates.description !== undefined) dbUpdates.description = updates.description
+        if (updates.icon !== undefined) dbUpdates.icon = updates.icon
+        if (updates.color !== undefined) dbUpdates.color = updates.color
+        if (updates.specialty !== undefined) dbUpdates.specialty = updates.specialty
+
+        const { data: updated, error } = await supabaseHelpers.studyAI.updateNotebook(id, dbUpdates)
+        if (error) {
+            console.error("Error al actualizar el cuaderno")
+            return
+        }
+
         setNotebooks(prev => prev.map(n =>
-            n.id === id ? { ...n, ...updates, updatedAt: new Date() } : n
+            n.id === id ? { ...n, ...updates, updatedAt: new Date(updated.updated_at) } : n
         ))
     }, [])
 
-    const deleteNotebook = useCallback((id) => {
+    const deleteNotebook = useCallback(async (id) => {
+        const { error } = await supabaseHelpers.studyAI.deleteNotebook(id)
+        if (error) {
+            console.error("Error al eliminar el cuaderno")
+            return
+        }
+
         setNotebooks(prev => prev.filter(n => n.id !== id))
         setChats(prev => {
             const next = { ...prev }
-            // Also clean up messages for all chats in this notebook
             if (next[id]) {
                 next[id].forEach(chat => {
                     setMessages(prevMsgs => {
@@ -288,37 +391,75 @@ export function StudyAIProvider({ children }) {
         if (activeNotebookId === id) setActiveNotebookId(null)
     }, [activeNotebookId])
 
-    const togglePinNotebook = useCallback((id) => {
+    const togglePinNotebook = useCallback(async (id) => {
+        const notebook = notebooks.find(n => n.id === id)
+        if (!notebook) return
+
+        const isPinned = !notebook.isPinned
+        const { data: updated, error } = await supabaseHelpers.studyAI.updateNotebook(id, { is_pinned: isPinned })
+        if (error) {
+            console.error("Error al fijar el cuaderno")
+            return
+        }
+
         setNotebooks(prev => prev.map(n =>
-            n.id === id ? { ...n, isPinned: !n.isPinned } : n
+            n.id === id ? { ...n, isPinned, updatedAt: new Date(updated.updated_at) } : n
         ))
-    }, [])
+    }, [notebooks])
 
     // ── Chat CRUD ──
-    const createChat = useCallback((notebookId, title = 'Nuevo Chat') => {
-        const newChat = {
-            id: `chat-${Date.now()}`,
-            notebookId,
-            title,
-            createdAt: new Date(),
-            updatedAt: new Date()
+    const createChat = useCallback(async (notebookId, title = 'Nuevo Chat') => {
+        if (!user) return null
+
+        const dbChat = {
+            user_id: user.id,
+            notebook_id: notebookId,
+            title
         }
+
+        const { data: created, error } = await supabaseHelpers.studyAI.createChat(dbChat)
+        if (error) {
+            console.error("Error al crear el chat")
+            return null
+        }
+
+        const newChat = {
+            id: created.id,
+            notebookId: created.notebook_id,
+            title: created.title,
+            createdAt: new Date(created.created_at),
+            updatedAt: new Date(created.updated_at)
+        }
+
         setChats(prev => ({
             ...prev,
             [notebookId]: [newChat, ...(prev[notebookId] || [])]
         }))
         setMessages(prev => ({ ...prev, [newChat.id]: [] }))
+
         // Update notebook chat count
-        setNotebooks(prev => prev.map(n =>
-            n.id === notebookId
-                ? { ...n, chatsCount: (n.chatsCount || 0) + 1, updatedAt: new Date() }
-                : n
-        ))
+        const notebook = notebooks.find(n => n.id === notebookId)
+        if (notebook) {
+            const newCount = notebook.chatsCount + 1
+            await supabaseHelpers.studyAI.updateNotebook(notebookId, { chats_count: newCount })
+            setNotebooks(prev => prev.map(n =>
+                n.id === notebookId
+                    ? { ...n, chatsCount: newCount, updatedAt: new Date() }
+                    : n
+            ))
+        }
+
         setActiveChatId(newChat.id)
         return newChat
-    }, [])
+    }, [user, notebooks])
 
-    const deleteChat = useCallback((chatId, notebookId) => {
+    const deleteChat = useCallback(async (chatId, notebookId) => {
+        const { error } = await supabaseHelpers.studyAI.deleteChat(chatId)
+        if (error) {
+            console.error("Error al eliminar el chat")
+            return
+        }
+
         setChats(prev => ({
             ...prev,
             [notebookId]: (prev[notebookId] || []).filter(c => c.id !== chatId)
@@ -328,42 +469,68 @@ export function StudyAIProvider({ children }) {
             delete next[chatId]
             return next
         })
-        setNotebooks(prev => prev.map(n =>
-            n.id === notebookId
-                ? { ...n, chatsCount: Math.max(0, (n.chatsCount || 1) - 1) }
-                : n
-        ))
-        if (activeChatId === chatId) setActiveChatId(null)
-    }, [activeChatId])
 
-    const renameChat = useCallback((chatId, notebookId, newTitle) => {
+        const notebook = notebooks.find(n => n.id === notebookId)
+        if (notebook) {
+            const newCount = Math.max(0, notebook.chatsCount - 1)
+            await supabaseHelpers.studyAI.updateNotebook(notebookId, { chats_count: newCount })
+            setNotebooks(prev => prev.map(n =>
+                n.id === notebookId
+                    ? { ...n, chatsCount: newCount }
+                    : n
+            ))
+        }
+
+        if (activeChatId === chatId) setActiveChatId(null)
+    }, [activeChatId, notebooks])
+
+    const renameChat = useCallback(async (chatId, notebookId, newTitle) => {
+        const { data: updated, error } = await supabaseHelpers.studyAI.updateChat(chatId, { title: newTitle })
+        if (error) {
+            console.error("Error al renombrar el chat")
+            return
+        }
+
         setChats(prev => ({
             ...prev,
             [notebookId]: (prev[notebookId] || []).map(c =>
-                c.id === chatId ? { ...c, title: newTitle, updatedAt: new Date() } : c
+                c.id === chatId ? { ...c, title: newTitle, updatedAt: new Date(updated.updated_at) } : c
             )
         }))
     }, [])
 
     // ── Messages & AI ──
     const sendMessage = useCallback(async (chatId, content) => {
-        const userMessage = {
-            id: `msg-${Date.now()}`,
-            chatId,
-            role: 'user',
-            content,
-            contentType: 'text',
-            createdAt: new Date()
-        }
-
-        setMessages(prev => ({
-            ...prev,
-            [chatId]: [...(prev[chatId] || []), userMessage]
-        }))
-
         setIsAILoading(true)
 
         try {
+            // Save User message to Supabase
+            const { data: dbUserMsg, error: userMsgErr } = await supabaseHelpers.studyAI.createMessage({
+                chat_id: chatId,
+                role: 'user',
+                content: content,
+                content_type: 'text'
+            })
+
+            if (userMsgErr) {
+                console.error("Error al enviar mensaje")
+                throw userMsgErr
+            }
+
+            const userMessage = {
+                id: dbUserMsg.id,
+                chatId: dbUserMsg.chat_id,
+                role: dbUserMsg.role,
+                content: dbUserMsg.content,
+                contentType: dbUserMsg.content_type,
+                createdAt: new Date(dbUserMsg.created_at)
+            }
+
+            setMessages(prev => ({
+                ...prev,
+                [chatId]: [...(prev[chatId] || []), userMessage]
+            }))
+
             // Obtener datos del cuaderno actual para contexto
             const currentChat = Object.values(chats).flat().find(c => c.id === chatId)
             const notebook = notebooks.find(n => n.id === currentChat?.notebookId)
@@ -465,13 +632,26 @@ export function StudyAIProvider({ children }) {
                 })
             }
 
-            const aiMessage = {
-                id: `msg-${Date.now() + 1}`,
-                chatId,
+            // Save AI message to Supabase
+            const { data: dbAiMsg, error: aiMsgErr } = await supabaseHelpers.studyAI.createMessage({
+                chat_id: chatId,
                 role: 'assistant',
                 content: JSON.stringify(slideData),
-                contentType: 'slide',
-                createdAt: new Date()
+                content_type: 'slide'
+            })
+
+            if (aiMsgErr) {
+                toast.error("Error al guardar respuesta del AI")
+                throw aiMsgErr
+            }
+
+            const aiMessage = {
+                id: dbAiMsg.id,
+                chatId: dbAiMsg.chat_id,
+                role: dbAiMsg.role,
+                content: dbAiMsg.content,
+                contentType: dbAiMsg.content_type,
+                createdAt: new Date(dbAiMsg.created_at)
             }
 
             setMessages(prev => ({
@@ -479,13 +659,27 @@ export function StudyAIProvider({ children }) {
                 [chatId]: [...(prev[chatId] || []), aiMessage]
             }))
 
+            // Update chat's updatedAt in Supabase
+            await supabaseHelpers.studyAI.updateChat(chatId, { updated_at: new Date().toISOString() })
+
+            // Update local state for chat
+            const chatToUpdate = Object.values(chats).flat().find(c => c.id === chatId)
+            if (chatToUpdate) {
+                setChats(prev => ({
+                    ...prev,
+                    [chatToUpdate.notebookId]: (prev[chatToUpdate.notebookId] || []).map(c =>
+                        c.id === chatId ? { ...c, updatedAt: new Date() } : c
+                    )
+                }))
+            }
+
         } catch (error) {
-            console.error('Error contactando al motor de IA (n8n):', error)
+            console.error('Error contactando al motor de IA (n8n) o DB:', error)
             const errorMessage = {
                 id: `msg-${Date.now() + 1}`,
                 chatId,
                 role: 'assistant',
-                content: 'Hubo un error al procesar tu solicitud con el Asistente IA. Revisa la consola o asegúrate de que el workflow de n8n esté activo y tenga configuradas las API Keys.',
+                content: 'Hubo un error al procesar tu solicitud. Revisa la consola o asegúrate de tener conexión.',
                 contentType: 'text',
                 createdAt: new Date()
             }
@@ -495,19 +689,9 @@ export function StudyAIProvider({ children }) {
             }))
         } finally {
             setIsAILoading(false)
-
-            // Update chat's updatedAt
-            const chat = Object.values(chats).flat().find(c => c.id === chatId)
-            if (chat) {
-                setChats(prev => ({
-                    ...prev,
-                    [chat.notebookId]: (prev[chat.notebookId] || []).map(c =>
-                        c.id === chatId ? { ...c, updatedAt: new Date() } : c
-                    )
-                }))
-            }
         }
     }, [chats, notebooks, user])
+
 
     const value = {
         // State

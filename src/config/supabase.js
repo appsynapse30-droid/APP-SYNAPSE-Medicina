@@ -489,15 +489,100 @@ export const supabaseHelpers = {
             return { data, error };
         },
 
-        /**
-         * Delete a clinical case
-         */
         delete: async (id) => {
             const { error } = await supabase
                 .from('clinical_cases')
                 .delete()
                 .eq('id', id);
             return { error };
+        }
+    },
+
+    // Study AI helpers
+    studyAI: {
+        // Notebooks
+        getNotebooks: async (userId) => {
+            const { data, error } = await supabase
+                .from('study_notebooks')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+            return { data, error };
+        },
+        createNotebook: async (notebook) => {
+            const { data, error } = await supabase
+                .from('study_notebooks')
+                .insert(notebook)
+                .select()
+                .single();
+            return { data, error };
+        },
+        updateNotebook: async (id, updates) => {
+            const { data, error } = await supabase
+                .from('study_notebooks')
+                .update({ ...updates, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            return { data, error };
+        },
+        deleteNotebook: async (id) => {
+            const { error } = await supabase
+                .from('study_notebooks')
+                .delete()
+                .eq('id', id);
+            return { error };
+        },
+        // Chats
+        getChats: async (userId) => {
+            const { data, error } = await supabase
+                .from('study_chats')
+                .select('*')
+                .eq('user_id', userId)
+                .order('updated_at', { ascending: false });
+            return { data, error };
+        },
+        createChat: async (chat) => {
+            const { data, error } = await supabase
+                .from('study_chats')
+                .insert(chat)
+                .select()
+                .single();
+            return { data, error };
+        },
+        updateChat: async (id, updates) => {
+            const { data, error } = await supabase
+                .from('study_chats')
+                .update({ ...updates, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            return { data, error };
+        },
+        deleteChat: async (id) => {
+            const { error } = await supabase
+                .from('study_chats')
+                .delete()
+                .eq('id', id);
+            return { error };
+        },
+        // Messages
+        getMessages: async (chatIds) => {
+            if (!chatIds || chatIds.length === 0) return { data: [], error: null };
+            const { data, error } = await supabase
+                .from('study_messages')
+                .select('*')
+                .in('chat_id', chatIds)
+                .order('created_at', { ascending: true });
+            return { data, error };
+        },
+        createMessage: async (message) => {
+            const { data, error } = await supabase
+                .from('study_messages')
+                .insert(message)
+                .select()
+                .single();
+            return { data, error };
         }
     }
 };
