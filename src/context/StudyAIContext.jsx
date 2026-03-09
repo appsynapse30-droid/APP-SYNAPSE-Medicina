@@ -140,7 +140,11 @@ export function StudyAIProvider({ children }) {
 
     // ── Notebook CRUD ──
     const createNotebook = useCallback(async (data) => {
-        if (!user) return null
+        console.log("createNotebook invoked! user:", user, "data:", data);
+        if (!user) {
+            console.error("No hay usuario autenticado, createNotebook se aborta");
+            return null
+        }
 
         // Prepare DB notebook
         const dbNotebook = {
@@ -154,10 +158,26 @@ export function StudyAIProvider({ children }) {
             chats_count: 0
         }
 
-        const { data: created, error } = await supabaseHelpers.studyAI.createNotebook(dbNotebook)
+        console.log("Calling supabaseHelpers.studyAI.createNotebook with dbNotebook:", dbNotebook);
+        let created, error;
+        try {
+            const result = await supabaseHelpers.studyAI.createNotebook(dbNotebook);
+            created = result.data;
+            error = result.error;
+            console.log("Received response from Supabase. created:", created, "error:", error);
+        } catch (catchedErr) {
+            console.error("EXCEPCIÓN CRÍTICA al llamar a Supabase:", catchedErr);
+            return null;
+        }
+
         if (error) {
-            console.error("Error al crear el cuaderno")
+            console.error("Error devuelto por Supabase al crear el cuaderno:", error.message || error)
             return null
+        }
+
+        if (!created) {
+            console.error("No se devolvió 'created' desde la base de datos.");
+            return null;
         }
 
         const newNotebook = {

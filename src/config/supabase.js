@@ -510,12 +510,19 @@ export const supabaseHelpers = {
             return { data, error };
         },
         createNotebook: async (notebook) => {
-            const { data, error } = await supabase
-                .from('study_notebooks')
-                .insert(notebook)
-                .select()
-                .single();
-            return { data, error };
+            console.log("supabase.js -> CALLING REAL insert()", notebook);
+            try {
+                const response = await supabase
+                    .from('study_notebooks')
+                    .insert(notebook)
+                    .select()
+                    .single();
+                console.log("supabase.js -> insert() resolved:", response);
+                return response;
+            } catch (err) {
+                console.error("supabase.js -> insert() threw an exception!", err);
+                return { data: null, error: err };
+            }
         },
         updateNotebook: async (id, updates) => {
             const { data, error } = await supabase

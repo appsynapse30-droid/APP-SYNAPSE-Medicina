@@ -56,14 +56,25 @@ export default function StudyAI() {
         navigate(`/study/notebook/${notebook.id}`)
     }
 
-    const handleCreate = () => {
-        if (!formData.title.trim()) return
-        if (editingNotebook) {
-            updateNotebook(editingNotebook.id, formData)
-        } else {
-            createNotebook(formData)
+    const handleCreate = async () => {
+        console.log("handleCreate CALLED with title:", formData.title);
+        if (!formData.title.trim()) {
+            console.warn("formData.title is empty, returning early.");
+            return
         }
-        closeModal()
+        try {
+            if (editingNotebook) {
+                console.log("Calling updateNotebook...");
+                await updateNotebook(editingNotebook.id, formData)
+            } else {
+                console.log("Calling createNotebook with:", formData);
+                const res = await createNotebook(formData);
+                console.log("createNotebook returned:", res);
+            }
+            closeModal()
+        } catch (error) {
+            console.error("Error expected inside handleCreate async flow:", error);
+        }
     }
 
     const openEditModal = (notebook) => {
@@ -93,7 +104,7 @@ export default function StudyAI() {
     const formatDate = (date) => {
         const now = new Date()
         const d = new Date(date)
-        const diffMs = now - d
+        const diffMs = Math.max(0, now - d)
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
         if (diffDays === 0) return 'Hoy'
@@ -253,6 +264,18 @@ export default function StudyAI() {
                         </div>
 
                         <div className="modal-body">
+                            <div className="form-group">
+                                <label>Nombre del cuaderno</label>
+                                <input
+                                    id="notebookNameInput"
+                                    type="text"
+                                    placeholder="ej. Cardiología Clínica"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    autoFocus
+                                />
+                            </div>
+
                             {/* Icon + Color selector */}
                             <div className="form-row icon-color-row">
                                 <div className="form-group">
@@ -285,17 +308,6 @@ export default function StudyAI() {
                             </div>
 
                             <div className="form-group">
-                                <label>Nombre del cuaderno</label>
-                                <input
-                                    type="text"
-                                    placeholder="ej. Cardiología Clínica"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    autoFocus
-                                />
-                            </div>
-
-                            <div className="form-group">
                                 <label>Especialidad</label>
                                 <select
                                     value={formData.specialty}
@@ -322,8 +334,13 @@ export default function StudyAI() {
                         <div className="modal-footer">
                             <button className="btn-cancel" onClick={closeModal}>Cancelar</button>
                             <button
+                                type="button"
                                 className="btn-create"
-                                onClick={handleCreate}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleCreate();
+                                }}
                                 disabled={!formData.title.trim()}
                             >
                                 <span style={{ fontSize: '18px' }}>{formData.icon}</span>
