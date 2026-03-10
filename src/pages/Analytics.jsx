@@ -26,7 +26,8 @@ import {
     Radio,
     Disc3,
     Wind,
-    Activity
+    Activity,
+    Search
 } from 'lucide-react'
 import {
     RadarChart,
@@ -135,7 +136,12 @@ export default function Analytics() {
         switchMode,
         setBinaural,
         changeNoiseVolume,
-        getActiveItem
+        getActiveItem,
+        searchResults,
+        isSearching,
+        searchYouTube,
+        currentSpotifyTrack,
+        searchAndPlaySpotifyTrack
     } = useMusic()
 
     // Calendar state
@@ -426,7 +432,7 @@ export default function Analytics() {
                         <div className="music-header" style={{ marginBottom: '10px' }}>
                             <span className="music-label">🎵 Focus & Lo-fi</span>
                             <div className="music-header-controls">
-                                {mode === 'tracks' && (
+                                {mode === 'youtube' && (
                                     <button className="music-nav-btn" onClick={prevTrack} title="Anterior">
                                         <SkipBack size={16} />
                                     </button>
@@ -443,11 +449,11 @@ export default function Analytics() {
                         {/* Mode Toggles */}
                         <div className="music-mode-toggles" style={{ display: 'flex', gap: '5px', marginBottom: '15px' }}>
                             <button
-                                className={`tag-chip ${mode === 'tracks' ? 'active' : ''}`}
-                                onClick={() => switchMode('tracks')}
-                                style={{ flex: 1, padding: '6px', fontSize: '11px', justifyContent: 'center', background: mode === 'tracks' ? 'var(--bg-elevated)' : 'transparent', border: '1px solid var(--border-primary)' }}
+                                className={`tag-chip ${mode === 'youtube' ? 'active' : ''}`}
+                                onClick={() => switchMode('youtube')}
+                                style={{ flex: 1, padding: '6px', fontSize: '11px', justifyContent: 'center', background: mode === 'youtube' ? 'var(--bg-elevated)' : 'transparent', border: '1px solid var(--border-primary)' }}
                             >
-                                <Disc3 size={12} style={{ marginRight: '4px' }} /> Curadas
+                                <Music size={12} style={{ marginRight: '4px' }} /> Música
                             </button>
                             <button
                                 className={`tag-chip ${mode === 'radio' ? 'active' : ''}`}
@@ -458,12 +464,48 @@ export default function Analytics() {
                             </button>
                         </div>
 
+                        {/* Search Input for YouTube mode */}
+                        {mode === 'youtube' && (
+                            <div className="youtube-search-bar" style={{ display: 'flex', gap: '5px', marginBottom: '15px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar lo-fi, Mozart..."
+                                    className="search-input"
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 12px',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border-primary)',
+                                        background: 'var(--bg-elevated)',
+                                        color: 'var(--text-primary)',
+                                        fontSize: '12px'
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && e.target.value.trim() !== '') {
+                                            searchYouTube(e.target.value.trim())
+                                        }
+                                    }}
+                                />
+                                <button
+                                    onClick={(e) => {
+                                        const val = e.currentTarget.previousElementSibling.value.trim();
+                                        if (val !== '') searchYouTube(val)
+                                    }}
+                                    className="timer-btn primary"
+                                    style={{ padding: '8px', borderRadius: '8px' }}
+                                    disabled={isSearching}
+                                >
+                                    <Search size={14} />
+                                </button>
+                            </div>
+                        )}
+
                         {/* Now Playing info */}
                         <div className="now-playing" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-primary)', padding: '10px', borderRadius: '8px', marginBottom: '15px' }}>
                             <Music size={14} color="var(--accent-cyan)" />
                             <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '10px', overflow: 'hidden' }}>
                                 <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                                    {mode === 'tracks' ? 'TRACK LOCAL' : 'LIVE STREAMING'}
+                                    {mode === 'youtube' ? 'REPRODUCIENDO' : 'LIVE STREAMING'}
                                 </span>
                                 <span className={isMusicPlaying ? 'playing-text' : ''} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {getActiveItem().title}
@@ -473,24 +515,52 @@ export default function Analytics() {
 
                         {/* Track List */}
                         <div className="track-list" style={{ maxHeight: '150px', marginBottom: '15px' }}>
-                            {(mode === 'tracks' ? curatedTracks : radioStations).map((item, i) => {
-                                const isActive = mode === 'tracks' ? i === currentTrackIndex : i === currentRadioIndex;
-                                return (
-                                    <button
-                                        key={item.id}
-                                        className={`track-item ${isActive ? 'active' : ''}`}
-                                        onClick={() => selectItem(i, mode)}
-                                    >
-                                        <span className="track-number">{i + 1}</span>
-                                        <span className="track-title">{item.title}</span>
-                                        {isActive && isMusicPlaying && (
-                                            <div className="track-playing-icon">
-                                                <span /><span /><span />
-                                            </div>
-                                        )}
-                                    </button>
-                                )
-                            })}
+                            {isSearching ? (
+                                <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                    Buscando canciones...
+                                </div>
+                            ) : mode === 'youtube' ? (
+                                searchResults.map((item, i) => {
+                                    const isActive = currentSpotifyTrack?.id === item.id;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            className={`track-item ${isActive ? 'active' : ''}`}
+                                            onClick={() => searchAndPlaySpotifyTrack(item)}
+                                        >
+                                            <span className="track-number">{i + 1}</span>
+                                            <span className="track-title" style={{ textAlign: 'left', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontSize: '12px' }}>{item.title}</span>
+                                                <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{item.channel}</span>
+                                            </span>
+                                            {isActive && isMusicPlaying && (
+                                                <div className="track-playing-icon">
+                                                    <span /><span /><span />
+                                                </div>
+                                            )}
+                                        </button>
+                                    )
+                                })
+                            ) : (
+                                radioStations.map((item, i) => {
+                                    const isActive = i === currentRadioIndex;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            className={`track-item ${isActive ? 'active' : ''}`}
+                                            onClick={() => selectItem(i, 'radio')}
+                                        >
+                                            <span className="track-number">{i + 1}</span>
+                                            <span className="track-title">{item.title}</span>
+                                            {isActive && isMusicPlaying && (
+                                                <div className="track-playing-icon">
+                                                    <span /><span /><span />
+                                                </div>
+                                            )}
+                                        </button>
+                                    )
+                                })
+                            )}
                         </div>
 
                         {/* Volume music */}
@@ -593,10 +663,10 @@ export default function Analytics() {
                         </span>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* ====== CALENDAR HEATMAP SECTION ====== */}
-            <div className="heatmap-section">
+            < div className="heatmap-section" >
                 <div className="heatmap-header">
                     <div>
                         <h2>Calendario de Estudio</h2>
@@ -648,18 +718,20 @@ export default function Analytics() {
                         </div>
                     </div>
                 </div>
-                {hoveredDay && (
-                    <div
-                        className="heatmap-tooltip"
-                        style={{ left: tooltipPos.x, top: tooltipPos.y }}
-                    >
-                        <strong>{hoveredDay.hours}h</strong> el {new Date(hoveredDay.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </div>
-                )}
-            </div>
+                {
+                    hoveredDay && (
+                        <div
+                            className="heatmap-tooltip"
+                            style={{ left: tooltipPos.x, top: tooltipPos.y }}
+                        >
+                            <strong>{hoveredDay.hours}h</strong> el {new Date(hoveredDay.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </div>
+                    )
+                }
+            </div >
 
             {/* ====== EXISTING STATS CARDS ====== */}
-            <div className="stats-row">
+            < div className="stats-row" >
                 <div className="stat-card blue">
                     <div className="stat-icon">
                         <TrendingUp size={20} />
@@ -714,10 +786,10 @@ export default function Analytics() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Additional Stats Row */}
-            <div className="mini-stats-row">
+            < div className="mini-stats-row" >
                 <div className="mini-stat">
                     <BookOpen size={18} />
                     <div className="mini-stat-content">
@@ -746,10 +818,10 @@ export default function Analytics() {
                         <span className="mini-stat-label">Mejor Racha</span>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Charts Row */}
-            <div className="charts-row">
+            < div className="charts-row" >
                 <div className="chart-card">
                     <div className="chart-header">
                         <div>
@@ -842,10 +914,10 @@ export default function Analytics() {
                         </ResponsiveContainer>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Bottom Row */}
-            <div className="bottom-row">
+            < div className="bottom-row" >
                 <div className="diagnostic-card">
                     <div className="card-header">
                         <div className="header-icon">
@@ -946,7 +1018,7 @@ export default function Analytics() {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }

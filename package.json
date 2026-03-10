@@ -17,6 +17,7 @@
     "react-dom": "^18.2.0",
     "react-pdf": "^10.3.0",
     "react-router-dom": "^6.20.0",
+    "react-youtube": "^10.1.0",
     "recharts": "^2.10.0",
     "sileo": "^0.1.5"
   },

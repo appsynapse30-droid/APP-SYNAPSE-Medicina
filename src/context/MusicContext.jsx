@@ -1,15 +1,5 @@
 import { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react'
-
-// ============================================================
-// RESOURCES: CURATED TRACKS (Option A - High Quality MP3 Local/CDN)
-// ============================================================
-const CURATED_TRACKS = [
-    { id: 't1', title: 'Lofi Study Beats', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3' },
-    { id: 't2', title: 'Chillhop Piano', url: 'https://cdn.pixabay.com/download/audio/2022/04/27/audio_651f67f637.mp3?filename=chill-abstract-intention-110820.mp3' },
-    { id: 't3', title: 'Rainy Cafe Vibes', url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_b26ce3ba2b.mp3?filename=lofi-chill-medium-version-109403.mp3' },
-    { id: 't4', title: 'Night Owl Jazz', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_169b59664f.mp3?filename=empty-mind-118973.mp3' },
-    { id: 't5', title: 'Deep Concentration', url: 'https://cdn.pixabay.com/download/audio/2021/11/25/audio_106cd33d02.mp3?filename=lofi-ambient-14227.mp3' },
-]
+import YouTube from 'react-youtube'
 
 // ============================================================
 // RESOURCES: LIVE STREAM RADIOS (Option B/C - 24/7 Streams)
@@ -138,11 +128,16 @@ const MusicContext = createContext(null)
 
 export function MusicProvider({ children }) {
     // Media playback state
-    const [mode, setMode] = useState('tracks') // 'tracks' | 'radio'
+    const [mode, setMode] = useState('youtube') // 'youtube' | 'radio'
     const [isPlaying, setIsPlaying] = useState(false)
-    const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
     const [currentRadioIndex, setCurrentRadioIndex] = useState(0)
     const [volume, setVolume] = useState(0.4)
+
+    // YouTube Mini Spotify State
+    const [searchResults, setSearchResults] = useState([])
+    const [currentSpotifyTrack, setCurrentSpotifyTrack] = useState(null)
+    const [isSearching, setIsSearching] = useState(false)
+    const [youtubePlayer, setYoutubePlayer] = useState(null)
 
     // Scientific state
     const [binauralMode, setBinauralMode] = useState('none') // 'none' | 'alpha' | 'beta'
@@ -150,16 +145,17 @@ export function MusicProvider({ children }) {
 
     // Refs for real DOM audio element
     const audioRef = useRef(new Audio())
-    const isReadyRef = useRef(false)
 
-    // Handle HTML5 Audio Element Setup
+    // -----------------------------------------------------------------
+    // HTML5 RADIO AUDIO HANDLING
+    // -----------------------------------------------------------------
     useEffect(() => {
         const ad = audioRef.current
         ad.crossOrigin = 'anonymous'
 
         const handleEnded = () => {
-            if (mode === 'tracks') {
-                setCurrentTrackIndex(prev => (prev + 1) % CURATED_TRACKS.length)
+            if (mode === 'radio') {
+                setCurrentRadioIndex(prev => (prev + 1) % RADIO_STATIONS.length)
             }
         }
 
@@ -167,38 +163,123 @@ export function MusicProvider({ children }) {
         return () => ad.removeEventListener('ended', handleEnded)
     }, [mode])
 
-    // Load track/radio source when indices change, only if it's supposed to play
     useEffect(() => {
         const ad = audioRef.current
-        const sourceUrl = mode === 'tracks'
-            ? CURATED_TRACKS[currentTrackIndex].url
-            : RADIO_STATIONS[currentRadioIndex].url
-
-        // If the URL changed, load and play
-        if (ad.src !== sourceUrl) {
-            ad.src = sourceUrl
-            ad.load()
+        if (mode === 'radio') {
+            const sourceUrl = RADIO_STATIONS[currentRadioIndex].url
+            if (ad.src !== sourceUrl) {
+                ad.src = sourceUrl
+                ad.load()
+            }
             if (isPlaying) {
                 ad.play().catch(e => console.error("Playback failed:", e))
+                // Pause YT if exists
+                if (youtubePlayer && typeof youtubePlayer.pauseVideo === 'function') {
+                    youtubePlayer.pauseVideo()
+                }
+            } else {
+                ad.pause()
+            }
+        } else {
+            // mode youtube
+            ad.pause()
+            if (isPlaying && youtubePlayer && typeof youtubePlayer.playVideo === 'function') {
+                youtubePlayer.playVideo()
+            } else if (!isPlaying && youtubePlayer && typeof youtubePlayer.pauseVideo === 'function') {
+                youtubePlayer.pauseVideo()
             }
         }
-    }, [currentTrackIndex, currentRadioIndex, mode, isPlaying])
+    }, [currentRadioIndex, mode, isPlaying, youtubePlayer])
 
     // Volume syncing
     useEffect(() => {
         audioRef.current.volume = volume
-    }, [volume])
+        if (youtubePlayer && typeof youtubePlayer.setVolume === 'function') {
+            youtubePlayer.setVolume(volume * 100) // YT expects 0-100
+        }
+    }, [volume, youtubePlayer])
 
-    // Core playback controls
+    // -----------------------------------------------------------------
+    // YOUTUBE SEARCH & PLAYER HANDLING
+    // -----------------------------------------------------------------
+    const searchYouTube = useCallback(async (query) => {
+        setIsSearching(true)
+        const instances = [
+            'https://pipedapi.kavin.rocks',
+            'https://pipedapi.smnz.de',
+            'https://pipedapi.lunar.icu',
+            'https://api.piped.projectsegfau.lt'
+        ]
+
+        let foundItems = []
+        for (const url of instances) {
+            try {
+                const res = await fetch(`${url}/search?q=${encodeURIComponent(query + ' lofi study relaxing focus')}&filter=music_songs`)
+                if (res.ok) {
+                    const data = await res.json()
+                    foundItems = data.items.slice(0, 15).map(item => ({
+                        id: item.url.split('?v=')[1],
+                        title: item.title,
+                        thumbnail: item.thumbnail,
+                        channel: item.uploaderName
+                    }))
+                    break // Stop if successful
+                }
+            } catch (e) {
+                console.warn(`Piped instance ${url} failed, trying next...`)
+            }
+        }
+
+        // If API fails or yields no results, provide some defaults
+        if (foundItems.length === 0) {
+            foundItems = [
+                { id: 'jfKfPfyJRdk', title: 'lofi hip hop radio - beats to relax/study to', channel: 'Lofi Girl', thumbnail: '' },
+                { id: '5qap5aO4i9A', title: 'lofi hip hop radio - beats to sleep/chill to', channel: 'Lofi Girl', thumbnail: '' },
+                { id: '4xDzrMQvK8Y', title: 'Chillhop Radio - jazzy & lofi hip hop beats', channel: 'Chillhop Music', thumbnail: '' }
+            ]
+        }
+
+        setSearchResults(foundItems)
+        setIsSearching(false)
+        return foundItems
+    }, [])
+
+    const searchAndPlaySpotifyTrack = useCallback((trackObj) => {
+        setCurrentSpotifyTrack(trackObj)
+        setMode('youtube')
+        setIsPlaying(true)
+        initWebAudio()
+        startScientificGenerators(binauralMode, noiseVolume)
+        // Note: The YT iframe will detect currentSpotifyTrack and update its ID, then auto-play
+    }, [binauralMode, noiseVolume])
+
+    const playNextSpotifyTrack = useCallback(() => {
+        if (!currentSpotifyTrack || searchResults.length === 0) return
+        const currentIndex = searchResults.findIndex(t => t.id === currentSpotifyTrack.id)
+        if (currentIndex !== -1 && currentIndex < searchResults.length - 1) {
+            searchAndPlaySpotifyTrack(searchResults[currentIndex + 1])
+        }
+    }, [currentSpotifyTrack, searchResults, searchAndPlaySpotifyTrack])
+
+    const playPrevSpotifyTrack = useCallback(() => {
+        if (!currentSpotifyTrack || searchResults.length === 0) return
+        const currentIndex = searchResults.findIndex(t => t.id === currentSpotifyTrack.id)
+        if (currentIndex > 0) {
+            searchAndPlaySpotifyTrack(searchResults[currentIndex - 1])
+        }
+    }, [currentSpotifyTrack, searchResults, searchAndPlaySpotifyTrack])
+
+
+    // -----------------------------------------------------------------
+    // CORE PLAYBACK CONTROLS
+    // -----------------------------------------------------------------
     const play = useCallback(() => {
         initWebAudio()
-        audioRef.current.play().catch(e => console.error("Playback failed:", e))
         setIsPlaying(true)
         startScientificGenerators(binauralMode, noiseVolume)
     }, [binauralMode, noiseVolume])
 
     const stop = useCallback(() => {
-        audioRef.current.pause()
         setIsPlaying(false)
         if (binauralGain && audioCtx) {
             binauralGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5)
@@ -214,29 +295,29 @@ export function MusicProvider({ children }) {
     }, [isPlaying, play, stop])
 
     const next = useCallback(() => {
-        if (mode === 'tracks') {
-            setCurrentTrackIndex(prev => (prev + 1) % CURATED_TRACKS.length)
+        if (mode === 'youtube') {
+            playNextSpotifyTrack()
         } else {
             setCurrentRadioIndex(prev => (prev + 1) % RADIO_STATIONS.length)
         }
         if (!isPlaying) play()
-    }, [mode, isPlaying, play])
+    }, [mode, isPlaying, play, playNextSpotifyTrack])
 
     const prev = useCallback(() => {
-        if (mode === 'tracks') {
-            setCurrentTrackIndex(prev => (prev - 1 + CURATED_TRACKS.length) % CURATED_TRACKS.length)
+        if (mode === 'youtube') {
+            playPrevSpotifyTrack()
         } else {
             setCurrentRadioIndex(prev => (prev - 1 + RADIO_STATIONS.length) % RADIO_STATIONS.length)
         }
         if (!isPlaying) play()
-    }, [mode, isPlaying, play])
+    }, [mode, isPlaying, play, playPrevSpotifyTrack])
 
     const selectItem = useCallback((index, itemMode) => {
         if (itemMode !== mode) {
             setMode(itemMode)
         }
-        if (itemMode === 'tracks') {
-            setCurrentTrackIndex(index)
+        if (itemMode === 'youtube') {
+            // Should be handled by searchAndPlaySpotifyTrack for tracks
         } else {
             setCurrentRadioIndex(index)
         }
@@ -249,12 +330,7 @@ export function MusicProvider({ children }) {
 
     const switchMode = useCallback((newMode) => {
         setMode(newMode)
-        if (isPlaying) {
-            const tempAd = audioRef.current
-            tempAd.pause()
-            // Setting state triggers useEffect to load new URL and play
-        }
-    }, [isPlaying])
+    }, [])
 
     // Scientific Controls
     const setBinaural = useCallback((bm) => {
@@ -276,16 +352,19 @@ export function MusicProvider({ children }) {
     }, [isPlaying, binauralMode])
 
     const getActiveItem = useCallback(() => {
-        return mode === 'tracks' ? CURATED_TRACKS[currentTrackIndex] : RADIO_STATIONS[currentRadioIndex]
-    }, [mode, currentTrackIndex, currentRadioIndex])
+        return mode === 'youtube'
+            ? (currentSpotifyTrack || { title: 'No track selected' })
+            : RADIO_STATIONS[currentRadioIndex]
+    }, [mode, currentSpotifyTrack, currentRadioIndex])
 
 
     const value = {
-        curatedTracks: CURATED_TRACKS,
         radioStations: RADIO_STATIONS,
         mode,
         isPlaying,
-        currentTrackIndex,
+        searchResults,
+        isSearching,
+        currentSpotifyTrack,
         currentRadioIndex,
         volume,
         binauralMode,
@@ -300,12 +379,56 @@ export function MusicProvider({ children }) {
         switchMode,
         setBinaural,
         changeNoiseVolume,
-        getActiveItem
+        getActiveItem,
+        searchYouTube,
+        searchAndPlaySpotifyTrack
     }
 
     return (
         <MusicContext.Provider value={value}>
             {children}
+            {/* Invisible YouTube Player for Audio integration */}
+            <div style={{ display: 'none' }}>
+                {currentSpotifyTrack && (
+                    <YouTube
+                        videoId={currentSpotifyTrack.id}
+                        opts={{
+                            height: '0',
+                            width: '0',
+                            playerVars: {
+                                autoplay: 1,
+                                controls: 0,
+                                disablekb: 1,
+                                fs: 0,
+                                rel: 0,
+                                iv_load_policy: 3
+                            }
+                        }}
+                        onReady={(e) => {
+                            setYoutubePlayer(e.target)
+                            e.target.setVolume(volume * 100)
+                            if (!isPlaying || mode !== 'youtube') e.target.pauseVideo()
+                        }}
+                        onStateChange={(e) => {
+                            // 0 = ended, 1 = playing, 2 = paused
+                            if (e.data === 0) {
+                                playNextSpotifyTrack()
+                            }
+                            // Sync state if YT player is unexpectedly paused
+                            if (e.data === 2 && isPlaying && mode === 'youtube') {
+                                setIsPlaying(false)
+                            }
+                            if (e.data === 1 && !isPlaying && mode === 'youtube') {
+                                setIsPlaying(true)
+                            }
+                        }}
+                        onError={(e) => {
+                            console.error("YouTube Player Error", e)
+                            playNextSpotifyTrack()
+                        }}
+                    />
+                )}
+            </div>
         </MusicContext.Provider>
     )
 }
