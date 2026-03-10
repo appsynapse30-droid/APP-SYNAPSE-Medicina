@@ -137,7 +137,7 @@ export function MusicProvider({ children }) {
     const [searchResults, setSearchResults] = useState([])
     const [currentSpotifyTrack, setCurrentSpotifyTrack] = useState(null)
     const [isSearching, setIsSearching] = useState(false)
-    const [youtubePlayer, setYoutubePlayer] = useState(null)
+    const youtubePlayerRef = useRef(null)
 
     // Scientific state
     const [binauralMode, setBinauralMode] = useState('none') // 'none' | 'alpha' | 'beta'
@@ -174,8 +174,8 @@ export function MusicProvider({ children }) {
             if (isPlaying) {
                 ad.play().catch(e => console.error("Playback failed:", e))
                 // Pause YT if exists
-                if (youtubePlayer && typeof youtubePlayer.pauseVideo === 'function') {
-                    youtubePlayer.pauseVideo()
+                if (youtubePlayerRef.current && typeof youtubePlayerRef.current.pauseVideo === 'function') {
+                    try { youtubePlayerRef.current.pauseVideo() } catch (e) { }
                 }
             } else {
                 ad.pause()
@@ -183,21 +183,23 @@ export function MusicProvider({ children }) {
         } else {
             // mode youtube
             ad.pause()
-            if (isPlaying && youtubePlayer && typeof youtubePlayer.playVideo === 'function') {
-                youtubePlayer.playVideo()
-            } else if (!isPlaying && youtubePlayer && typeof youtubePlayer.pauseVideo === 'function') {
-                youtubePlayer.pauseVideo()
+            if (isPlaying && youtubePlayerRef.current && typeof youtubePlayerRef.current.playVideo === 'function') {
+                try { youtubePlayerRef.current.playVideo() } catch (e) { }
+            } else if (!isPlaying && youtubePlayerRef.current && typeof youtubePlayerRef.current.pauseVideo === 'function') {
+                try { youtubePlayerRef.current.pauseVideo() } catch (e) { }
             }
         }
-    }, [currentRadioIndex, mode, isPlaying, youtubePlayer])
+    }, [currentRadioIndex, mode, isPlaying])
 
     // Volume syncing
     useEffect(() => {
         audioRef.current.volume = volume
-        if (youtubePlayer && typeof youtubePlayer.setVolume === 'function') {
-            youtubePlayer.setVolume(volume * 100) // YT expects 0-100
+        if (youtubePlayerRef.current && typeof youtubePlayerRef.current.setVolume === 'function') {
+            try {
+                youtubePlayerRef.current.setVolume(volume * 100) // YT expects 0-100
+            } catch (e) { }
         }
-    }, [volume, youtubePlayer])
+    }, [volume])
 
     // -----------------------------------------------------------------
     // YOUTUBE SEARCH & PLAYER HANDLING
@@ -262,7 +264,9 @@ export function MusicProvider({ children }) {
         setIsPlaying(true)
         initWebAudio()
         startScientificGenerators(binauralMode, noiseVolume)
-        // Note: The YT iframe will detect currentSpotifyTrack and update its ID, then auto-play
+        if (youtubePlayerRef.current && typeof youtubePlayerRef.current.playVideo === 'function') {
+            try { youtubePlayerRef.current.playVideo() } catch (e) { }
+        }
     }, [binauralMode, noiseVolume])
 
     const playNextSpotifyTrack = useCallback(() => {
@@ -400,26 +404,29 @@ export function MusicProvider({ children }) {
         <MusicContext.Provider value={value}>
             {children}
             {/* Invisible YouTube Player for Audio integration */}
-            <div style={{ display: 'none' }}>
+            <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '300px', height: '300px', opacity: 0, pointerEvents: 'none' }}>
                 {currentSpotifyTrack && (
                     <YouTube
                         videoId={currentSpotifyTrack.id}
                         opts={{
-                            height: '0',
-                            width: '0',
+                            height: '200',
+                            width: '200',
                             playerVars: {
                                 autoplay: 1,
                                 controls: 0,
                                 disablekb: 1,
                                 fs: 0,
                                 rel: 0,
-                                iv_load_policy: 3
+                                iv_load_policy: 3,
+                                origin: window.location ? window.location.origin : 'http://localhost:3000'
                             }
                         }}
                         onReady={(e) => {
-                            setYoutubePlayer(e.target)
-                            e.target.setVolume(volume * 100)
-                            if (!isPlaying || mode !== 'youtube') e.target.pauseVideo()
+                            youtubePlayerRef.current = e.target
+                            try { e.target.setVolume(volume * 100) } catch (err) { }
+                            if (!isPlaying || mode !== 'youtube') {
+                                try { e.target.pauseVideo() } catch (err) { }
+                            }
                         }}
                         onStateChange={(e) => {
                             // 0 = ended, 1 = playing, 2 = paused
