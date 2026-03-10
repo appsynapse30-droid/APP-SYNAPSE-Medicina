@@ -212,17 +212,24 @@ export function MusicProvider({ children }) {
         ]
 
         let foundItems = []
+        // We append "study" to keep the results academically focused, unless the query already has it
+        const searchQuery = query.toLowerCase().includes('study') ? query : query + ' study relax'
+
         for (const url of instances) {
             try {
-                const res = await fetch(`${url}/search?q=${encodeURIComponent(query + ' lofi study relaxing focus')}&filter=music_songs`)
+                // Using filter=all because many study mixes are standard videos, not "music_songs"
+                const res = await fetch(`${url}/search?q=${encodeURIComponent(searchQuery)}&filter=all`)
                 if (res.ok) {
                     const data = await res.json()
-                    foundItems = data.items.slice(0, 15).map(item => ({
-                        id: item.url.split('?v=')[1],
-                        title: item.title,
-                        thumbnail: item.thumbnail,
-                        channel: item.uploaderName
-                    }))
+                    foundItems = data.items
+                        .filter(item => item.type === 'stream') // Ensure it's a playback video
+                        .slice(0, 15)
+                        .map(item => ({
+                            id: item.url.split('?v=')[1],
+                            title: item.title,
+                            thumbnail: item.thumbnail,
+                            channel: item.uploaderName
+                        }))
                     break // Stop if successful
                 }
             } catch (e) {
@@ -230,12 +237,17 @@ export function MusicProvider({ children }) {
             }
         }
 
-        // If API fails or yields no results, provide some defaults
+        // If API fails or yields no results, provide some defaults and highly recommended classical/focus tracks
         if (foundItems.length === 0) {
             foundItems = [
-                { id: 'jfKfPfyJRdk', title: 'lofi hip hop radio - beats to relax/study to', channel: 'Lofi Girl', thumbnail: '' },
-                { id: '5qap5aO4i9A', title: 'lofi hip hop radio - beats to sleep/chill to', channel: 'Lofi Girl', thumbnail: '' },
-                { id: '4xDzrMQvK8Y', title: 'Chillhop Radio - jazzy & lofi hip hop beats', channel: 'Chillhop Music', thumbnail: '' }
+                { id: 'jfKfPfyJRdk', title: 'Lofi Hip Hop Radio - Beats to relax/study to', channel: 'Lofi Girl' },
+                { id: 'm-yQIEQ0tK0', title: 'Mozart for Studying and Concentration', channel: 'HALIDONMUSIC' },
+                { id: '4xDzrMQvK8Y', title: 'Chillhop Radio - Jazzy & lofi hip hop beats', channel: 'Chillhop Music' },
+                { id: '9kZWzFv-6fQ', title: 'Classical Music for Studying & Brain Power', channel: 'HALIDONMUSIC' },
+                { id: 'lTRiuFIWV54', title: 'Deep Focus - Music For Studying, Concentration', channel: 'Quiet Quest' },
+                { id: '7NOSDKb0HlU', title: 'Ambient study music to concentrate', channel: 'the bootleg boy' },
+                { id: '21qNxnCS8WU', title: 'Bossa Nova Jazz Music for Studying & Working', channel: 'Cafe Music BGM channel' },
+                { id: 'lVK18qKnsms', title: 'Dark Academia | Classical Music for Studying', channel: 'Dark Academia' }
             ]
         }
 
