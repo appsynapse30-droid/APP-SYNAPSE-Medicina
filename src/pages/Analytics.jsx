@@ -22,7 +22,11 @@ import {
     ChevronRight,
     SkipForward,
     SkipBack,
-    Music
+    Music,
+    Radio,
+    Disc3,
+    Wind,
+    Activity
 } from 'lucide-react'
 import {
     RadarChart,
@@ -114,17 +118,24 @@ export default function Analytics() {
 
     // --- Music from global context (persists across routes) ---
     const {
-        tracks: FOCUS_TRACKS,
+        curatedTracks,
+        radioStations,
+        mode,
         isPlaying: isMusicPlaying,
-        currentTrack,
+        currentTrackIndex,
+        currentRadioIndex,
         volume: musicVolume,
-        play: startMusic,
-        stop: stopMusic,
+        binauralMode,
+        noiseVolume,
         toggle: toggleMusic,
         next: nextTrack,
         prev: prevTrack,
-        selectTrack,
+        selectItem,
         changeVolume,
+        switchMode,
+        setBinaural,
+        changeNoiseVolume,
+        getActiveItem
     } = useMusic()
 
     // Calendar state
@@ -410,14 +421,16 @@ export default function Analytics() {
 
                 {/* Music + Today Stats Panel */}
                 <div className="pomodoro-side-panel">
-                    {/* Deep Focus Music Playlist */}
+                    {/* Deep Focus Music Playlist & Neuro-Tools */}
                     <div className="music-card">
-                        <div className="music-header">
-                            <span className="music-label">🎵 Deep Focus</span>
+                        <div className="music-header" style={{ marginBottom: '10px' }}>
+                            <span className="music-label">🎵 Focus & Lo-fi</span>
                             <div className="music-header-controls">
-                                <button className="music-nav-btn" onClick={prevTrack} title="Anterior">
-                                    <SkipBack size={16} />
-                                </button>
+                                {mode === 'tracks' && (
+                                    <button className="music-nav-btn" onClick={prevTrack} title="Anterior">
+                                        <SkipBack size={16} />
+                                    </button>
+                                )}
                                 <button className="music-toggle" onClick={toggleMusic}>
                                     {isMusicPlaying ? <Pause size={18} /> : <Play size={18} />}
                                 </button>
@@ -427,35 +440,61 @@ export default function Analytics() {
                             </div>
                         </div>
 
-                        {/* Now Playing */}
-                        <div className="now-playing">
-                            <Music size={14} />
-                            <span className={isMusicPlaying ? 'playing-text' : ''}>
-                                {FOCUS_TRACKS[currentTrack].title}
-                            </span>
+                        {/* Mode Toggles */}
+                        <div className="music-mode-toggles" style={{ display: 'flex', gap: '5px', marginBottom: '15px' }}>
+                            <button
+                                className={`tag-chip ${mode === 'tracks' ? 'active' : ''}`}
+                                onClick={() => switchMode('tracks')}
+                                style={{ flex: 1, padding: '6px', fontSize: '11px', justifyContent: 'center', background: mode === 'tracks' ? 'var(--bg-elevated)' : 'transparent', border: '1px solid var(--border-primary)' }}
+                            >
+                                <Disc3 size={12} style={{ marginRight: '4px' }} /> Curadas
+                            </button>
+                            <button
+                                className={`tag-chip ${mode === 'radio' ? 'active' : ''}`}
+                                onClick={() => switchMode('radio')}
+                                style={{ flex: 1, padding: '6px', fontSize: '11px', justifyContent: 'center', background: mode === 'radio' ? 'var(--bg-elevated)' : 'transparent', border: '1px solid var(--border-primary)' }}
+                            >
+                                <Radio size={12} style={{ marginRight: '4px' }} /> Radio en Vivo
+                            </button>
+                        </div>
+
+                        {/* Now Playing info */}
+                        <div className="now-playing" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-primary)', padding: '10px', borderRadius: '8px', marginBottom: '15px' }}>
+                            <Music size={14} color="var(--accent-cyan)" />
+                            <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '10px', overflow: 'hidden' }}>
+                                <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                                    {mode === 'tracks' ? 'TRACK LOCAL' : 'LIVE STREAMING'}
+                                </span>
+                                <span className={isMusicPlaying ? 'playing-text' : ''} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {getActiveItem().title}
+                                </span>
+                            </div>
                         </div>
 
                         {/* Track List */}
-                        <div className="track-list">
-                            {FOCUS_TRACKS.map((track, i) => (
-                                <button
-                                    key={i}
-                                    className={`track-item ${i === currentTrack ? 'active' : ''}`}
-                                    onClick={() => selectTrack(i)}
-                                >
-                                    <span className="track-number">{i + 1}</span>
-                                    <span className="track-title">{track.title}</span>
-                                    {i === currentTrack && isMusicPlaying && (
-                                        <div className="track-playing-icon">
-                                            <span /><span /><span />
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
+                        <div className="track-list" style={{ maxHeight: '150px', marginBottom: '15px' }}>
+                            {(mode === 'tracks' ? curatedTracks : radioStations).map((item, i) => {
+                                const isActive = mode === 'tracks' ? i === currentTrackIndex : i === currentRadioIndex;
+                                return (
+                                    <button
+                                        key={item.id}
+                                        className={`track-item ${isActive ? 'active' : ''}`}
+                                        onClick={() => selectItem(i, mode)}
+                                    >
+                                        <span className="track-number">{i + 1}</span>
+                                        <span className="track-title">{item.title}</span>
+                                        {isActive && isMusicPlaying && (
+                                            <div className="track-playing-icon">
+                                                <span /><span /><span />
+                                            </div>
+                                        )}
+                                    </button>
+                                )
+                            })}
                         </div>
 
-                        {/* Volume */}
-                        <div className="volume-control">
+                        {/* Volume music */}
+                        <div className="volume-control" style={{ marginBottom: '15px' }}>
                             <VolumeX size={14} />
                             <input
                                 type="range"
@@ -463,10 +502,63 @@ export default function Analytics() {
                                 max="1"
                                 step="0.05"
                                 value={musicVolume}
-                                onChange={handleVolumeChange}
+                                onChange={(e) => changeVolume(parseFloat(e.target.value))}
                                 className="volume-slider"
                             />
                             <Volume2 size={14} />
+                        </div>
+
+                        {/* Scientific Settings (Binaural & Noise) */}
+                        <div style={{ borderTop: '1px solid var(--border-primary)', paddingTop: '15px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                <Activity size={12} style={{ marginRight: '5px', color: 'var(--accent-purple)' }} />
+                                <strong>Mejora Cognitiva</strong> (Recomendado)
+                            </div>
+
+                            {/* Binaural Beats Select */}
+                            <div style={{ display: 'flex', gap: '5px', marginBottom: '15px' }}>
+                                <button
+                                    className={`tag-chip ${binauralMode === 'none' ? 'active' : ''}`}
+                                    onClick={() => setBinaural('none')}
+                                    style={{ flex: 1, padding: '4px', fontSize: '10px', justifyContent: 'center' }}
+                                >
+                                    Off
+                                </button>
+                                <button
+                                    className={`tag-chip ${binauralMode === 'alpha' ? 'active' : ''}`}
+                                    onClick={() => setBinaural('alpha')}
+                                    title="Ondas Alfa (8-14Hz): Lectura relajada y memoria"
+                                    style={{ flex: 1, padding: '4px', fontSize: '10px', justifyContent: 'center', border: binauralMode === 'alpha' ? '1px solid var(--accent-cyan)' : 'none' }}
+                                >
+                                    Alfa (Relax)
+                                </button>
+                                <button
+                                    className={`tag-chip ${binauralMode === 'beta' ? 'active' : ''}`}
+                                    onClick={() => setBinaural('beta')}
+                                    title="Ondas Beta (14-30Hz): Alerta mental y casos clínicos"
+                                    style={{ flex: 1, padding: '4px', fontSize: '10px', justifyContent: 'center', border: binauralMode === 'beta' ? '1px solid var(--accent-purple)' : 'none' }}
+                                >
+                                    Beta (Focus)
+                                </button>
+                            </div>
+
+                            {/* Brown Noise Slider */}
+                            <div className="volume-control" title="Enmascaramiento de fondo: Bloquea distracciones externas con Ruido Marrón" style={{ background: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '6px' }}>
+                                <Wind size={14} color="var(--text-secondary)" />
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    value={noiseVolume}
+                                    onChange={(e) => changeNoiseVolume(parseFloat(e.target.value))}
+                                    className="volume-slider"
+                                    style={{ flex: 1, accentColor: 'var(--text-secondary)' }}
+                                />
+                                <span style={{ fontSize: '10px', color: 'var(--text-secondary)', marginLeft: '5px', minWidth: '25px', textAlign: 'right' }}>
+                                    {Math.round(noiseVolume * 100)}%
+                                </span>
+                            </div>
                         </div>
                     </div>
 

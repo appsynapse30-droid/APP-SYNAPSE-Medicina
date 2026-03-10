@@ -1,66 +1,91 @@
 version: "2"
 type: frontend
 tech_stack:
-  - React 18
-  - Vite 5
-  - Supabase Auth (email/password + Google OAuth)
-  - React Router v6
-  - CSS (custom, no framework)
-  - Lucide React icons
+  - javascript
+  - react
+  - vite
+  - tailwindcss
+  - supabase
+  - react-router-dom
+  - lucide-react
+routes:
+  - path: /
+    file: src/pages/Landing.jsx
+    auth_required: false
+    description: Landing page introducing the app
+  - path: /login
+    file: src/pages/RegistroInicio.jsx
+    auth_required: false
+    description: User login and registration page
+  - path: /study
+    file: src/pages/StudyAI.jsx
+    auth_required: true
+    description: Main Study AI hub showing notebooks
+  - path: /study/notebook/:id
+    file: src/pages/NotebookView.jsx
+    auth_required: true
+    description: Chat interface and content for a specific notebook
+  - path: /clinical-cases
+    file: src/pages/ClinicalCases.jsx
+    auth_required: true
+    description: Page for practicing clinical cases
+  - path: /community
+    file: src/pages/Community.jsx
+    auth_required: true
+    description: Community features area
+  - path: /music
+    file: src/pages/Music.jsx
+    auth_required: true
+    description: Deep focus ambient music generator
+  - path: /settings
+    file: src/pages/Settings.jsx
+    auth_required: true
+    description: User settings and preferences
 features:
-  - name: User Login
-    description: Email/password login with error handling and Google OAuth
+  - name: User Authentication
+    description: Login and register with email/password via Supabase
     files:
-      - src/pages/Login.jsx
-      - src/pages/Login.css
+      - src/pages/RegistroInicio.jsx
       - src/context/AuthContext.jsx
-      - src/config/supabase.js
-    pages:
-      - path: /login
-        description: Login page with email/password form and Google OAuth button
-  - name: User Registration
-    description: New user signup with email verification
+    entry_route: /login
+    user_interactions:
+      - Fill email input field
+      - Fill password input field
+      - Fill name field (on register)
+      - Click Login/Register button to submit
+    api_calls:
+      - method: POST
+        endpoint: supabase.auth.signUp/signInWithPassword
+    auth_required: false
+  - name: Create Notebook
+    description: Create a new study notebook to organize materials
     files:
-      - src/pages/Register.jsx
-      - src/pages/Register.css
-      - src/context/AuthContext.jsx
-    pages:
-      - path: /register
-        description: Registration form with email, name, password, and password strength indicators
-  - name: Password Recovery
-    description: Password reset via email link
+      - src/pages/StudyAI.jsx
+      - src/context/StudyAIContext.jsx
+    entry_route: /study
+    user_interactions:
+      - Click "Nuevo Cuaderno" button to open modal
+      - Fill notebook name
+      - Select specialty from dropdown
+      - Fill description
+      - Select icon and color
+      - Click "Crear cuaderno" button
+    api_calls:
+      - method: POST
+        endpoint: supabase.from('study_notebooks').insert
+    auth_required: true
+  - name: AI Notebook Chat
+    description: Chat with the AI tutor within a specific notebook
     files:
-      - src/pages/ForgotPassword.jsx
-      - src/pages/ForgotPassword.css
-      - src/context/AuthContext.jsx
-    pages:
-      - path: /forgot-password
-        description: Email input form to send password reset link
-  - name: Route Protection
-    description: Protected routes redirect unauthenticated users to login
-    files:
-      - src/components/ProtectedRoute.jsx
-      - src/context/AuthContext.jsx
-    pages:
-      - path: /
-        description: Dashboard (protected, requires authentication)
-  - name: Medical Study Dashboard
-    description: Main dashboard with study statistics and navigation
-    files:
-      - src/pages/Dashboard.jsx
-      - src/pages/Dashboard.css
-    pages:
-      - path: /
-        description: Dashboard showing study stats, flashcards, and clinical cases
-  - name: Document Library
-    description: Upload, manage, and organize study documents
-    files:
-      - src/pages/Library.jsx
-      - src/context/LibraryContext.jsx
-    pages:
-      - path: /library
-        description: Document library with upload, collections, and search
-known_limitations:
-  - issue: Supabase free plan auto-pauses after 7 days of inactivity
-    location: Supabase configuration
-    impact: Database becomes unavailable after extended periods without API requests
+      - src/pages/NotebookView.jsx
+    entry_route: /study/notebook/:id
+    user_interactions:
+      - Type a message in the input field
+      - Click send button or press Enter
+      - See AI response in chat history
+      - Use options from the Studio Sidebar (Flashcards, Occlusion, etc)
+    api_calls:
+      - method: POST
+        endpoint: https://n8n-synapse.onrender.com/webhook/estudio-ia/query
+    auth_required: true
+known_limitations: []

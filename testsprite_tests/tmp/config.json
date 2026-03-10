@@ -2,18 +2,17 @@
   "status": "commited",
   "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3000/login",
-  "backendAuthType": "public",
+  "localEndpoint": "http://localhost:4173",
   "executionArgs": {
     "projectName": "APP-SYNAPSE (Medicina)",
     "projectPath": "c:\\Users\\MyPc\\Desktop\\APP-SYNAPSE (Medicina)",
     "testIds": [],
-    "additionalInstruction": "Verify file upload in the Library section. Check specifically if 'AbortError: signal is aborted without reason' or 'StorageUnknownError' occurs during the upload process.",
+    "additionalInstruction": "",
     "serverMode": "production",
     "envs": {
       "API_KEY": "sk-user-v9bQnrsTIyvbPdyCN5O3w2AQQtQatzRByIl7Oz34VzKqfNTU1TjiOrweCMLCcTj9hyX61A2tGk2WNurARhM2ChzUQlrm2um3-jP5LOaINI-P7yQoyLixMjBo6R9qT4izHs8"
     }
   },
-  "serverPort": 49663,
-  "proxy": "http://ac067ee0-8861-40ba-82ac-6467696ea288:EgVrJnSg7pLp7G5LHXmUJJrz7cxrnyRX@tun.testsprite.com:8080"
+  "serverPort": 53482,
+  "proxy": "http://d1d92c45-3652-4008-83eb-215bc9a3d17f:DrwoWnvP3UqgnLLdy2ynwf7GWzOKBTDT@tun.testsprite.com:8080"
 }

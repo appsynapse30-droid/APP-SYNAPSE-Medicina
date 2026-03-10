@@ -1,139 +1,39 @@
-import { createContext, useContext, useState, useRef, useCallback } from 'react'
+import { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react'
 
 // ============================================================
-// NOTE FREQUENCY MAP (scientific pitch notation)
+// RESOURCES: CURATED TRACKS (Option A - High Quality MP3 Local/CDN)
 // ============================================================
-const NOTE_FREQ = {
-    'C2': 65.41, 'D2': 73.42, 'E2': 82.41, 'F2': 87.31, 'G2': 98.00, 'A2': 110.00, 'Bb2': 116.54, 'B2': 123.47,
-    'C3': 130.81, 'Db3': 138.59, 'D3': 146.83, 'Eb3': 155.56, 'E3': 164.81, 'F3': 174.61, 'Gb3': 185.00, 'G3': 196.00, 'Ab3': 207.65, 'A3': 220.00, 'Bb3': 233.08, 'B3': 246.94,
-    'C4': 261.63, 'Db4': 277.18, 'D4': 293.66, 'Eb4': 311.13, 'E4': 329.63, 'F4': 349.23, 'Gb4': 369.99, 'G4': 392.00, 'Ab4': 415.30, 'A4': 440.00, 'Bb4': 466.16, 'B4': 493.88,
-    'C5': 523.25, 'Db5': 554.37, 'D5': 587.33, 'Eb5': 622.25, 'E5': 659.26, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'B5': 987.77,
-    'C6': 1046.50,
-}
-
-// ============================================================
-// 8 UNIQUE TRACK DEFINITIONS
-// Each track defines: tempo, arp pattern, pad chords, bass line
-// ============================================================
-const FOCUS_TRACKS = [
-    {
-        title: 'Lofi Study Beats',
-        tempo: 72,
-        arp: ['C4', 'E4', 'G4', 'B4', 'G4', 'E4', 'A4', 'G4'],
-        pads: [['C3', 'E3', 'G3', 'B3'], ['A2', 'C3', 'E3', 'G3'], ['F2', 'A2', 'C3', 'E3'], ['G2', 'B2', 'D3', 'F3']],
-        bass: ['C2', 'C2', 'A2', 'A2', 'F2', 'F2', 'G2', 'G2'],
-        arpType: 'triangle',
-        padType: 'sine',
-        filterFreq: 900,
-        delayTime: 0.35,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Calm Piano Waves',
-        tempo: 56,
-        arp: ['G4', 'B4', 'D5', 'G5', 'D5', 'B4', 'A4', 'B4'],
-        pads: [['G2', 'B2', 'D3', 'G3'], ['E2', 'G2', 'B2', 'E3'], ['C3', 'E3', 'G3', 'C4'], ['D3', 'Gb3', 'A3', 'D4']],
-        bass: ['G2', 'G2', 'E2', 'E2', 'C2', 'C2', 'D2', 'D2'],
-        arpType: 'sine',
-        padType: 'sine',
-        filterFreq: 700,
-        delayTime: 0.5,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Ambient Flow',
-        tempo: 45,
-        arp: ['D4', 'F4', 'A4', 'D5', 'C5', 'A4', 'F4', 'E4'],
-        pads: [['D3', 'F3', 'A3', 'D4'], ['Bb2', 'D3', 'F3', 'A3'], ['G2', 'Bb2', 'D3', 'G3'], ['A2', 'D3', 'F3', 'A3']],
-        bass: ['D2', 'D2', 'Bb2', 'Bb2', 'G2', 'G2', 'A2', 'A2'],
-        arpType: 'sine',
-        padType: 'sine',
-        filterFreq: 500,
-        delayTime: 0.6,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Rain & Coffee',
-        tempo: 66,
-        arp: ['F4', 'A4', 'C5', 'E5', 'C5', 'A4', 'G4', 'A4'],
-        pads: [['F3', 'A3', 'C4', 'E4'], ['Bb2', 'D3', 'F3', 'A3'], ['C3', 'E3', 'G3', 'Bb3'], ['F2', 'A2', 'C3', 'E3']],
-        bass: ['F2', 'F2', 'Bb2', 'Bb2', 'C2', 'C2', 'F2', 'F2'],
-        arpType: 'triangle',
-        padType: 'sine',
-        filterFreq: 1100,
-        delayTime: 0.3,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Night Owl Jazz',
-        tempo: 62,
-        arp: ['Bb4', 'D5', 'F4', 'A4', 'G4', 'Bb4', 'C5', 'A4'],
-        pads: [['Bb2', 'D3', 'F3', 'A3'], ['Eb3', 'G3', 'Bb3', 'D4'], ['F2', 'A2', 'C3', 'Eb3'], ['Bb2', 'D3', 'F3', 'Ab3']],
-        bass: ['Bb2', 'Bb2', 'Eb2', 'Eb2', 'F2', 'F2', 'Bb2', 'Bb2'],
-        arpType: 'triangle',
-        padType: 'sine',
-        filterFreq: 950,
-        delayTime: 0.4,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Deep Concentration',
-        tempo: 50,
-        arp: ['A3', 'C4', 'E4', 'A4', 'E4', 'C4', 'B3', 'C4'],
-        pads: [['A2', 'C3', 'E3', 'A3'], ['F2', 'A2', 'C3', 'E3'], ['D2', 'F2', 'A2', 'D3'], ['E2', 'Ab2', 'B2', 'E3']],
-        bass: ['A2', 'A2', 'F2', 'F2', 'D2', 'D2', 'E2', 'E2'],
-        arpType: 'sine',
-        padType: 'sine',
-        filterFreq: 450,
-        delayTime: 0.55,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Peaceful Morning',
-        tempo: 58,
-        arp: ['E4', 'Ab4', 'B4', 'E5', 'B4', 'Ab4', 'Gb4', 'Ab4'],
-        pads: [['E3', 'Ab3', 'B3', 'E4'], ['Db3', 'E3', 'Ab3', 'B3'], ['A2', 'Db3', 'E3', 'A3'], ['B2', 'Eb3', 'Gb3', 'B3']],
-        bass: ['E2', 'E2', 'Db2', 'Db2', 'A2', 'A2', 'B2', 'B2'],
-        arpType: 'sine',
-        padType: 'sine',
-        filterFreq: 750,
-        delayTime: 0.45,
-        padBeatLen: 8,
-    },
-    {
-        title: 'Cosmic Drift',
-        tempo: 40,
-        arp: ['Db4', 'E4', 'Ab4', 'Db5', 'B4', 'Ab4', 'E4', 'Db4'],
-        pads: [['Db3', 'E3', 'Ab3', 'Db4'], ['A2', 'Db3', 'E3', 'Ab3'], ['Gb2', 'A2', 'Db3', 'E3'], ['Ab2', 'Db3', 'E3', 'Ab3']],
-        bass: ['Db2', 'Db2', 'A2', 'A2', 'Gb2', 'Gb2', 'Ab2', 'Ab2'],
-        arpType: 'triangle',
-        padType: 'sine',
-        filterFreq: 400,
-        delayTime: 0.7,
-        padBeatLen: 8,
-    },
+const CURATED_TRACKS = [
+    { id: 't1', title: 'Lofi Study Beats', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3' },
+    { id: 't2', title: 'Chillhop Piano', url: 'https://cdn.pixabay.com/download/audio/2022/04/27/audio_651f67f637.mp3?filename=chill-abstract-intention-110820.mp3' },
+    { id: 't3', title: 'Rainy Cafe Vibes', url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_b26ce3ba2b.mp3?filename=lofi-chill-medium-version-109403.mp3' },
+    { id: 't4', title: 'Night Owl Jazz', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_169b59664f.mp3?filename=empty-mind-118973.mp3' },
+    { id: 't5', title: 'Deep Concentration', url: 'https://cdn.pixabay.com/download/audio/2021/11/25/audio_106cd33d02.mp3?filename=lofi-ambient-14227.mp3' },
 ]
 
 // ============================================================
-// AUDIO ENGINE — Singleton melodic sequencer
+// RESOURCES: LIVE STREAM RADIOS (Option B/C - 24/7 Streams)
+// ============================================================
+const RADIO_STATIONS = [
+    { id: 'r1', title: 'Lofi Girl / Chillhop (Radio)', url: 'https://streams.ilovemusic.de/iloveradio17.mp3' },
+    { id: 'r2', title: 'Ambient Sleeping Pill (Deep Flow)', url: 'http://ice1.somafm.com/defcon-128-mp3' },
+    { id: 'r3', title: 'Groove Salad (Downtempo)', url: 'http://ice1.somafm.com/groovesalad-128-mp3' },
+]
+
+// ============================================================
+// SCIENTIFIC AUDIO GENERATOR (Binaural Beats & Brown Noise)
 // ============================================================
 let audioCtx = null
-let masterGain = null
-let sequencerInterval = null
-let activePadOscs = []
-let delayNode = null
-let feedbackGain = null
-let filterNode = null
-let padGainNode = null
-let arpGainNode = null
-let bassGainNode = null
+let binauralOscL = null
+let binauralOscR = null
+let binauralGain = null
 
-function getAudioContext() {
+let brownNoiseNode = null
+let brownNoiseGain = null
+
+function initWebAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-        masterGain = audioCtx.createGain()
-        masterGain.gain.value = 0.3
-        masterGain.connect(audioCtx.destination)
     }
     if (audioCtx.state === 'suspended') {
         audioCtx.resume()
@@ -141,281 +41,266 @@ function getAudioContext() {
     return audioCtx
 }
 
-function createEffectsChain(ctx, trackConfig) {
-    // Clean up old effect nodes
-    if (filterNode) try { filterNode.disconnect() } catch (e) { }
-    if (delayNode) try { delayNode.disconnect() } catch (e) { }
-    if (feedbackGain) try { feedbackGain.disconnect() } catch (e) { }
-    if (padGainNode) try { padGainNode.disconnect() } catch (e) { }
-    if (arpGainNode) try { arpGainNode.disconnect() } catch (e) { }
-    if (bassGainNode) try { bassGainNode.disconnect() } catch (e) { }
-
-    // Low-pass filter for warmth
-    filterNode = ctx.createBiquadFilter()
-    filterNode.type = 'lowpass'
-    filterNode.frequency.value = trackConfig.filterFreq
-    filterNode.Q.value = 0.5
-
-    // Delay with feedback for spaciousness
-    delayNode = ctx.createDelay(2.0)
-    delayNode.delayTime.value = trackConfig.delayTime
-
-    feedbackGain = ctx.createGain()
-    feedbackGain.gain.value = 0.25
-
-    // Delay feedback loop
-    delayNode.connect(feedbackGain)
-    feedbackGain.connect(delayNode)
-
-    // Dry path: filter → master
-    filterNode.connect(masterGain)
-    // Wet path: filter → delay → master
-    const delaySend = ctx.createGain()
-    delaySend.gain.value = 0.3
-    filterNode.connect(delaySend)
-    delaySend.connect(delayNode)
-    delayNode.connect(masterGain)
-
-    // Sub-gains for each layer
-    padGainNode = ctx.createGain()
-    padGainNode.gain.value = 0.18
-    padGainNode.connect(filterNode)
-
-    arpGainNode = ctx.createGain()
-    arpGainNode.gain.value = 0.22
-    arpGainNode.connect(filterNode)
-
-    bassGainNode = ctx.createGain()
-    bassGainNode.gain.value = 0.15
-    bassGainNode.connect(filterNode)
+function createBrownNoise(ctx) {
+    const bufferSize = 2 * ctx.sampleRate
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+    const output = noiseBuffer.getChannelData(0)
+    let lastOut = 0
+    for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1
+        output[i] = (lastOut + (0.02 * white)) / 1.02
+        lastOut = output[i]
+        output[i] *= 3.5 // (roughly compensate gain)
+    }
+    const noiseSource = ctx.createBufferSource()
+    noiseSource.buffer = noiseBuffer
+    noiseSource.loop = true
+    return noiseSource
 }
 
-// Play a single short note (for arpeggios and bass)
-function playNote(ctx, freq, gainNode, type, startTime, duration, isArp) {
-    const osc = ctx.createOscillator()
-    osc.type = type
-    osc.frequency.value = freq
+function startScientificGenerators(binauralMode, noiseVolume) {
+    const ctx = initWebAudio()
 
-    const noteGain = ctx.createGain()
-    noteGain.gain.setValueAtTime(0, startTime)
+    // 1. Binaural Beats setup
+    if (!binauralOscL) {
+        binauralGain = ctx.createGain()
+        binauralGain.gain.value = 0
+        binauralGain.connect(ctx.destination)
 
-    if (isArp) {
-        // Arp: quick attack, gentle decay for plucky feel
-        noteGain.gain.linearRampToValueAtTime(0.6, startTime + 0.02)
-        noteGain.gain.exponentialRampToValueAtTime(0.08, startTime + duration * 0.85)
-        noteGain.gain.linearRampToValueAtTime(0, startTime + duration)
+        const merger = ctx.createChannelMerger(2)
+        binauralOscL = ctx.createOscillator()
+        binauralOscR = ctx.createOscillator()
+
+        binauralOscL.connect(merger, 0, 0) // Left ear
+        binauralOscR.connect(merger, 0, 1) // Right ear
+        merger.connect(binauralGain)
+
+        binauralOscL.start()
+        binauralOscR.start()
+    }
+
+    // frequencies based on mode
+    const baseFreq = 200 // Carrier
+    let diff = 0 // Beat frequency
+    if (binauralMode === 'alpha') diff = 10 // Alpha (8-14Hz) - Relaxed focus
+    if (binauralMode === 'beta') diff = 20  // Beta (14-30Hz) - Alert concentration
+
+    if (diff > 0) {
+        binauralOscL.frequency.setValueAtTime(baseFreq, ctx.currentTime)
+        binauralOscR.frequency.setValueAtTime(baseFreq + diff, ctx.currentTime)
+        binauralGain.gain.setTargetAtTime(0.15, ctx.currentTime, 0.5) // Gentle volume
     } else {
-        // Bass: rounder attack, sustained
-        noteGain.gain.linearRampToValueAtTime(0.5, startTime + 0.05)
-        noteGain.gain.setValueAtTime(0.5, startTime + duration * 0.6)
-        noteGain.gain.linearRampToValueAtTime(0, startTime + duration)
+        binauralGain.gain.setTargetAtTime(0, ctx.currentTime, 0.5)
     }
 
-    osc.connect(noteGain)
-    noteGain.connect(gainNode)
-    osc.start(startTime)
-    osc.stop(startTime + duration + 0.05)
-}
+    // 2. Brown Noise setup (Masking)
+    if (!brownNoiseNode) {
+        brownNoiseGain = ctx.createGain()
+        brownNoiseGain.gain.value = 0
+        brownNoiseGain.connect(ctx.destination)
 
-// Start/replace sustained pad chord
-function playPadChord(ctx, noteNames, gainNode, padType) {
-    // Fade out old pads
-    activePadOscs.forEach(({ osc, gain: g }) => {
-        const now = ctx.currentTime
-        g.gain.cancelScheduledValues(now)
-        g.gain.setValueAtTime(g.gain.value, now)
-        g.gain.linearRampToValueAtTime(0, now + 1.5)
-        setTimeout(() => { try { osc.stop() } catch (e) { } }, 2000)
-    })
-    activePadOscs = []
-
-    const now = ctx.currentTime
-
-    noteNames.forEach((note, i) => {
-        const freq = NOTE_FREQ[note]
-        if (!freq) return
-
-        const osc = ctx.createOscillator()
-        osc.type = padType
-        osc.frequency.value = freq
-        // Slight detune for richness
-        osc.detune.value = (i - 1.5) * 4
-
-        const noteGain = ctx.createGain()
-        noteGain.gain.setValueAtTime(0, now)
-        // Slow fade in for dreamy pad feel
-        noteGain.gain.linearRampToValueAtTime(0.25, now + 2.0)
-
-        osc.connect(noteGain)
-        noteGain.connect(gainNode)
-        osc.start(now)
-
-        activePadOscs.push({ osc, gain: noteGain })
-    })
-}
-
-function stopAll() {
-    // Stop sequencer
-    if (sequencerInterval) {
-        clearInterval(sequencerInterval)
-        sequencerInterval = null
+        brownNoiseNode = createBrownNoise(ctx)
+        brownNoiseNode.connect(brownNoiseGain)
+        brownNoiseNode.start()
     }
 
-    // Fade out master
-    if (masterGain && audioCtx) {
-        const now = audioCtx.currentTime
-        masterGain.gain.cancelScheduledValues(now)
-        masterGain.gain.setValueAtTime(masterGain.gain.value, now)
-        masterGain.gain.linearRampToValueAtTime(0, now + 0.6)
+    // Apply smooth volume change
+    brownNoiseGain.gain.setTargetAtTime(Math.min(noiseVolume, 0.8), ctx.currentTime, 0.5)
+}
+
+function setScientificVolume(noiseVolume) {
+    if (brownNoiseGain && audioCtx) {
+        brownNoiseGain.gain.setTargetAtTime(Math.min(noiseVolume, 0.8), audioCtx.currentTime, 0.1)
     }
-
-    // Stop pad oscillators
-    setTimeout(() => {
-        activePadOscs.forEach(({ osc, gain: g }) => {
-            try { osc.stop() } catch (e) { }
-            try { osc.disconnect() } catch (e) { }
-        })
-        activePadOscs = []
-    }, 700)
 }
 
-function playTrack(trackConfig, volume) {
-    const ctx = getAudioContext()
+function setBinauralModeRaw(mode) {
+    if (!audioCtx || !binauralOscL || !binauralGain) return
+    const baseFreq = 200
+    let diff = 0
+    if (mode === 'alpha') diff = 10
+    if (mode === 'beta') diff = 20
 
-    // Stop anything currently playing
-    stopAll()
-
-    // Wait for any fade out to complete
-    setTimeout(() => {
-        // Set master volume
-        masterGain.gain.cancelScheduledValues(ctx.currentTime)
-        masterGain.gain.setValueAtTime(volume, ctx.currentTime)
-
-        // Create fresh effects chain
-        createEffectsChain(ctx, trackConfig)
-
-        const beatDuration = 60 / trackConfig.tempo  // seconds per beat
-        let step = 0
-        let currentPadIndex = -1
-
-        function tick() {
-            const now = ctx.currentTime
-            const arpIndex = step % trackConfig.arp.length
-            const bassIndex = step % trackConfig.bass.length
-            const padIndex = Math.floor(step / trackConfig.padBeatLen) % trackConfig.pads.length
-
-            // --- Arp note ---
-            const arpNote = trackConfig.arp[arpIndex]
-            const arpFreq = NOTE_FREQ[arpNote]
-            if (arpFreq) {
-                playNote(ctx, arpFreq, arpGainNode, trackConfig.arpType, now, beatDuration * 0.8, true)
-            }
-
-            // --- Bass note (plays every 2 beats for slower rhythm) ---
-            if (step % 2 === 0) {
-                const bassNote = trackConfig.bass[bassIndex]
-                const bassFreq = NOTE_FREQ[bassNote]
-                if (bassFreq) {
-                    playNote(ctx, bassFreq, bassGainNode, 'sine', now, beatDuration * 1.8, false)
-                }
-            }
-
-            // --- Pad chord change ---
-            if (padIndex !== currentPadIndex) {
-                currentPadIndex = padIndex
-                playPadChord(ctx, trackConfig.pads[padIndex], padGainNode, trackConfig.padType)
-            }
-
-            step++
-        }
-
-        // Play first beat immediately
-        tick()
-
-        // Schedule subsequent beats
-        sequencerInterval = setInterval(tick, beatDuration * 1000)
-    }, 650)
+    if (diff > 0) {
+        binauralOscL.frequency.setValueAtTime(baseFreq, audioCtx.currentTime)
+        binauralOscR.frequency.setValueAtTime(baseFreq + diff, audioCtx.currentTime)
+        binauralGain.gain.setTargetAtTime(0.15, audioCtx.currentTime, 0.5)
+    } else {
+        binauralGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5)
+    }
 }
 
-function setMasterVolume(vol) {
-    if (!audioCtx || !masterGain) return
-    masterGain.gain.cancelScheduledValues(audioCtx.currentTime)
-    masterGain.gain.setValueAtTime(vol, audioCtx.currentTime)
-}
 
 // ============================================================
-// REACT CONTEXT (API unchanged)
+// REACT CONTEXT API
 // ============================================================
 const MusicContext = createContext(null)
 
 export function MusicProvider({ children }) {
+    // Media playback state
+    const [mode, setMode] = useState('tracks') // 'tracks' | 'radio'
     const [isPlaying, setIsPlaying] = useState(false)
-    const [currentTrack, setCurrentTrack] = useState(0)
-    const [volume, setVolume] = useState(0.3)
-    const isPlayingRef = useRef(false)
+    const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
+    const [currentRadioIndex, setCurrentRadioIndex] = useState(0)
+    const [volume, setVolume] = useState(0.4)
 
-    const play = useCallback((trackIndex) => {
-        const idx = trackIndex !== undefined ? trackIndex : currentTrack
-        playTrack(FOCUS_TRACKS[idx], volume)
+    // Scientific state
+    const [binauralMode, setBinauralMode] = useState('none') // 'none' | 'alpha' | 'beta'
+    const [noiseVolume, setNoiseVolume] = useState(0) // 0 to 1
+
+    // Refs for real DOM audio element
+    const audioRef = useRef(new Audio())
+    const isReadyRef = useRef(false)
+
+    // Handle HTML5 Audio Element Setup
+    useEffect(() => {
+        const ad = audioRef.current
+        ad.crossOrigin = 'anonymous'
+
+        const handleEnded = () => {
+            if (mode === 'tracks') {
+                setCurrentTrackIndex(prev => (prev + 1) % CURATED_TRACKS.length)
+            }
+        }
+
+        ad.addEventListener('ended', handleEnded)
+        return () => ad.removeEventListener('ended', handleEnded)
+    }, [mode])
+
+    // Load track/radio source when indices change, only if it's supposed to play
+    useEffect(() => {
+        const ad = audioRef.current
+        const sourceUrl = mode === 'tracks'
+            ? CURATED_TRACKS[currentTrackIndex].url
+            : RADIO_STATIONS[currentRadioIndex].url
+
+        // If the URL changed, load and play
+        if (ad.src !== sourceUrl) {
+            ad.src = sourceUrl
+            ad.load()
+            if (isPlaying) {
+                ad.play().catch(e => console.error("Playback failed:", e))
+            }
+        }
+    }, [currentTrackIndex, currentRadioIndex, mode, isPlaying])
+
+    // Volume syncing
+    useEffect(() => {
+        audioRef.current.volume = volume
+    }, [volume])
+
+    // Core playback controls
+    const play = useCallback(() => {
+        initWebAudio()
+        audioRef.current.play().catch(e => console.error("Playback failed:", e))
         setIsPlaying(true)
-        isPlayingRef.current = true
-        if (trackIndex !== undefined) setCurrentTrack(idx)
-    }, [currentTrack, volume])
+        startScientificGenerators(binauralMode, noiseVolume)
+    }, [binauralMode, noiseVolume])
 
     const stop = useCallback(() => {
-        stopAll()
+        audioRef.current.pause()
         setIsPlaying(false)
-        isPlayingRef.current = false
+        if (binauralGain && audioCtx) {
+            binauralGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5)
+        }
+        if (brownNoiseGain && audioCtx) {
+            brownNoiseGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5)
+        }
     }, [])
 
     const toggle = useCallback(() => {
-        if (isPlayingRef.current) {
-            stop()
-        } else {
-            play()
-        }
-    }, [play, stop])
+        if (isPlaying) stop()
+        else play()
+    }, [isPlaying, play, stop])
 
     const next = useCallback(() => {
-        const nextIdx = (currentTrack + 1) % FOCUS_TRACKS.length
-        setCurrentTrack(nextIdx)
-        if (isPlayingRef.current) {
-            playTrack(FOCUS_TRACKS[nextIdx], volume)
+        if (mode === 'tracks') {
+            setCurrentTrackIndex(prev => (prev + 1) % CURATED_TRACKS.length)
+        } else {
+            setCurrentRadioIndex(prev => (prev + 1) % RADIO_STATIONS.length)
         }
-    }, [currentTrack, volume])
+        if (!isPlaying) play()
+    }, [mode, isPlaying, play])
 
     const prev = useCallback(() => {
-        const prevIdx = (currentTrack - 1 + FOCUS_TRACKS.length) % FOCUS_TRACKS.length
-        setCurrentTrack(prevIdx)
-        if (isPlayingRef.current) {
-            playTrack(FOCUS_TRACKS[prevIdx], volume)
+        if (mode === 'tracks') {
+            setCurrentTrackIndex(prev => (prev - 1 + CURATED_TRACKS.length) % CURATED_TRACKS.length)
+        } else {
+            setCurrentRadioIndex(prev => (prev - 1 + RADIO_STATIONS.length) % RADIO_STATIONS.length)
         }
-    }, [currentTrack, volume])
+        if (!isPlaying) play()
+    }, [mode, isPlaying, play])
 
-    const selectTrack = useCallback((index) => {
-        setCurrentTrack(index)
-        playTrack(FOCUS_TRACKS[index], volume)
-        setIsPlaying(true)
-        isPlayingRef.current = true
-    }, [volume])
+    const selectItem = useCallback((index, itemMode) => {
+        if (itemMode !== mode) {
+            setMode(itemMode)
+        }
+        if (itemMode === 'tracks') {
+            setCurrentTrackIndex(index)
+        } else {
+            setCurrentRadioIndex(index)
+        }
+        if (!isPlaying) play()
+    }, [mode, isPlaying, play])
 
     const changeVolume = useCallback((vol) => {
         setVolume(vol)
-        setMasterVolume(vol)
     }, [])
 
+    const switchMode = useCallback((newMode) => {
+        setMode(newMode)
+        if (isPlaying) {
+            const tempAd = audioRef.current
+            tempAd.pause()
+            // Setting state triggers useEffect to load new URL and play
+        }
+    }, [isPlaying])
+
+    // Scientific Controls
+    const setBinaural = useCallback((bm) => {
+        setBinauralMode(bm)
+        if (isPlaying) {
+            initWebAudio()
+            startScientificGenerators(bm, noiseVolume)
+            setBinauralModeRaw(bm)
+        }
+    }, [isPlaying, noiseVolume])
+
+    const changeNoiseVolume = useCallback((nv) => {
+        setNoiseVolume(nv)
+        if (isPlaying) {
+            initWebAudio()
+            startScientificGenerators(binauralMode, nv)
+            setScientificVolume(nv)
+        }
+    }, [isPlaying, binauralMode])
+
+    const getActiveItem = useCallback(() => {
+        return mode === 'tracks' ? CURATED_TRACKS[currentTrackIndex] : RADIO_STATIONS[currentRadioIndex]
+    }, [mode, currentTrackIndex, currentRadioIndex])
+
+
     const value = {
-        tracks: FOCUS_TRACKS,
+        curatedTracks: CURATED_TRACKS,
+        radioStations: RADIO_STATIONS,
+        mode,
         isPlaying,
-        currentTrack,
+        currentTrackIndex,
+        currentRadioIndex,
         volume,
+        binauralMode,
+        noiseVolume,
         play,
         stop,
         toggle,
         next,
         prev,
-        selectTrack,
+        selectItem,
         changeVolume,
+        switchMode,
+        setBinaural,
+        changeNoiseVolume,
+        getActiveItem
     }
 
     return (
