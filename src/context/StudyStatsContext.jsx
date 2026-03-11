@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { useAuth } from './AuthContext'
+import { supabaseHelpers } from '../config/supabase'
 
 const StudyStatsContext = createContext(null)
 
@@ -24,34 +26,90 @@ const createInitialState = () => ({
     totalStudyTime: 0,
     lastStudyDate: null,
     pomodoroSessions: [], // { date, studyMinutes, breakMinutes, completedAt }
+    completedGoalsCount: 0,
+    lastRewardDate: null
 })
 
 export function StudyStatsProvider({ children }) {
-    const [stats, setStats] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEY)
-        if (saved) {
+    const { user } = useAuth()
+    const [stats, setStats] = useState(createInitialState())
+    const [isLoaded, setIsLoaded] = useState(false)
+
+    // Cargar datos (de Supabase primero, luego localStorage)
+    useEffect(() => {
+        let isMounted = true
+
+        const loadStats = async () => {
+            const localSaved = localStorage.getItem(STORAGE_KEY)
+            let parsedLocal = null
+            if (localSaved) {
+                try {
+                    parsedLocal = JSON.parse(localSaved)
+                } catch (e) {}
+            }
+
+            if (!user?.id) {
+                if (isMounted) {
+                    setStats(parsedLocal ? { ...createInitialState(), ...parsedLocal } : createInitialState())
+                    setIsLoaded(true)
+                }
+                return
+            }
+
             try {
-                const parsed = JSON.parse(saved)
-                return { ...createInitialState(), ...parsed }
-            } catch {
-                return createInitialState()
+                const { data, error } = await supabaseHelpers.studyStats.get(user.id)
+                if (!error && data?.stats_data) {
+                    if (isMounted) setStats({ ...createInitialState(), ...data.stats_data })
+                } else {
+                    // Si no hay datos en la BD pero sí locales, subimos los locales
+                    if (parsedLocal) {
+                        if (isMounted) setStats({ ...createInitialState(), ...parsedLocal })
+                        supabaseHelpers.studyStats.upsert(user.id, parsedLocal).catch(() => {})
+                    } else {
+                        if (isMounted) setStats(createInitialState())
+                    }
+                }
+            } catch (err) {
+                console.error("Error cargando estadísticas de estudio:", err)
+                if (isMounted && parsedLocal) {
+                    setStats({ ...createInitialState(), ...parsedLocal })
+                }
+            } finally {
+                if (isMounted) setIsLoaded(true)
             }
         }
-        return createInitialState()
-    })
 
-    // Persistir en localStorage
+        loadStats()
+        
+        return () => {
+            isMounted = false
+        }
+    }, [user])
+
+    // Guardar stats (en localStorage siempre, en Supabase debounced)
     useEffect(() => {
+        if (!isLoaded) return // No guardar si no se han cargado
+        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stats))
-    }, [stats])
+        
+        const saveTimeout = setTimeout(() => {
+            if (user?.id) {
+                supabaseHelpers.studyStats.upsert(user.id, stats)
+                    .catch(err => console.error("Error guardando estadísticas de estudio:", err))
+            }
+        }, 2000)
+
+        return () => clearTimeout(saveTimeout)
+    }, [stats, user, isLoaded])
 
     // Calcular racha actual al cargar
     useEffect(() => {
+        if (!isLoaded) return
+        
         const calculateStreak = () => {
             const today = getToday()
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
-            const yesterdayStr = yesterday.toISOString().split('T')[0]
 
             let streak = 0
             let checkDate = new Date()
@@ -82,15 +140,28 @@ export function StudyStatsProvider({ children }) {
         }
 
         calculateStreak()
-    }, [stats.studyHistory])
+    }, [stats.studyHistory, isLoaded])
 
-    // Agregar tiempo de estudio
+    // Agregar tiempo de estudio y detectar metas
     const addStudyTime = (minutes) => {
         const today = getToday()
 
         setStats(prev => {
             const currentTodayMinutes = prev.studyHistory[today] || 0
             const newTodayMinutes = currentTodayMinutes + minutes
+            
+            // Check if goal just completed
+            const wasComplete = currentTodayMinutes >= prev.dailyGoal
+            const isComplete = newTodayMinutes >= prev.dailyGoal
+            
+            let newCompletedGoals = prev.completedGoalsCount || 0
+            let newRewardDate = prev.lastRewardDate
+            
+            // Si apenas completamos la meta HOY, otorgamos el premio
+            if (!wasComplete && isComplete && prev.lastRewardDate !== today) {
+                newCompletedGoals += 1
+                newRewardDate = today
+            }
 
             return {
                 ...prev,
@@ -100,6 +171,8 @@ export function StudyStatsProvider({ children }) {
                 },
                 totalStudyTime: prev.totalStudyTime + minutes,
                 lastStudyDate: today,
+                completedGoalsCount: newCompletedGoals,
+                lastRewardDate: newRewardDate
             }
         })
     }

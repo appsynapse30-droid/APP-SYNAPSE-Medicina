@@ -18,7 +18,9 @@ import {
     Target,
     Zap,
     ArrowRight,
-    RefreshCw
+    RefreshCw,
+    Edit2,
+    Trophy
 } from 'lucide-react'
 import { useCalendar, eventCategories } from '../context/CalendarContext'
 import { useStudyStats } from '../context/StudyStatsContext'
@@ -31,11 +33,30 @@ import './Dashboard.css'
 export default function Dashboard() {
     const navigate = useNavigate()
     const { getUpcomingEvents } = useCalendar()
-    const { getTodayProgress, getStreakInfo, getGreeting, addStudyTime } = useStudyStats()
+    const { getTodayProgress, getStreakInfo, getGreeting, addStudyTime, stats, setDailyGoal } = useStudyStats()
     const { cases, getStats, getStudyCases } = useClinicalCases()
     const { documents } = useLibrary()
     const { settings } = useSettings()
     const { user } = useAuth()
+
+    const [isEditingGoal, setIsEditingGoal] = useState(false)
+    const [goalInput, setGoalInput] = useState('')
+
+    const handleGoalSubmit = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const hours = parseFloat(goalInput)
+        if (!isNaN(hours) && hours > 0) {
+            setDailyGoal(Math.floor(hours * 60))
+        }
+        setIsEditingGoal(false)
+    }
+
+    const startEditingGoal = (e) => {
+        e.stopPropagation()
+        setGoalInput((stats.dailyGoal / 60).toFixed(1))
+        setIsEditingGoal(true)
+    }
 
     // Get the user's display name from settings or auth metadata
     const userName = settings.profile?.displayName
@@ -244,9 +265,15 @@ export default function Dashboard() {
                 <div className="stats-scroll-container">
                     <div className="stats-grid">
                         {/* Meta Diaria */}
-                        <div className="stat-card" onClick={() => navigate('/analytics')}>
+                        <div className="stat-card" onClick={() => !isEditingGoal && navigate('/analytics')}>
                             <div className="stat-header">
-                                <span className="stat-label">Meta Diaria</span>
+                                <span className="stat-label">Meta Diaria
+                                    {!isEditingGoal && (
+                                        <button className="btn-icon btn-edit-goal" onClick={startEditingGoal} title="Editar Meta">
+                                            <Edit2 size={14} />
+                                        </button>
+                                    )}
+                                </span>
                                 <div className="progress-ring">
                                     <svg width="48" height="48">
                                         <circle className="progress-ring-bg" cx="24" cy="24" r="20" />
@@ -264,10 +291,28 @@ export default function Dashboard() {
                                     <span className="progress-percent">{todayProgress.percentage}%</span>
                                 </div>
                             </div>
-                            <div className="stat-value">
-                                <span className="stat-number">{todayProgress.hours} hrs</span>
-                                <span className="stat-total">/ {todayProgress.goalHours} hrs</span>
-                            </div>
+                            
+                            {isEditingGoal ? (
+                                <form className="goal-edit-form" onSubmit={handleGoalSubmit}>
+                                    <input 
+                                        type="number" 
+                                        step="0.5" 
+                                        min="0.5" 
+                                        value={goalInput}
+                                        onChange={(e) => setGoalInput(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        autoFocus
+                                    />
+                                    <span className="goal-edit-unit">hrs</span>
+                                    <button type="submit" className="btn btn-primary btn-sm" onClick={(e) => e.stopPropagation()}>OK</button>
+                                </form>
+                            ) : (
+                                <div className="stat-value">
+                                    <span className="stat-number">{todayProgress.hours} hrs</span>
+                                    <span className="stat-total">/ {todayProgress.goalHours} hrs</span>
+                                </div>
+                            )}
+                            
                             <span className={`stat-status ${todayProgress.isComplete ? 'positive' : todayProgress.percentage > 50 ? 'positive' : ''}`}>
                                 {todayProgress.isComplete ? '¡Meta completada!' : todayProgress.percentage > 50 ? 'En camino' : 'Sigue adelante'}
                             </span>
@@ -276,8 +321,14 @@ export default function Dashboard() {
                         {/* Racha Actual */}
                         <div className="stat-card streak-card">
                             <div className="stat-header">
-                                <span className="stat-label">Racha Actual</span>
-                                <Flame className={`stat-icon flame ${streakInfo.current > 0 ? 'active' : ''}`} size={24} />
+                                <span className="stat-label">Racha / Trofeos</span>
+                                <div className="streak-icons">
+                                    <Flame className={`stat-icon flame ${streakInfo.current > 0 ? 'active' : ''}`} size={24} />
+                                    <div className="trophy-badge" title="Metas Cumplidas">
+                                        <Trophy size={16} />
+                                        <span>{stats?.completedGoalsCount || 0}</span>
+                                    </div>
+                                </div>
                             </div>
                             <div className="stat-value">
                                 <span className="stat-number">{streakInfo.current} Días</span>
@@ -368,39 +419,22 @@ export default function Dashboard() {
                                 </div>
                             ))
                         ) : (
-                            <>
-                                <div className="recommendation-card">
-                                    <div className="recommendation-icon warning">
-                                        <AlertTriangle size={20} />
-                                    </div>
-                                    <div className="recommendation-content">
-                                        <h3>Repasar Farmacología: Beta-bloqueadores</h3>
-                                        <p>Brecha de Conocimiento • Puntuación baja (65%)</p>
-                                    </div>
-                                    <button
-                                        className="btn btn-ghost"
-                                        onClick={() => navigate('/library')}
-                                    >
-                                        Iniciar Repaso
-                                    </button>
+                            <div className="zero-state-card">
+                                <div className="zero-state-icon">
+                                    <Lightbulb size={32} />
                                 </div>
-
-                                <div className="recommendation-card">
-                                    <div className="recommendation-icon info">
-                                        <Stethoscope size={20} />
-                                    </div>
-                                    <div className="recommendation-content">
-                                        <h3>Simulación Clínica: Dolor Torácico Agudo</h3>
-                                        <p>Alto Rendimiento • Frecuente en exámenes</p>
-                                    </div>
+                                <div className="zero-state-content">
+                                    <h3>Aún no hay recomendaciones</h3>
+                                    <p>Empieza a estudiar casos clínicos en el simulador para que nuestra inteligencia artificial pueda analizar tus brechas de conocimiento y generar recomendaciones personalizadas.</p>
                                     <button
-                                        className="btn btn-ghost"
+                                        className="btn btn-primary mt-3"
                                         onClick={handleViewAllCases}
                                     >
-                                        Iniciar Simulación
+                                        <Play size={16} />
+                                        Ir al Simulador
                                     </button>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>

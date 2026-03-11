@@ -258,6 +258,27 @@ export const supabaseHelpers = {
         }
     },
 
+    // Study Stats helpers
+    studyStats: {
+        get: async (userId) => {
+            const { data, error } = await supabase
+                .from('study_stats')
+                .select('stats_data')
+                .eq('user_id', userId)
+                .single();
+            return { data, error };
+        },
+
+        upsert: async (userId, statsData) => {
+            const { data, error } = await supabase
+                .from('study_stats')
+                .upsert({ user_id: userId, stats_data: statsData })
+                .select()
+                .single();
+            return { data, error };
+        }
+    },
+
     // Exams helpers
     exams: {
         getUpcoming: async (userId) => {

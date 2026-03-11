@@ -1,0 +1,83 @@
+﻿­ƒÜÇ Starting test execution...
+node : checkPortListening tcp error: 4173 localhost
+En línea: 1 Carácter: 1
++ node C:\Users\MyPc\AppData\Local\npm-cache\_npx\8ddf6bea01b2519d\node ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (checkPortListen... 4173 localhost:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening http check failed: http://localhost:4173/ TypeError: fetch failed
+checkPortListening failed (tcp + http): 4173 localhost
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening tcp error: 4173 localhost
+AggregateError
+checkPortListening http check failed: http://localhost:4173/ TypeError: fetch failed
+checkPortListening failed (tcp + http): 4173 localhost
+Error occurred. Cleaning up tunnel...
+HTTP Proxy has been closed.
+Tunnel has been closed.
+ÔØî Test execution failed: Error: Failed to generate and execute tests: Error:  Failed to set up testing tunnel: 
+Because the local project is not running on port 4173. 
+Step 1: Install all necessary dependencies for the local project.
+Step 2: Restart the local project.
+Step 3: Review and update the local port configuration if needed to ensure the project functions correctly.
+    at _startTunnel (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@testsprite/tests
+prite-mcp/dist/index.js:136831:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async _generateCodeAndExecute (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/
+@testsprite/testsprite-mcp/dist/index.js:136539:23)
+    at async file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@testsprite/testsprite-mc
+p/dist/index.js:134300:24
+    at async Command.<anonymous> (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@tes
+tsprite/testsprite-mcp/dist/index.js:141369:9)
+    at async Command.parseAsync (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@test
+sprite/testsprite-mcp/dist/index.js:139638:6)
+    at async main (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@testsprite/testspr
+ite-mcp/dist/index.js:141614:9)
+    at _generateCodeAndExecute (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@tests
+prite/testsprite-mcp/dist/index.js:136801:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@testsprite/testsprite-mc
+p/dist/index.js:134300:24
+    at async Command.<anonymous> (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@tes
+tsprite/testsprite-mcp/dist/index.js:141369:9)
+    at async Command.parseAsync (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@test
+sprite/testsprite-mcp/dist/index.js:139638:6)
+    at async main (file:///C:/Users/MyPc/AppData/Local/npm-cache/_npx/8ddf6bea01b2519d/node_modules/@testsprite/testspr
+ite-mcp/dist/index.js:141614:9)

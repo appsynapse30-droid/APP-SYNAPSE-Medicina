@@ -582,23 +582,25 @@
 }
 
 .studio-tools-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
 }
 
 .studio-tool-btn {
     background: var(--bg-card);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
-    padding: var(--space-md);
+    padding: 10px var(--space-md);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: var(--space-sm);
+    justify-content: flex-start;
+    gap: var(--space-md);
     cursor: pointer;
     transition: all 0.2s ease;
-    text-align: center;
+    text-align: left;
+    width: 100%;
 }
 
 .studio-tool-btn:hover {
@@ -609,12 +611,13 @@
 }
 
 .tool-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .tool-icon.flashcard-icon {
@@ -638,9 +641,11 @@
 }
 
 .studio-tool-btn span {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-primary);
+    white-space: normal;
+    line-height: 1.2;
 }
 
 .studio-info {
@@ -752,7 +757,8 @@
     }
 
     .studio-tools-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
     }
 }
 
