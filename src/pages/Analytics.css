@@ -830,8 +830,12 @@
     background: var(--bg-tertiary);
     border-radius: var(--radius-md);
     margin-bottom: var(--space-sm);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: var(--font-size-sm);
+}
+
+.tag-chip {
+    color: var(--text-primary);
 }
 
 .now-playing .playing-text {
@@ -899,6 +903,7 @@
 
 .track-title {
     flex: 1;
+    color: var(--text-primary);
 }
 
 /* Track Playing Animation */
