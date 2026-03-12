@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     Clock,
@@ -20,7 +20,9 @@ import {
     ArrowRight,
     RefreshCw,
     Edit2,
-    Trophy
+    Trophy,
+    Pause,
+    PlayCircle
 } from 'lucide-react'
 import { useCalendar, eventCategories } from '../context/CalendarContext'
 import { useStudyStats } from '../context/StudyStatsContext'
@@ -134,15 +136,19 @@ export default function Dashboard() {
 
     // Estado para el tip actual
     const [currentTipIndex, setCurrentTipIndex] = useState(0)
+    const [isAutoRotating, setIsAutoRotating] = useState(true)
+    const [animationKey, setAnimationKey] = useState(0)
     const currentTip = studyTips[currentTipIndex]
 
     // Funciones para navegar entre tips
     const nextTip = () => {
         setCurrentTipIndex((prev) => (prev + 1) % studyTips.length)
+        setAnimationKey(prev => prev + 1)
     }
 
     const prevTip = () => {
         setCurrentTipIndex((prev) => (prev - 1 + studyTips.length) % studyTips.length)
+        setAnimationKey(prev => prev + 1)
     }
 
     const randomTip = () => {
@@ -151,7 +157,20 @@ export default function Dashboard() {
             newIndex = Math.floor(Math.random() * studyTips.length)
         } while (newIndex === currentTipIndex && studyTips.length > 1)
         setCurrentTipIndex(newIndex)
+        setAnimationKey(prev => prev + 1)
     }
+
+    // Auto-rotación de consejos cada 3 segundos
+    useEffect(() => {
+        if (!isAutoRotating) return
+
+        const intervalId = setInterval(() => {
+            setCurrentTipIndex((prev) => (prev + 1) % studyTips.length)
+            setAnimationKey(prev => prev + 1)
+        }, 3000) // 3 segundos
+
+        return () => clearInterval(intervalId) // Limpiar al desmontar
+    }, [studyTips.length, isAutoRotating])
 
     // Datos del calendario
     const upcomingEvents = getUpcomingEvents(4)
@@ -291,13 +310,13 @@ export default function Dashboard() {
                                     <span className="progress-percent">{todayProgress.percentage}%</span>
                                 </div>
                             </div>
-                            
+
                             {isEditingGoal ? (
                                 <form className="goal-edit-form" onSubmit={handleGoalSubmit}>
-                                    <input 
-                                        type="number" 
-                                        step="0.5" 
-                                        min="0.5" 
+                                    <input
+                                        type="number"
+                                        step="0.5"
+                                        min="0.5"
                                         value={goalInput}
                                         onChange={(e) => setGoalInput(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
@@ -312,7 +331,7 @@ export default function Dashboard() {
                                     <span className="stat-total">/ {todayProgress.goalHours} hrs</span>
                                 </div>
                             )}
-                            
+
                             <span className={`stat-status ${todayProgress.isComplete ? 'positive' : todayProgress.percentage > 50 ? 'positive' : ''}`}>
                                 {todayProgress.isComplete ? '¡Meta completada!' : todayProgress.percentage > 50 ? 'En camino' : 'Sigue adelante'}
                             </span>
@@ -596,30 +615,41 @@ export default function Dashboard() {
                                 <h4 className="tip-title">{currentTip.title}</h4>
                             </div>
                         </div>
-                        <button
-                            className="tip-refresh-btn"
-                            onClick={randomTip}
-                            title="Nuevo consejo aleatorio"
-                        >
-                            <RefreshCw size={16} />
-                        </button>
-                    </div>
-                    <p className="tip-content">
-                        {currentTip.content.split(currentTip.linkText)[0]}
-                        {currentTip.linkText && (
-                            <a
-                                href="#"
-                                className="tip-link"
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    navigate(currentTip.link)
-                                }}
+                        <div className="tip-controls">
+                            <button
+                                className="tip-refresh-btn"
+                                onClick={() => setIsAutoRotating(!isAutoRotating)}
+                                title={isAutoRotating ? "Pausar rotación" : "Reanudar rotación"}
                             >
-                                {currentTip.linkText}
-                            </a>
-                        )}
-                        {currentTip.content.split(currentTip.linkText)[1] || ''}
-                    </p>
+                                {isAutoRotating ? <Pause size={16} /> : <PlayCircle size={16} />}
+                            </button>
+                            <button
+                                className="tip-refresh-btn"
+                                onClick={randomTip}
+                                title="Nuevo consejo aleatorio"
+                            >
+                                <RefreshCw size={16} />
+                            </button>
+                        </div>
+                    </div>
+                    <div key={animationKey} className="tip-content-wrapper">
+                        <p className="tip-content">
+                            {currentTip.content.split(currentTip.linkText)[0]}
+                            {currentTip.linkText && (
+                                <a
+                                    href="#"
+                                    className="tip-link"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        navigate(currentTip.link)
+                                    }}
+                                >
+                                    {currentTip.linkText}
+                                </a>
+                            )}
+                            {currentTip.content.split(currentTip.linkText)[1] || ''}
+                        </p>
+                    </div>
                     <div className="tip-navigation">
                         <button className="tip-nav-btn" onClick={prevTip} title="Consejo anterior">
                             <ChevronLeft size={16} />

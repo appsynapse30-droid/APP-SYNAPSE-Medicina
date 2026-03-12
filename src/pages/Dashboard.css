@@ -622,6 +622,7 @@
     border-radius: var(--radius-lg);
     padding: var(--space-md);
     transition: all 0.3s ease;
+    overflow: hidden;
 }
 
 .tip-card:hover {
@@ -687,6 +688,27 @@
     background: rgba(247, 201, 72, 0.2);
     color: var(--accent-yellow);
     transform: rotate(180deg);
+}
+
+.tip-controls {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.tip-content-wrapper {
+    animation: tipFadeIn 0.5s ease-in-out;
+}
+
+@keyframes tipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .tip-content {
@@ -868,7 +890,9 @@
     cursor: pointer;
     padding: 0 4px;
 }
-.btn-edit-goal:hover, .btn-edit-goal:focus {
+
+.btn-edit-goal:hover,
+.btn-edit-goal:focus {
     opacity: 1;
     color: var(--accent-blue);
     outline: none;
@@ -879,8 +903,10 @@
     align-items: center;
     gap: var(--space-xs);
     margin-bottom: var(--space-xs);
-    height: 40px; /* match the stat-value height */
+    height: 40px;
+    /* match the stat-value height */
 }
+
 .goal-edit-form input {
     width: 60px;
     padding: 4px 8px;
@@ -891,10 +917,12 @@
     font-size: var(--font-size-base);
     font-weight: 700;
 }
+
 .goal-edit-form input:focus {
     outline: none;
     border-color: var(--accent-blue);
 }
+
 .goal-edit-unit {
     color: var(--text-secondary);
     font-size: var(--font-size-sm);
@@ -906,6 +934,7 @@
     align-items: center;
     gap: var(--space-sm);
 }
+
 .trophy-badge {
     display: flex;
     align-items: center;
@@ -929,6 +958,7 @@
     border: 1px dashed var(--border-secondary);
     border-radius: var(--radius-lg);
 }
+
 .zero-state-icon {
     width: 56px;
     height: 56px;
@@ -940,11 +970,13 @@
     justify-content: center;
     flex-shrink: 0;
 }
+
 .zero-state-content h3 {
     font-size: var(--font-size-lg);
     margin-bottom: var(--space-xs);
     color: var(--text-primary);
 }
+
 .zero-state-content p {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
