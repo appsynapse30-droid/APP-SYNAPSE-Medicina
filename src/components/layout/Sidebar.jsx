@@ -18,7 +18,7 @@ import './Sidebar.css'
 const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Panel' },
     { path: '/library', icon: BookOpen, label: 'Biblioteca' },
-    { path: '/study/session', icon: GraduationCap, label: 'Estudiar', highlight: true },
+    { path: '/simulator', icon: GraduationCap, label: 'Estudiar', highlight: true },
     { path: '/study', icon: Brain, label: 'Estudio IA' },
     { path: '/simulations', icon: Stethoscope, label: 'Casos Clínicos' },
     { path: '/analytics', icon: BarChart3, label: 'Progreso' },

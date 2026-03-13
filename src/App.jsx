@@ -35,6 +35,9 @@ import Settings from './pages/Settings'
 import DocumentReader from './pages/DocumentReader'
 import Calendar from './pages/Calendar'
 import NotebookView from './pages/NotebookView'
+import SimulatorDashboard from './pages/SimulatorDashboard'
+import ActiveSimulation from './pages/ActiveSimulation'
+import SimulationResults from './pages/SimulationResults'
 
 function App() {
     return (
@@ -79,6 +82,9 @@ function App() {
                                                             <Route path="study" element={<StudyAI />} />
                                                             <Route path="study/notebook/:notebookId" element={<NotebookView />} />
                                                             <Route path="study/session" element={<StudySession />} />
+                                                            <Route path="simulator" element={<SimulatorDashboard />} />
+                                                            <Route path="simulator/active" element={<ActiveSimulation />} />
+                                                            <Route path="simulator/results" element={<SimulationResults />} />
                                                             <Route path="simulations" element={<ClinicalCases />} />
                                                             <Route path="analytics" element={<Analytics />} />
                                                             <Route path="calendar" element={<Calendar />} />

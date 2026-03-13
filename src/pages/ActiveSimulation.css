@@ -1,0 +1,367 @@
+.active-simulation-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Loader */
+.active-sim-loading {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.sim-loader-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sim-loader-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--accent-primary);
+    border-right-color: var(--accent-primary);
+    animation: simSpin 1.5s linear infinite;
+}
+
+.sim-loader-ring.inner {
+    width: 70%;
+    height: 70%;
+    border-top-color: var(--accent-secondary);
+    border-right-color: var(--accent-secondary);
+    animation: simSpin reverse 1s linear infinite;
+}
+
+.sim-loader-icon {
+    color: var(--accent-primary);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Header */
+.sim-active-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: var(--surface-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.sim-header-left, .sim-header-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.sim-header-right {
+    justify-content: flex-end;
+}
+
+.sim-header-center {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sim-exit-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-right: 1.5rem;
+}
+
+.sim-exit-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.sim-mode-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.sim-mode-badge[data-mode="examen"] { background: rgba(255, 75, 75, 0.15); color: #ff4b4b; }
+.sim-mode-badge[data-mode="tutor"] { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.sim-mode-badge[data-mode="reto"] { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+.sim-mode-badge[data-mode="casos_dinamicos"] { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+
+.sim-progress-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.sim-progress-bar {
+    width: 60%;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.sim-progress-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    border-radius: 100px;
+    transition: width 0.3s ease;
+}
+
+.sim-timer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    background: var(--bg-hover);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.sim-timer.urgent {
+    color: #ef4444;
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    animation: flash Urgent 2s infinite;
+}
+
+/* Work Area */
+.sim-work-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.sim-placeholder {
+    margin: auto;
+    text-align: center;
+    max-width: 500px;
+    padding: 3rem;
+    background: var(--surface-bg);
+    border: 1px dashed var(--border-color);
+    border-radius: 16px;
+}
+
+.sim-placeholder h3 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.sim-placeholder p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Modals */
+.sim-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.sim-modal {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.sim-modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.5rem auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sim-modal-icon.warning {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.sim-modal h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.sim-modal p {
+    color: var(--text-secondary);
+    margin: 0 0 2rem 0;
+    line-height: 1.5;
+}
+
+.sim-modal-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.sim-modal-actions button {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-secondary {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.btn-danger:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+/* Animations */
+@keyframes simSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+@keyframes flashUrgent {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@media (max-width: 768px) {
+    .sim-active-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .sim-header-left, .sim-header-right, .sim-header-center {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sim-exit-btn {
+        position: absolute;
+        left: 1rem;
+        top: 1rem;
+        margin: 0;
+    }
+}
+
+/* Layout Classes for Content */
+.sim-content-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.sim-content-wrapper.full-width {
+    max-width: 1400px;
+    height: 100%;
+}
+
+.sim-content-wrapper.split-view {
+    max-width: 1600px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.sim-question-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.sim-feedback-column {
+    position: sticky;
+    top: 2rem;
+}
+
+.btn-next-question {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-next-question:hover {
+    background: var(--text-secondary);
+}
+
+@media (max-width: 1200px) {
+    .sim-content-wrapper.split-view {
+        grid-template-columns: 1fr;
+    }
+    
+    .sim-feedback-column {
+        position: static;
+        margin-top: 2rem;
+    }
+}

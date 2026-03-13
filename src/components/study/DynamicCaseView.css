@@ -1,0 +1,237 @@
+.dynamic-case-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Vitals Monitor */
+.vitals-monitor {
+    display: flex;
+    gap: 1rem;
+    background: #000;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #333;
+    overflow-x: auto;
+}
+
+.vital-readout {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #10b981;
+}
+
+.vital-readout.abnormal {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.vital-icon {
+    color: #10b981;
+}
+
+.vital-readout.abnormal .vital-icon {
+    color: #ef4444;
+    animation: pulse 1s infinite;
+}
+
+.vital-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.v-label {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.v-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: monospace;
+    color: #10b981;
+}
+
+.vital-readout.abnormal .v-val {
+    color: #ef4444;
+}
+
+.sim-time-display {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin-left: auto;
+    border-left: 1px solid #333;
+    text-align: right;
+}
+
+.sim-time-display .v-val {
+    color: #fff;
+    font-size: 1.25rem;
+}
+
+/* Work Grid */
+.case-work-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.case-content-panel, .case-actions-panel {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Case Content */
+.case-presentation h3, .case-log h3, .case-actions-panel h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.case-presentation p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+}
+
+.empty-log {
+    color: var(--text-secondary);
+    font-style: italic;
+    background: var(--bg-hover);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.log-entry {
+    background: var(--bg-hover);
+    border-left: 3px solid var(--accent-primary);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.log-time {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.log-action, .log-result {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.log-result {
+    color: var(--text-secondary);
+}
+
+/* Actions Panel */
+.actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.medical-action-btn {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.medical-action-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-primary);
+    transform: translateX(4px);
+}
+
+.action-category {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.medical-action-btn h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.unstable-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+.finish-case-btn {
+    margin-top: 1rem;
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.finish-case-btn:hover {
+    background: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+    .case-work-grid {
+        grid-template-columns: 1fr;
+    }
+}

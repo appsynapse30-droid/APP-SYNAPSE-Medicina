@@ -59,74 +59,89 @@ export function StudyAIProvider({ children }) {
 
             if (isMounted) setIsLoadingData(true)
 
+            let mappedNotebooks = []
+            let chatsMap = {}
+            let messagesMap = {}
+
+            // 1. Fetch notebooks (independent try/catch)
             try {
-                // 1. Fetch notebooks
                 const { data: nbData, error: nbError } = await supabaseHelpers.studyAI.getNotebooks(user.id)
-                if (nbError) throw nbError
-
-                const mappedNotebooks = nbData.map(nb => ({
-                    id: nb.id,
-                    title: nb.title,
-                    description: nb.description,
-                    icon: nb.icon,
-                    color: nb.color,
-                    specialty: nb.specialty,
-                    isPinned: nb.is_pinned,
-                    chatsCount: nb.chats_count,
-                    createdAt: new Date(nb.created_at),
-                    updatedAt: new Date(nb.updated_at)
-                }))
-
-                // 2. Fetch chats
-                const { data: chData, error: chError } = await supabaseHelpers.studyAI.getChats(user.id)
-                if (chError) throw chError
-
-                const chatsMap = {}
-                chData.forEach(ch => {
-                    if (!chatsMap[ch.notebook_id]) chatsMap[ch.notebook_id] = []
-                    chatsMap[ch.notebook_id].push({
-                        id: ch.id,
-                        notebookId: ch.notebook_id,
-                        title: ch.title,
-                        createdAt: new Date(ch.created_at),
-                        updatedAt: new Date(ch.updated_at)
-                    })
-                })
-
-                // 3. Fetch messages
-                const chatIds = chData.map(ch => ch.id)
-                const { data: msgData, error: msgError } = await supabaseHelpers.studyAI.getMessages(chatIds)
-                if (msgError) throw msgError
-
-                const messagesMap = {}
-                msgData.forEach(msg => {
-                    if (!messagesMap[msg.chat_id]) messagesMap[msg.chat_id] = []
-                    messagesMap[msg.chat_id].push({
-                        id: msg.id,
-                        chatId: msg.chat_id,
-                        role: msg.role,
-                        content: msg.content,
-                        contentType: msg.content_type,
-                        createdAt: new Date(msg.created_at)
-                    })
-                })
-
-                if (isMounted) {
-                    setNotebooks(mappedNotebooks)
-                    setChats(chatsMap)
-                    setMessages(messagesMap)
+                if (nbError) {
+                    console.error('Error cargando cuadernos:', nbError.message)
+                } else if (nbData) {
+                    mappedNotebooks = nbData.map(nb => ({
+                        id: nb.id,
+                        title: nb.title,
+                        description: nb.description || '',
+                        icon: nb.icon || '📚',
+                        color: nb.color || '#58a6ff',
+                        specialty: nb.specialty || '',
+                        isPinned: nb.is_pinned || false,
+                        chatsCount: nb.chats_count || 0,
+                        createdAt: new Date(nb.created_at),
+                        updatedAt: new Date(nb.updated_at)
+                    }))
                 }
             } catch (err) {
-                console.error("Error cargando datos de StudyAI:", err)
-            } finally {
-                if (isMounted) setIsLoadingData(false)
+                console.error('Excepción cargando cuadernos:', err)
+            }
+
+            // 2. Fetch chats (independent try/catch)
+            try {
+                const { data: chData, error: chError } = await supabaseHelpers.studyAI.getChats(user.id)
+                if (chError) {
+                    console.error('Error cargando chats:', chError.message)
+                } else if (chData && chData.length > 0) {
+                    chData.forEach(ch => {
+                        if (!chatsMap[ch.notebook_id]) chatsMap[ch.notebook_id] = []
+                        chatsMap[ch.notebook_id].push({
+                            id: ch.id,
+                            notebookId: ch.notebook_id,
+                            title: ch.title,
+                            createdAt: new Date(ch.created_at),
+                            updatedAt: new Date(ch.updated_at)
+                        })
+                    })
+
+                    // 3. Fetch messages only if we have chats
+                    try {
+                        const chatIds = chData.map(ch => ch.id)
+                        const { data: msgData, error: msgError } = await supabaseHelpers.studyAI.getMessages(chatIds)
+                        if (msgError) {
+                            console.error('Error cargando mensajes:', msgError.message)
+                        } else if (msgData) {
+                            msgData.forEach(msg => {
+                                if (!messagesMap[msg.chat_id]) messagesMap[msg.chat_id] = []
+                                messagesMap[msg.chat_id].push({
+                                    id: msg.id,
+                                    chatId: msg.chat_id,
+                                    role: msg.role,
+                                    content: msg.content,
+                                    contentType: msg.content_type,
+                                    createdAt: new Date(msg.created_at)
+                                })
+                            })
+                        }
+                    } catch (msgErr) {
+                        console.error('Excepción cargando mensajes:', msgErr)
+                    }
+                }
+            } catch (err) {
+                console.error('Excepción cargando chats:', err)
+            }
+
+            if (isMounted) {
+                setNotebooks(mappedNotebooks)
+                setChats(chatsMap)
+                setMessages(messagesMap)
+                setIsLoadingData(false)
             }
         }
 
         loadSupabaseData()
 
         return () => { isMounted = false }
-    }, [user])
+    }, [user?.id])
 
     // ── Computed values ──
     const activeNotebook = notebooks.find(n => n.id === activeNotebookId) || null
@@ -140,13 +155,11 @@ export function StudyAIProvider({ children }) {
 
     // ── Notebook CRUD ──
     const createNotebook = useCallback(async (data) => {
-        console.log("createNotebook invoked! user:", user, "data:", data);
-        if (!user) {
-            console.error("No hay usuario autenticado, createNotebook se aborta");
+        if (!user?.id) {
+            console.error('createNotebook: No hay usuario autenticado')
             return null
         }
 
-        // Prepare DB notebook
         const dbNotebook = {
             user_id: user.id,
             title: data.title || 'Nuevo Cuaderno',
@@ -158,45 +171,41 @@ export function StudyAIProvider({ children }) {
             chats_count: 0
         }
 
-        console.log("Calling supabaseHelpers.studyAI.createNotebook with dbNotebook:", dbNotebook);
-        let created, error;
         try {
-            const result = await supabaseHelpers.studyAI.createNotebook(dbNotebook);
-            created = result.data;
-            error = result.error;
-            console.log("Received response from Supabase. created:", created, "error:", error);
-        } catch (catchedErr) {
-            console.error("EXCEPCIÓN CRÍTICA al llamar a Supabase:", catchedErr);
-            return null;
-        }
+            const result = await supabaseHelpers.studyAI.createNotebook(dbNotebook)
+            const { data: created, error } = result
 
-        if (error) {
-            console.error("Error devuelto por Supabase al crear el cuaderno:", error.message || error)
+            if (error) {
+                console.error('Error Supabase al crear cuaderno:', error.message || error)
+                return null
+            }
+
+            if (!created) {
+                console.error('Supabase no devolvió datos del cuaderno creado')
+                return null
+            }
+
+            const newNotebook = {
+                id: created.id,
+                title: created.title,
+                description: created.description || '',
+                icon: created.icon || '📚',
+                color: created.color || '#58a6ff',
+                specialty: created.specialty || '',
+                isPinned: created.is_pinned || false,
+                chatsCount: created.chats_count || 0,
+                createdAt: new Date(created.created_at),
+                updatedAt: new Date(created.updated_at)
+            }
+
+            setNotebooks(prev => [newNotebook, ...prev])
+            setChats(prev => ({ ...prev, [newNotebook.id]: [] }))
+            return newNotebook
+        } catch (err) {
+            console.error('Excepción al crear cuaderno:', err)
             return null
         }
-
-        if (!created) {
-            console.error("No se devolvió 'created' desde la base de datos.");
-            return null;
-        }
-
-        const newNotebook = {
-            id: created.id,
-            title: created.title,
-            description: created.description,
-            icon: created.icon,
-            color: created.color,
-            specialty: created.specialty,
-            isPinned: created.is_pinned,
-            chatsCount: created.chats_count,
-            createdAt: new Date(created.created_at),
-            updatedAt: new Date(created.updated_at)
-        }
-
-        setNotebooks(prev => [newNotebook, ...prev])
-        setChats(prev => ({ ...prev, [newNotebook.id]: [] }))
-        return newNotebook
-    }, [user])
+    }, [user?.id])
 
     const updateNotebook = useCallback(async (id, updates) => {
         const dbUpdates = {}
@@ -510,7 +519,7 @@ export function StudyAIProvider({ children }) {
             })
 
             if (aiMsgErr) {
-                toast.error("Error al guardar respuesta del AI")
+                console.error('Error al guardar respuesta del AI:', aiMsgErr.message)
                 throw aiMsgErr
             }
 

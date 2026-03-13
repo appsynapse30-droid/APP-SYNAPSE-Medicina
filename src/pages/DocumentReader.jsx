@@ -67,33 +67,31 @@ export default function DocumentReader() {
     }, [id, documents])
 
     // Fetch the signed URL from Supabase Storage when document is found
-    const fetchFileUrl = useCallback(async () => {
-        if (!document || document.isSample || !document.filePath) return
+    const fetchFileUrl = useCallback(async (docId, docFilePath) => {
+        if (!docId || !docFilePath) return
 
-        console.log("fetchFileUrl: Starting fetch for document path", document.filePath);
         setFileLoading(true)
         setFileError(null)
+        setFileUrl(null)
 
         try {
-            console.log("fetchFileUrl: Calling getDocumentViewUrl");
-            const { url, error } = await getDocumentViewUrl(document.id)
-            console.log("fetchFileUrl: getDocumentViewUrl returned", { url, error });
-            if (error) throw new Error(error)
+            const { url, error } = await getDocumentViewUrl(docId)
+            if (error) throw new Error(typeof error === 'string' ? error : error.message || 'Error desconocido')
+            if (!url) throw new Error('No se pudo obtener la URL del documento')
             setFileUrl(url)
         } catch (err) {
-            console.error('Error fetching file URL:', err)
+            console.error('Error obteniendo URL del archivo:', err)
             setFileError(err.message || 'Error al cargar el archivo')
         } finally {
-            console.log("fetchFileUrl: Setting fileLoading to false");
             setFileLoading(false)
         }
-    }, [document, getDocumentViewUrl])
+    }, [getDocumentViewUrl])
 
     useEffect(() => {
-        if (document && document.filePath) {
-            fetchFileUrl()
+        if (document && document.filePath && !document.isSample) {
+            fetchFileUrl(document.id, document.filePath)
         }
-    }, [document?.id]) // Only refetch when document ID changes
+    }, [document?.id, document?.filePath, fetchFileUrl])
 
     const handleSend = () => {
         if (!inputValue.trim()) return
@@ -252,7 +250,7 @@ export default function DocumentReader() {
                             <AlertCircle size={48} />
                             <h3>Error al cargar el archivo</h3>
                             <p>{fileError}</p>
-                            <button className="btn btn-primary" onClick={fetchFileUrl}>
+                            <button className="btn btn-primary" onClick={() => fetchFileUrl(document.id, document.filePath)}>
                                 <RefreshCw size={16} />
                                 Reintentar
                             </button>
