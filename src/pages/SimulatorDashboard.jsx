@@ -69,8 +69,8 @@ export default function SimulatorDashboard() {
     const navigate = useNavigate()
     const [selectedMode, setSelectedMode] = useState('tutor')
     const [selectedLength, setSelectedLength] = useState('standard')
-    const [difficulty, setDifficulty] = useState(3) // 1 to 5
     const [questionState, setQuestionState] = useState('todas') // nuevas, incorrectas, marcadas, todas
+    const [selectedTopics, setSelectedTopics] = useState(['Cardiología', 'Neurología', 'Gastroenterología'])
     const [isStarting, setIsStarting] = useState(false)
     const { getDueCardsCount } = useFSRS()
     const [dueStats, setDueStats] = useState({ new: 0, due: 0, total: 0 })
@@ -94,7 +94,8 @@ export default function SimulatorDashboard() {
                         mode: selectedMode,
                         length: selectedLength,
                         difficulty: difficulty,
-                        questionState: questionState
+                        questionState: questionState,
+                        topics: selectedTopics
                     }
                 }
             })
@@ -229,9 +230,23 @@ export default function SimulatorDashboard() {
 
                         <div className="filter-group">
                             <label>Sistemas / Disciplinas</label>
-                            <button className="open-topics-btn">
+                            <div className="topics-pill-container">
+                                {selectedTopics.map(t => (
+                                    <span key={t} className="topic-pill">
+                                        {t}
+                                        <button onClick={() => setSelectedTopics(prev => prev.filter(x => x !== t))}>×</button>
+                                    </span>
+                                ))}
+                            </div>
+                            <button 
+                                className="open-topics-btn"
+                                onClick={() => {
+                                    const next = prompt("Añade un tema (ej: Pediatría, Farmacología):")
+                                    if (next) setSelectedTopics(prev => [...new Set([...prev, next])])
+                                }}
+                            >
                                 <Filter size={16} />
-                                <span>Seleccionar Temas (Todos)</span>
+                                <span>Añadir Tema</span>
                             </button>
                         </div>
                     </section>

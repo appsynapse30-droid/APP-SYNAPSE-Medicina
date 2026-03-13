@@ -4,6 +4,9 @@ import { ArrowLeft, Clock, AlertTriangle, ShieldAlert } from 'lucide-react'
 import SimQuestionView from '../components/study/SimQuestionView'
 import SimFeedbackPanel from '../components/study/SimFeedbackPanel'
 import DynamicCaseView from '../components/study/DynamicCaseView'
+import n8nService from '../services/n8n'
+import { useFSRS } from '../context/FSRSContext'
+import { toast } from 'sileo'
 import './ActiveSimulation.css'
 
 // --- Mock Data ---
@@ -57,7 +60,9 @@ export default function ActiveSimulation() {
 
     const [isLoading, setIsLoading] = useState(true)
     const [simData, setSimData] = useState(null)
+    const [currentQuestion, setCurrentQuestion] = useState(null)
     const [showExitWarning, setShowExitWarning] = useState(false)
+    const { addFlashcards } = useFSRS()
 
     // Verify config exists
     useEffect(() => {
@@ -69,21 +74,48 @@ export default function ActiveSimulation() {
         // Mock loading simulation data from backend/n8n
         const initSim = async () => {
             setIsLoading(true)
-            // Here we would call Supabase to create the simulation record
-            // And potentially trigger n8n to generate the first batch of questions if not pre-fetched
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            
-            setSimData({
-                id: 'sim_' + Date.now(),
-                mode: config.mode,
-                totalQuestions: config.length === 'micro' ? 10 : config.length === 'standard' ? 40 : 150,
-                currentQuestion: 1,
-                timeRemaining: config.length === 'micro' ? 10 * 60 : 60 * 60, // in seconds
-                status: 'in_progress',
-                userAnswerId: null, // Track answered state for tutor mode
-                showFeedback: false 
-            })
-            setIsLoading(false)
+            try {
+                // Real AI generation via n8n
+                const data = await n8nService.generateSimulation({
+                    mode: config.mode,
+                    difficulty: config.difficulty,
+                    topics: config.topics || ['Medicina General'],
+                    count: 1
+                })
+
+                if (data && data.question) {
+                    setCurrentQuestion(data.question)
+                    setSimData({
+                        id: 'sim_' + Date.now(),
+                        mode: config.mode,
+                        totalQuestions: config.length === 'micro' ? 10 : config.length === 'standard' ? 40 : 150,
+                        currentQuestion: 1,
+                        timeRemaining: config.length === 'micro' ? 10 * 60 : 60 * 60,
+                        status: 'in_progress',
+                        userAnswerId: null,
+                        showFeedback: false 
+                    })
+                } else {
+                    throw new Error('No se pudo generar la pregunta')
+                }
+            } catch (err) {
+                console.error("Error initializing sim:", err)
+                toast.error("Error al conectar con el Cerebro IA. Usando datos de respaldo.")
+                // Fallback to dummy
+                setCurrentQuestion(DUMMY_QUESTION)
+                setSimData({
+                    id: 'sim_fallback',
+                    mode: config.mode,
+                    totalQuestions: 1,
+                    currentQuestion: 1,
+                    timeRemaining: 600,
+                    status: 'error_fallback',
+                    userAnswerId: null,
+                    showFeedback: false
+                })
+            } finally {
+                setIsLoading(false)
+            }
         }
 
         initSim()
@@ -169,7 +201,7 @@ export default function ActiveSimulation() {
                     ) : (
                         <div className="sim-question-column">
                             <SimQuestionView 
-                                question={DUMMY_QUESTION}
+                                question={currentQuestion || DUMMY_QUESTION}
                                 mode={simData?.mode}
                                 isAnswered={!!simData?.userAnswerId}
                                 userAnswerId={simData?.userAnswerId}
@@ -181,12 +213,27 @@ export default function ActiveSimulation() {
                                     }))
 
                                     if (simData?.mode === 'examen' || simData?.mode === 'reto') {
-                                        // In exam mode, we might auto advance or show a "next" button 
-                                        setTimeout(() => {
-                                            alert("Simulación de avance a siguiente pregunta...")
-                                            // Reset
-                                            setSimData(prev => ({ ...prev, userAnswerId: null, currentQuestion: prev.currentQuestion + 1 }))
-                                        }, 1000)
+                                        setTimeout(async () => {
+                                            // Advance to next question (generating it on the fly)
+                                            setIsLoading(true)
+                                            try {
+                                                const nextData = await n8nService.generateSimulation({
+                                                    mode: config.mode,
+                                                    difficulty: config.difficulty,
+                                                    topics: config.topics
+                                                })
+                                                setCurrentQuestion(nextData.question)
+                                                setSimData(prev => ({ 
+                                                    ...prev, 
+                                                    userAnswerId: null, 
+                                                    currentQuestion: prev.currentQuestion + 1 
+                                                }))
+                                            } catch (e) {
+                                                toast.error("Error al generar siguiente pregunta")
+                                            } finally {
+                                                setIsLoading(false)
+                                            }
+                                        }, 1500)
                                     }
                                 }}
                             />
@@ -194,12 +241,25 @@ export default function ActiveSimulation() {
                             {simData?.showFeedback && simData?.mode === 'tutor' && (
                                 <button 
                                     className="btn-next-question"
-                                    onClick={() => setSimData(prev => ({ 
-                                        ...prev, 
-                                        userAnswerId: null, 
-                                        showFeedback: false,
-                                        currentQuestion: prev.currentQuestion + 1 
-                                    }))}
+                                    onClick={async () => {
+                                        setIsLoading(true)
+                                        try {
+                                            const nextData = await n8nService.generateSimulation({
+                                                mode: config.mode,
+                                                difficulty: config.difficulty,
+                                                topics: config.topics
+                                            })
+                                            setCurrentQuestion(nextData.question)
+                                            setSimData(prev => ({ 
+                                                ...prev, 
+                                                userAnswerId: null, 
+                                                showFeedback: false,
+                                                currentQuestion: prev.currentQuestion + 1 
+                                            }))
+                                        } finally {
+                                            setIsLoading(false)
+                                        }
+                                    }}
                                     style={{ marginTop: '1rem', float: 'right' }}
                                 >
                                     Siguiente Pregunta
@@ -212,9 +272,22 @@ export default function ActiveSimulation() {
                     {simData?.mode === 'tutor' && simData.showFeedback && (
                         <div className="sim-feedback-column">
                             <SimFeedbackPanel 
-                                feedbackData={DUMMY_FEEDBACK}
-                                onCreateFlashcard={(pearl) => {
-                                    alert(`Flashcard generada y enviada a FSRS: \n"${pearl}"`)
+                                feedbackData={currentQuestion?.feedback || DUMMY_FEEDBACK}
+                                onCreateFlashcard={async (pearl) => {
+                                    const loadingToast = toast.loading("Procesando perla clínica...")
+                                    try {
+                                        const result = await n8nService.createFlashcards({
+                                            content: pearl,
+                                            topic: currentQuestion?.feedback?.topic || 'Simulación'
+                                        })
+                                        
+                                        if (result && result.flashcards) {
+                                            await addFlashcards(result.flashcards)
+                                            toast.success(`${result.flashcards.length} Flashcards añadidas a tu mazo FSRS`, { id: loadingToast })
+                                        }
+                                    } catch (e) {
+                                        toast.error("Error al crear flashcards", { id: loadingToast })
+                                    }
                                 }}
                             />
                         </div>
