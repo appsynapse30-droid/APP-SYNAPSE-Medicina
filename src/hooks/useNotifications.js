@@ -14,6 +14,67 @@
 import { useCallback, useRef } from 'react'
 import { sileo } from 'sileo'
 
+// ─── Notification Sound (Web Audio API — no external files needed) ───────────
+const playNotificationSound = (type = 'chime') => {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext
+        if (!AudioCtx) return
+        const ctx = new AudioCtx()
+
+        if (type === 'chime') {
+            // Pleasant two-tone chime
+            const notes = [880, 1108.73] // A5 → C#6
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                osc.type = 'sine'
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15)
+                gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15)
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.8)
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                osc.start(ctx.currentTime + i * 0.15)
+                osc.stop(ctx.currentTime + i * 0.15 + 0.8)
+            })
+        } else if (type === 'success') {
+            // Triumphant three-tone arpeggio
+            const notes = [523.25, 659.25, 783.99] // C5 → E5 → G5
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                osc.type = 'sine'
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12)
+                gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.12)
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 1.0)
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                osc.start(ctx.currentTime + i * 0.12)
+                osc.stop(ctx.currentTime + i * 0.12 + 1.0)
+            })
+        } else if (type === 'alert') {
+            // Attention-getting double beep
+            for (let i = 0; i < 2; i++) {
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                osc.type = 'triangle'
+                osc.frequency.setValueAtTime(740, ctx.currentTime + i * 0.25)
+                gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.25)
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.25 + 0.2)
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                osc.start(ctx.currentTime + i * 0.25)
+                osc.stop(ctx.currentTime + i * 0.25 + 0.2)
+            }
+        }
+
+        // Clean up context after sounds finish
+        setTimeout(() => ctx.close(), 2000)
+    } catch (e) {
+        // Silently fail — sound is a nice-to-have
+        console.warn('Notification sound failed:', e)
+    }
+}
+
 // ─── Notification presets ────────────────────────────────────────────────────
 
 export function useNotifications() {
@@ -56,6 +117,7 @@ export function useNotifications() {
     }, [])
 
     const pomodoroCompleted = useCallback((studyMinutes) => {
+        playNotificationSound('success')
         sileo.success({
             title: '✅ ¡Pomodoro Completado!',
             description: `Has completado ${studyMinutes} min de estudio. ¡Tómate un descanso!`,
@@ -67,6 +129,7 @@ export function useNotifications() {
     }, [])
 
     const pomodoroBreakStarted = useCallback((breakMinutes) => {
+        playNotificationSound('chime')
         sileo.info({
             title: '☕ Tiempo de Descanso',
             description: `Descansa ${breakMinutes} min. Tu cerebro lo necesita.`,
@@ -74,6 +137,7 @@ export function useNotifications() {
     }, [])
 
     const pomodoroBreakEnded = useCallback(() => {
+        playNotificationSound('alert')
         sileo.warning({
             title: '⏰ Descanso Terminado',
             description: '¡Es hora de volver a estudiar!',
@@ -91,6 +155,7 @@ export function useNotifications() {
         if (firedRef.current.has('daily-goal')) return
         firedRef.current.add('daily-goal')
 
+        playNotificationSound('success')
         sileo.success({
             title: '🏆 ¡Meta Diaria Alcanzada!',
             description: '¡Felicidades! Has cumplido tu meta de estudio de hoy.',
