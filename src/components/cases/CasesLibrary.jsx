@@ -143,7 +143,7 @@ export default function CasesLibrary({
 
     const CategoryIcon = ({ category }) => {
         const Icon = categoryIcons[category] || Clipboard
-        return <Icon size={16} />
+        return <Icon size={20} />
     }
 
     return (
@@ -155,7 +155,7 @@ export default function CasesLibrary({
                     <p>{stats.total} casos guardados</p>
                 </div>
                 <button className="btn-new-case" onClick={onNewCase}>
-                    <Plus size={18} />
+                    <Plus size={22} />
                     Nuevo Caso
                 </button>
             </div>
@@ -173,7 +173,7 @@ export default function CasesLibrary({
                 </div>
                 <div className="stat-mini">
                     <div className="stat-icon progreso">
-                        <Clock size={18} />
+                        <Clock size={22} />
                     </div>
                     <div className="stat-info">
                         <span className="stat-number">{stats.byStatus.en_progreso}</span>
@@ -182,7 +182,7 @@ export default function CasesLibrary({
                 </div>
                 <div className="stat-mini">
                     <div className="stat-icon dominado">
-                        <CheckCircle2 size={18} />
+                        <CheckCircle2 size={22} />
                     </div>
                     <div className="stat-info">
                         <span className="stat-number">{stats.byStatus.dominado}</span>
@@ -191,7 +191,7 @@ export default function CasesLibrary({
                 </div>
                 <div className="stat-mini">
                     <div className="stat-icon pendiente">
-                        <BookOpen size={18} />
+                        <BookOpen size={22} />
                     </div>
                     <div className="stat-info">
                         <span className="stat-number">{stats.pendingReview}</span>
@@ -203,7 +203,7 @@ export default function CasesLibrary({
             {/* Search and Filters */}
             <div className="library-toolbar">
                 <div className="search-box">
-                    <Search size={18} />
+                    <Search size={22} />
                     <input
                         type="text"
                         placeholder="Buscar por título, paciente, etiqueta..."
@@ -217,9 +217,9 @@ export default function CasesLibrary({
                         className={`btn-filter ${showFilters ? 'active' : ''}`}
                         onClick={() => setShowFilters(!showFilters)}
                     >
-                        <Filter size={16} />
+                        <Filter size={20} />
                         Filtros
-                        <ChevronDown size={14} className={showFilters ? 'rotated' : ''} />
+                        <ChevronDown size={18} className={showFilters ? 'rotated' : ''} />
                     </button>
 
                     <select
@@ -237,14 +237,16 @@ export default function CasesLibrary({
                         <button
                             className={viewMode === 'grid' ? 'active' : ''}
                             onClick={() => setViewMode('grid')}
+                            title="Vista en Cuadrícula"
                         >
-                            <Grid size={16} />
+                            <Grid size={22} />
                         </button>
                         <button
                             className={viewMode === 'list' ? 'active' : ''}
                             onClick={() => setViewMode('list')}
+                            title="Vista en Lista"
                         >
-                            <List size={16} />
+                            <List size={22} />
                         </button>
                     </div>
                 </div>
@@ -314,7 +316,7 @@ export default function CasesLibrary({
                     </p>
                     {!searchQuery && filterCategory === 'all' && (
                         <button className="btn-primary" onClick={onNewCase}>
-                            <Plus size={16} />
+                            <Plus size={20} />
                             Crear Primer Caso
                         </button>
                     )}
@@ -332,7 +334,7 @@ export default function CasesLibrary({
                                 className={`btn-favorite ${caseItem.isFavorite ? 'active' : ''}`}
                                 onClick={(e) => handleToggleFavorite(caseItem.id, e)}
                             >
-                                <Star size={16} fill={caseItem.isFavorite ? 'currentColor' : 'none'} />
+                                <Star size={20} fill={caseItem.isFavorite ? 'currentColor' : 'none'} />
                             </button>
 
                             {/* Card Header */}
@@ -373,7 +375,7 @@ export default function CasesLibrary({
                                             setActiveMenu(activeMenu === caseItem.id ? null : caseItem.id)
                                         }}
                                     >
-                                        <MoreVertical size={16} />
+                                        <MoreVertical size={20} />
                                     </button>
                                     {activeMenu === caseItem.id && (
                                         <div className="case-menu">
@@ -382,11 +384,11 @@ export default function CasesLibrary({
                                                 onEditCase(caseItem.id)
                                                 setActiveMenu(null)
                                             }}>
-                                                <Edit2 size={14} />
+                                                <Edit2 size={18} />
                                                 Editar
                                             </button>
                                             <button onClick={(e) => handleDuplicate(caseItem.id, e)}>
-                                                <Copy size={14} />
+                                                <Copy size={18} />
                                                 Duplicar
                                             </button>
                                             {caseItem.timeline?.length > 0 && (
@@ -395,7 +397,7 @@ export default function CasesLibrary({
                                                     onSimulateCase(caseItem.id)
                                                     setActiveMenu(null)
                                                 }}>
-                                                    <Play size={14} />
+                                                    <Play size={18} />
                                                     Simular
                                                 </button>
                                             )}
@@ -403,7 +405,7 @@ export default function CasesLibrary({
                                                 className="danger"
                                                 onClick={(e) => handleDelete(caseItem.id, e)}
                                             >
-                                                <Trash2 size={14} />
+                                                <Trash2 size={18} />
                                                 Eliminar
                                             </button>
                                         </div>
@@ -489,7 +491,7 @@ export default function CasesLibrary({
                                     }}
                                     title="Modo Estudio"
                                 >
-                                    <BookOpen size={14} />
+                                    <BookOpen size={18} />
                                     Estudiar
                                 </button>
                                 <button

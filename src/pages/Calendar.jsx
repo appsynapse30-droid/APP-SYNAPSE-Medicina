@@ -222,7 +222,7 @@ export default function Calendar() {
             <aside className="calendar-sidebar">
                 <div className="sidebar-section">
                     <button className="btn-new-event" onClick={() => openNewEventModal()}>
-                        <Plus size={18} />
+                        <Plus size={22} />
                         Nuevo Evento
                     </button>
                 </div>
@@ -319,21 +319,21 @@ export default function Calendar() {
                                 onClick={() => setCurrentView('month')}
                                 title="Vista mensual"
                             >
-                                <LayoutGrid size={18} />
+                                <LayoutGrid size={22} />
                             </button>
                             <button
                                 className={currentView === 'week' ? 'active' : ''}
                                 onClick={() => setCurrentView('week')}
                                 title="Vista semanal"
                             >
-                                <CalendarDays size={18} />
+                                <CalendarDays size={22} />
                             </button>
                             <button
                                 className={currentView === 'list' ? 'active' : ''}
                                 onClick={() => setCurrentView('list')}
                                 title="Vista de lista"
                             >
-                                <List size={18} />
+                                <List size={22} />
                             </button>
                         </div>
                     </div>
@@ -392,7 +392,7 @@ export default function Calendar() {
                                                     openNewEventModal(day.date)
                                                 }}
                                             >
-                                                <Plus size={14} />
+                                                <Plus size={18} />
                                             </button>
                                         )}
                                     </div>
@@ -466,18 +466,18 @@ export default function Calendar() {
                                             </span>
                                             <div className="event-actions">
                                                 <button onClick={() => openEditEventModal(event)}>
-                                                    <Edit3 size={16} />
+                                                    <Edit3 size={20} />
                                                 </button>
                                                 <button onClick={() => handleDeleteEvent(event.id)}>
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={20} />
                                                 </button>
                                             </div>
                                         </div>
                                         <h3>{event.title}</h3>
                                         <div className="event-details">
-                                            <span><Clock size={14} /> {event.startTime} - {event.endTime}</span>
+                                            <span><Clock size={16} /> {event.startTime} - {event.endTime}</span>
                                             {event.location && (
-                                                <span><MapPin size={14} /> {event.location}</span>
+                                                <span><MapPin size={16} /> {event.location}</span>
                                             )}
                                         </div>
                                         {event.description && (
@@ -494,7 +494,7 @@ export default function Calendar() {
                                 openNewEventModal(selectedDate)
                             }}
                         >
-                            <Plus size={18} />
+                            <Plus size={22} />
                             Agregar Evento
                         </button>
                     </div>
@@ -769,7 +769,7 @@ function ListView({ events, openEditEventModal, handleDeleteEvent, handleDuplica
                                 }}
                             >
                                 <div className="list-event-time">
-                                    <Clock size={14} />
+                                    <Clock size={18} />
                                     {event.startTime} - {event.endTime}
                                 </div>
                                 <div className="list-event-content">
@@ -793,13 +793,13 @@ function ListView({ events, openEditEventModal, handleDeleteEvent, handleDuplica
                                 </div>
                                 <div className="list-event-actions">
                                     <button title="Editar" onClick={() => openEditEventModal(event)}>
-                                        <Edit3 size={16} />
+                                        <Edit3 size={20} />
                                     </button>
                                     <button title="Duplicar" onClick={() => handleDuplicateEvent(event.id)}>
-                                        <Copy size={16} />
+                                        <Copy size={20} />
                                     </button>
                                     <button title="Eliminar" onClick={() => handleDeleteEvent(event.id)}>
-                                        <Trash2 size={16} />
+                                        <Trash2 size={20} />
                                     </button>
                                 </div>
                             </div>
